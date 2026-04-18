@@ -147,9 +147,9 @@ function MealCard({ meal, onEdit, onDelete }) {
             )}
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-1.5">
-          <button type="button" onClick={onEdit} className="text-[#4B5563] hover:text-[#58A6FF]"><Edit2 size={12} /></button>
-          <button type="button" onClick={onDelete} className="text-[#4B5563] hover:text-[#F85149]"><Trash2 size={12} /></button>
+        <div className="flex shrink-0 items-center gap-2">
+          <button type="button" onClick={onEdit} className="p-1 text-[#4B5563] hover:text-[#58A6FF]"><Edit2 size={14} /></button>
+          <button type="button" onClick={onDelete} className="p-1 text-[#4B5563] hover:text-[#F85149]"><Trash2 size={14} /></button>
         </div>
       </div>
     </div>

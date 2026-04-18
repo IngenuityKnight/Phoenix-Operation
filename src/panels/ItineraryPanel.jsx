@@ -147,7 +147,7 @@ function ItineraryItem({ item, onEdit, onDelete }) {
           <div className="mt-1 text-[10px] text-[#4B5563] italic">{item.notes}</div>
         )}
       </div>
-      <div className="flex shrink-0 items-center gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
+      <div className="flex shrink-0 items-center gap-1.5 opacity-100 md:opacity-0 md:transition-opacity md:group-hover:opacity-100">
         <button type="button" onClick={onEdit} className="text-[#4B5563] hover:text-[#58A6FF]"><Edit2 size={12} /></button>
         <button type="button" onClick={onDelete} className="text-[#4B5563] hover:text-[#F85149]"><Trash2 size={12} /></button>
       </div>
