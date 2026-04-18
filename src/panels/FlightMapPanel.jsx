@@ -265,7 +265,7 @@ export default function FlightMapPanel() {
   const confirmed = arrivals.filter((item) => item.status === 'Confirmed').length
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+    <div className="flex flex-col md:min-h-0 md:flex-1 md:overflow-hidden">
       <div className="flex items-center justify-between border-b border-[#30363D] px-6 py-4">
         <div>
           <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8B949E]">Ops Map</div>

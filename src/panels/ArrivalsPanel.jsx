@@ -167,7 +167,7 @@ export default function ArrivalsPanel() {
   const needsPickup = arrivals.filter((a) => a.pickup_needed && a.status !== 'Arrived').length
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+    <div className="flex flex-col md:min-h-0 md:flex-1 md:overflow-hidden">
       {/* Header */}
       <div className="border-b border-[#30363D] px-4 py-4 md:px-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -233,7 +233,7 @@ export default function ArrivalsPanel() {
       )}
 
       {/* Content */}
-      <div className="flex-1 overflow-auto">
+      <div className="md:flex-1 md:overflow-auto">
         {loading ? (
           <div className="flex h-48 items-center justify-center text-[#8B949E]">
             <span className="text-[11px] uppercase tracking-widest">Loading…</span>

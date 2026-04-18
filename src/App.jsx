@@ -107,7 +107,7 @@ export default function App() {
       <ShellNav selectedPage={selectedPage} onSelectPage={setSelectedPage} />
       <main className="flex flex-1 flex-col md:min-h-0 md:overflow-hidden">
         <AppHeader selectedPage={selectedPage} />
-        <div className="flex flex-1 overflow-auto md:min-h-0 md:overflow-hidden">{content}</div>
+        <div className="flex flex-1 md:min-h-0 md:overflow-hidden">{content}</div>
       </main>
     </div>
   )

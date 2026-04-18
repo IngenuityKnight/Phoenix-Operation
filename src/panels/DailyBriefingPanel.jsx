@@ -134,7 +134,7 @@ export default function DailyBriefingPanel() {
   const openTasks = logistics.filter((item) => !item.done).length
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-auto bg-[#0b0f14]">
+    <div className="flex flex-col bg-[#0b0f14] md:min-h-0 md:flex-1 md:overflow-auto">
       <div className="border-b border-[#30363D] px-6 py-5">
         <div className="text-[10px] font-black uppercase tracking-[0.22em] text-[#58A6FF]">
           Daily Briefing

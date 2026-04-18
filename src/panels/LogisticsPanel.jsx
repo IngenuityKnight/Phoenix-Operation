@@ -130,7 +130,7 @@ export default function LogisticsPanel() {
   const total = items.length
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+    <div className="flex flex-col md:min-h-0 md:flex-1 md:overflow-hidden">
       <div className="border-b border-[#30363D] px-4 py-4 md:px-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
@@ -157,7 +157,7 @@ export default function LogisticsPanel() {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto p-6">
+      <div className="p-4 md:flex-1 md:overflow-auto md:p-6">
         {loading ? (
           <div className="flex h-48 items-center justify-center">
             <span className="text-[11px] uppercase tracking-widest text-[#8B949E]">Loading…</span>
