@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { DollarSign, Edit2, Plus, Trash2, X } from 'lucide-react'
+import { CheckCircle, Circle, DollarSign, Edit2, Plus, Trash2, X } from 'lucide-react'
 import { useSupabaseTable } from '../hooks/useSupabaseTable'
 
 const HEADCOUNT = 14
@@ -119,9 +119,27 @@ function ExpenseForm({ initial, onSave, onCancel, saving }) {
 
 export default function BudgetPanel() {
   const { rows: expenses, loading, insert, update, remove } = useSupabaseTable('expenses', { orderBy: 'created_at', ascending: false })
+  const { rows: paidSettlements, insert: markPaid, remove: unmarkPaid } = useSupabaseTable('settlements_paid', { orderBy: 'created_at' })
   const [modal, setModal] = useState(null)
   const [saving, setSaving] = useState(false)
   const [view, setView] = useState('expenses')
+
+  function isPaid(t) {
+    return paidSettlements.some((p) => p.from_person === t.from && p.to_person === t.to)
+  }
+
+  function getPaidRecord(t) {
+    return paidSettlements.find((p) => p.from_person === t.from && p.to_person === t.to)
+  }
+
+  async function handleMarkPaid(t) {
+    await markPaid({ from_person: t.from, to_person: t.to, amount: t.amount })
+  }
+
+  async function handleUnmarkPaid(t) {
+    const record = getPaidRecord(t)
+    if (record) await unmarkPaid(record.id)
+  }
 
   async function handleSave(form) {
     setSaving(true)
@@ -216,8 +234,8 @@ export default function BudgetPanel() {
           </div>
           {settlements.length > 0 && (
             <div className="text-center">
-              <div className="font-mono text-xl font-black text-[#A371F7]">{settlements.length}</div>
-              <div className="text-[9px] uppercase tracking-widest text-[#8B949E]">Transfers Needed</div>
+              <div className="font-mono text-xl font-black text-[#A371F7]">{settlements.filter((t) => !isPaid(t)).length}</div>
+              <div className="text-[9px] uppercase tracking-widest text-[#8B949E]">Outstanding</div>
             </div>
           )}
         </div>
@@ -363,38 +381,92 @@ export default function BudgetPanel() {
             {/* SETTLE UP VIEW */}
             {view === 'settle' && (
               <div className="flex flex-col gap-3">
-                <div className="text-[10px] text-[#8B949E] uppercase tracking-widest mb-1">
-                  Minimum transfers to square everyone up
-                </div>
                 {settlements.length === 0 ? (
                   <div className="flex flex-col items-center gap-2 py-12 text-[#4B5563]">
                     <div className="text-[11px] uppercase tracking-widest">
-                      {expenses.length === 0 ? 'No expenses yet' : "All square — nothing to settle!"}
+                      {expenses.length === 0 ? 'No expenses yet' : 'All square — nothing to settle!'}
                     </div>
                   </div>
                 ) : (
-                  settlements.map((t, i) => (
-                    <div key={i} className="flex items-center justify-between rounded border border-[#21262d] bg-[#0d1117] p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 items-center justify-center rounded bg-[#F85149]/10 text-xs font-black text-[#F85149]">
-                          {t.from[0]?.toUpperCase()}
-                        </div>
-                        <div>
-                          <div className="text-sm font-semibold text-[#C9D1D9]">{t.from}</div>
-                          <div className="text-[10px] text-[#8B949E]">sends to <span className="text-[#3FB950]">{t.to}</span></div>
-                        </div>
+                  <>
+                    {/* Outstanding transfers */}
+                    {settlements.filter((t) => !isPaid(t)).length > 0 && (
+                      <div className="flex flex-col gap-2">
+                        <div className="text-[9px] font-black uppercase tracking-[0.18em] text-[#8B949E]">Outstanding</div>
+                        {settlements.filter((t) => !isPaid(t)).map((t, i) => (
+                          <div key={i} className="flex items-center justify-between rounded border border-[#21262d] bg-[#0d1117] p-4">
+                            <div className="flex items-center gap-3">
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-[#F85149]/10 text-xs font-black text-[#F85149]">
+                                {t.from[0]?.toUpperCase()}
+                              </div>
+                              <div>
+                                <div className="text-sm font-semibold text-[#C9D1D9]">{t.from}</div>
+                                <div className="text-[10px] text-[#8B949E]">sends to <span className="text-[#3FB950]">{t.to}</span></div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <div className="text-right">
+                                <div className="font-mono text-lg font-black text-[#D29922]">${t.amount.toFixed(2)}</div>
+                                <div className="text-[9px] uppercase tracking-widest text-[#4B5563]">Venmo / Cash</div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleMarkPaid(t)}
+                                className="flex items-center gap-1.5 rounded border border-[#30363D] bg-[#161b22] px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#8B949E] hover:border-[#3FB950] hover:text-[#3FB950] transition-colors"
+                              >
+                                <Circle size={12} />
+                                Mark Paid
+                              </button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                      <div className="text-right">
-                        <div className="font-mono text-lg font-black text-[#D29922]">${t.amount.toFixed(2)}</div>
-                        <div className="mt-0.5 text-[9px] uppercase tracking-widest text-[#4B5563]">Venmo / Cash</div>
+                    )}
+
+                    {/* Settled transfers */}
+                    {settlements.filter((t) => isPaid(t)).length > 0 && (
+                      <div className="flex flex-col gap-2">
+                        <div className="text-[9px] font-black uppercase tracking-[0.18em] text-[#3FB950]/60">Settled</div>
+                        {settlements.filter((t) => isPaid(t)).map((t, i) => (
+                          <div key={i} className="flex items-center justify-between rounded border border-[#3FB950]/20 bg-[#3FB950]/5 p-4 opacity-60">
+                            <div className="flex items-center gap-3">
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-[#3FB950]/10 text-xs font-black text-[#3FB950]">
+                                <CheckCircle size={16} />
+                              </div>
+                              <div>
+                                <div className="text-sm font-semibold line-through text-[#8B949E]">{t.from}</div>
+                                <div className="text-[10px] text-[#4B5563]">paid <span className="text-[#8B949E]">{t.to}</span></div>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <div className="text-right">
+                                <div className="font-mono text-lg font-black text-[#3FB950]">${t.amount.toFixed(2)}</div>
+                                <div className="text-[9px] uppercase tracking-widest text-[#3FB950]/60">Settled</div>
+                              </div>
+                              <button
+                                type="button"
+                                onClick={() => handleUnmarkPaid(t)}
+                                className="text-[10px] text-[#4B5563] hover:text-[#8B949E] underline"
+                              >
+                                Undo
+                              </button>
+                            </div>
+                          </div>
+                        ))}
                       </div>
+                    )}
+
+                    {settlements.every((t) => isPaid(t)) && (
+                      <div className="rounded border border-[#3FB950]/30 bg-[#3FB950]/10 p-4 text-center">
+                        <div className="text-sm font-black text-[#3FB950]">All settled up!</div>
+                        <div className="mt-1 text-[10px] text-[#8B949E]">Everyone's square. Good trip.</div>
+                      </div>
+                    )}
+
+                    <div className="rounded border border-[#30363D] bg-[#11161d] p-3 text-[10px] text-[#8B949E]">
+                      Note: settlement assumes all {HEADCOUNT} guys split equally. If someone was absent for a specific expense, adjust the split count on that expense.
                     </div>
-                  ))
-                )}
-                {settlements.length > 0 && (
-                  <div className="mt-2 rounded border border-[#30363D] bg-[#11161d] p-3 text-[10px] text-[#8B949E]">
-                    Note: settlement assumes all {HEADCOUNT} guys split equally. If someone was absent for a specific expense, adjust the split count on that expense.
-                  </div>
+                  </>
                 )}
               </div>
             )}
