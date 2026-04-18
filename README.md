@@ -1,96 +1,32 @@
-# Family Trip Command Center
+# Phoenix Bachelor Command Center
 
-> A Palantir-ish dashboard for a very non-Palantir problem: getting a few families to Pine Mountain Lake and Yosemite without losing the plot.
+Realtime-style ops UI for a Scottsdale bachelor party weekend.
 
-Instead of a normal trip planner, this repo treats a long weekend like an operation: convoy routes, arrival windows, mission launches, meal logistics, family checklists, and a giant map that makes everything feel more serious than it needs to be.
+The application is organized around six surfaces:
 
-![Family Trip Command Center dashboard overview](docs/dashboard-overview.png)
+- `Daily Briefing` for the day-by-day command summary
+- `Itinerary` for events, venues, and timing
+- `Arrivals` for inbound travel and airport pickup control
+- `Ops Map` for PHX flight arcs and command-house context
+- `Meals` for food planning and headcount
+- `Logistics` for shared task execution
 
-## What It Does
-
-- Tracks multiple families arriving from different cities.
-- Simulates driving routes, convoy departures, and day-by-day timeline playback.
-- Organizes the trip into itinerary, stay, meals, activities, expenses, and family views.
-- Presents the whole thing as a dark, command-center-style dashboard because that is more fun than a spreadsheet.
-
-## Screens
-
-### Mission launch overlay
-
-![Mission launch overlay](docs/mission-launch.png)
-
-### Activity planning surface
-
-![Activity planning screen](docs/activity-board.png)
-
-### Meal logistics surface
-
-![Meal planning screen](docs/meals-planner.png)
-
-## Why This Exists
-
-Because “three families are trying to get to the same cabin” is already a systems problem.
-
-The repo is intentionally overbuilt for a small real-life use case. That is the point. It is a fun UI experiment, a trip-planning toy, and a mildly absurd attempt to make a family weekend feel like a live operations room.
-
-## Stack
-
-- React 19
-- Vite
-- Google Maps JavaScript API
-- Lucide icons
-- Framer Motion
-
-## Running It Locally
+## Development
 
 ```bash
 npm install
-cp .env.example .env
 npm run dev
 ```
 
-Open `http://127.0.0.1:5173` or whatever Vite prints.
+## Data
 
-## Environment
+The current UI reads and writes against Supabase tables used by the panel components:
 
-For the full map experience, add a browser Maps key to `.env`:
+- `arrivals`
+- `itinerary_items`
+- `meals`
+- `logistics`
 
-```bash
-VITE_GOOGLE_MAPS_API_KEY=your_browser_maps_key_here
-```
+## Product Direction
 
-Optional:
-
-```bash
-VITE_GOOGLE_MAP_ID=your_optional_google_map_id
-```
-
-Without a key, the app still renders its UI but the live Google map layer will not fully initialize.
-
-## Data / Privacy
-
-The trip data in this repo is intentionally sanitized for public sharing.
-
-- Family names are demo names.
-- The basecamp address is generalized.
-- Access instructions, Wi-Fi, host details, and other private trip notes are removed.
-
-If you publish this with your own Google Maps key, usage is billed to your Google Cloud project.
-
-## Repo Notes
-
-- State is stored locally in the browser.
-- The project is optimized for desktop and large-screen dashboard vibes.
-- The UI intentionally leans dense, dramatic, and slightly over-the-top.
-
-## If You Want To Hack On It
-
-Good places to start:
-
-- `src/App.jsx` for the main shell, timeline, and overlays
-- `src/CommandMap.jsx` for route rendering, playback, and map behavior
-- `src/tripModel.js` for the seeded trip document and helper logic
-
-## Status
-
-Built for fun. Surprisingly usable. Not pretending to be enterprise software.
+This codebase is intentionally scoped to one use case: a bachelor-party command center for Phoenix / Scottsdale. Legacy trip-planning code from the older concept has been removed.
