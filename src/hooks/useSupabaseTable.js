@@ -97,5 +97,13 @@ export function useSupabaseTable(tableName, { orderBy = 'created_at', ascending 
     [tableName],
   )
 
-  return { rows, loading, error, insert, update, remove, setRows }
+  const refetch = useCallback(() => {
+    supabase
+      .from(tableName)
+      .select('*')
+      .order(orderBy, { ascending })
+      .then(({ data }) => { if (data) setRows(data) })
+  }, [tableName, orderBy, ascending])
+
+  return { rows, loading, error, insert, update, remove, setRows, refetch }
 }

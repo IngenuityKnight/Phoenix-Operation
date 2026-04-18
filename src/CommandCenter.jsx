@@ -174,10 +174,10 @@ function ArrivalsBoard({ arrivals }) {
 
 // ─── MISSION CENTER ──────────────────────────────────────────────────────────
 
-function MissionCenter({ itinerary, weather }) {
-  const today = todayStr()
-  const tomorrow = tomorrowStr()
-  const nowTime = nowTimeStr()
+function MissionCenter({ itinerary, weather, now }) {
+  const today    = now.toLocaleDateString('en-CA')
+  const tomorrow = new Date(now.getTime() + 86400000).toLocaleDateString('en-CA')
+  const nowTime  = `${pad(now.getHours())}:${pad(now.getMinutes())}`
 
   const todayItems = [...itinerary]
     .filter((i) => i.day_date === today)
@@ -292,9 +292,9 @@ function MissionCenter({ itinerary, weather }) {
 
 // ─── STATS PANEL ─────────────────────────────────────────────────────────────
 
-function StatsPanel({ arrivals, itinerary }) {
-  const today = todayStr()
-  const nowTime = nowTimeStr()
+function StatsPanel({ arrivals, itinerary, now }) {
+  const today = now.toLocaleDateString('en-CA')
+  const nowTime = `${pad(now.getHours())}:${pad(now.getMinutes())}`
 
   const onSite     = arrivals.filter((a) => a.status === 'Arrived').length
   const inTransit  = arrivals.filter((a) => ['En Route', 'Landed'].includes(a.status)).length
@@ -311,9 +311,9 @@ function StatsPanel({ arrivals, itinerary }) {
   let countdownTime = null
   if (nextEvent?.start_time) {
     const [h, m] = nextEvent.start_time.split(':').map(Number)
-    const target = new Date()
+    const target = new Date(now)
     target.setHours(h, m, 0, 0)
-    const diff = target - new Date()
+    const diff = target - now
     if (diff > 0) {
       const hrs = Math.floor(diff / 3600000)
       const mins = Math.floor((diff % 3600000) / 60000)
@@ -439,25 +439,36 @@ function LiveIndicator({ lastUpdated }) {
 // ─── COMMAND CENTER ──────────────────────────────────────────────────────────
 
 export default function CommandCenter() {
-  const { rows: arrivals }  = useSupabaseTable('arrivals', { orderBy: 'arrival_time', ascending: true })
-  const { rows: itinerary } = useSupabaseTable('itinerary_items', { orderBy: 'start_time' })
+  const { rows: arrivals,  refetch: refetchArrivals }  = useSupabaseTable('arrivals', { orderBy: 'arrival_time', ascending: true })
+  const { rows: itinerary, refetch: refetchItinerary } = useSupabaseTable('itinerary_items', { orderBy: 'start_time' })
 
-  const [clock, setClock]       = useState(formatClock(new Date()))
-  const [cdText, setCdText]     = useState(weddingCountdown())
-  const [weather, setWeather]   = useState(null)
+  const [clock, setClock]             = useState(formatClock(new Date()))
+  const [cdText, setCdText]           = useState(weddingCountdown())
+  const [now, setNow]                 = useState(new Date())
+  const [weather, setWeather]         = useState(null)
   const [lastUpdated, setLastUpdated] = useState(0)
-  const [tick, setTick]         = useState(0) // forces StatsPanel re-render for live countdown
 
-  // 1-second clock + countdown
+  // 1-second clock + countdown — no component remounting
   useEffect(() => {
     const t = setInterval(() => {
-      setClock(formatClock(new Date()))
+      const d = new Date()
+      setClock(formatClock(d))
       setCdText(weddingCountdown())
+      setNow(d)
       setLastUpdated((s) => s + 1)
-      setTick((n) => n + 1)
     }, 1000)
     return () => clearInterval(t)
   }, [])
+
+  // 30-second polling fallback — keeps data fresh if WebSocket drops
+  useEffect(() => {
+    const t = setInterval(() => {
+      refetchArrivals()
+      refetchItinerary()
+      setLastUpdated(0)
+    }, 30000)
+    return () => clearInterval(t)
+  }, [refetchArrivals, refetchItinerary])
 
   // Weather — fetch on mount, refresh every 30 min
   useEffect(() => {
@@ -497,13 +508,12 @@ export default function CommandCenter() {
 
         {/* Center 35% — Mission */}
         <div className="w-[35%] overflow-hidden">
-          <MissionCenter itinerary={itinerary} weather={weather} />
+          <MissionCenter itinerary={itinerary} weather={weather} now={now} />
         </div>
 
         {/* Right 25% — Stats */}
         <div className="w-[25%] overflow-hidden">
-          {/* key={tick} forces countdown seconds to re-render every second */}
-          <StatsPanel key={tick} arrivals={arrivals} itinerary={itinerary} />
+          <StatsPanel arrivals={arrivals} itinerary={itinerary} now={now} />
         </div>
       </div>
 
