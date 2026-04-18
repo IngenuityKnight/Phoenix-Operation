@@ -83,8 +83,9 @@ export const MAP_FACILITIES = [
 ]
 
 export const NAV_ITEMS = [
-  { id: 'arrivals', label: 'Arrivals' },
   { id: 'itinerary', label: 'Itinerary' },
+  { id: 'arrivals', label: 'Arrivals' },
+  { id: 'map', label: 'Map' },
   { id: 'meals', label: 'Meals' },
   { id: 'logistics', label: 'Logistics' },
 ]

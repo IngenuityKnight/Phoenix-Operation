@@ -73,6 +73,7 @@ import ArrivalsPanel from './panels/ArrivalsPanel'
 import ItineraryPanel from './panels/ItineraryPanel'
 import MealsPanel from './panels/MealsPanel'
 import LogisticsPanel from './panels/LogisticsPanel'
+import FlightMapPanel from './panels/FlightMapPanel'
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
 const GOOGLE_MAP_ID = import.meta.env.VITE_GOOGLE_MAP_ID
@@ -84,8 +85,9 @@ function cn(...inputs) {
 }
 
 const PAGE_ICONS = {
-  arrivals: Users,
   itinerary: LayoutGrid,
+  arrivals: Users,
+  map: MapIcon,
   meals: Utensils,
   logistics: CheckSquare,
 }
@@ -909,28 +911,6 @@ function AppShell({
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="hidden md:flex items-center gap-2">
-              <div className="text-[9px] font-black uppercase tracking-[0.18em] text-[#8B949E]">
-                Working as
-              </div>
-              <div className="flex items-center gap-1.5">
-                {families.map((family) => (
-                  <button
-                    key={family.id}
-                    type="button"
-                    onClick={() => onSetActiveFamily(family.id)}
-                    className={cn(
-                      'border px-2.5 py-1 text-[9px] font-black uppercase tracking-[0.14em]',
-                      activeFamily?.id === family.id
-                        ? 'border-[#58A6FF]/50 bg-[#58A6FF]/12 text-[#C9D1D9]'
-                        : 'border-[#30363D] bg-[#0d1117] text-[#8B949E]',
-                    )}
-                  >
-                    {family.title}
-                  </button>
-                ))}
-              </div>
-            </div>
             <div className="rounded-[2px] border border-[#30363D] bg-[#0d1117] px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-[#58A6FF]">
               autosave live
             </div>
@@ -996,41 +976,6 @@ function AppShell({
         })}
       </nav>
 
-      {families.length > 0 && !activeFamily ? (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#0b0f14]/86 backdrop-blur-sm">
-          <div className="w-[420px] border border-[#30363D] bg-[#161b22] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
-            <div className="mb-2 text-[10px] font-black uppercase tracking-[0.22em] text-[#58A6FF]">
-              Family Profile
-            </div>
-            <div className="text-[18px] font-black uppercase tracking-[0.08em] text-[#E6EDF3]">
-              Choose your family
-            </div>
-            <div className="mt-2 text-[12px] leading-relaxed text-[#8B949E]">
-              This stays local in your browser, personalizes the planner to your family, and attributes edits and new expenses to you.
-            </div>
-            <div className="mt-5 grid gap-2">
-              {families.map((family) => (
-                <button
-                  key={family.id}
-                  type="button"
-                  onClick={() => onSetActiveFamily(family.id)}
-                  className="flex items-center justify-between border border-[#30363D] bg-[#0d1117] px-4 py-3 text-left transition-colors hover:border-[#58A6FF]/40 hover:bg-[#1f2a34]/50"
-                >
-                  <div>
-                    <div className="text-[12px] font-black uppercase tracking-[0.12em] text-[#C9D1D9]">
-                      {family.title}
-                    </div>
-                    <div className="mt-1 text-[10px] text-[#8B949E]">
-                      {family.shortOrigin} inbound · {family.headcount}
-                    </div>
-                  </div>
-                  <ArrowRight size={14} className="text-[#58A6FF]" />
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      ) : null}
     </div>
   )
 }
@@ -4891,10 +4836,12 @@ function App() {
   }
 
   let content = null
-  if (displayDoc.selectedPage === 'arrivals') {
-    content = <ArrivalsPanel />
-  } else if (displayDoc.selectedPage === 'itinerary') {
+  if (displayDoc.selectedPage === 'itinerary') {
     content = <ItineraryPanel />
+  } else if (displayDoc.selectedPage === 'arrivals') {
+    content = <ArrivalsPanel />
+  } else if (displayDoc.selectedPage === 'map') {
+    content = <FlightMapPanel />
   } else if (displayDoc.selectedPage === 'meals') {
     content = <MealsPanel />
   } else if (displayDoc.selectedPage === 'logistics') {

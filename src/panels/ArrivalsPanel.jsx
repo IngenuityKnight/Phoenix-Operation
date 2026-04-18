@@ -15,6 +15,7 @@ const STATUS_COLORS = {
 const EMPTY_FORM = {
   name: '',
   transport: 'flight',
+  origin_airport: '',
   arrival_date: '',
   arrival_time: '',
   flight_number: '',
@@ -82,10 +83,13 @@ function ArrivalForm({ initial, onSave, onCancel, saving }) {
             {TRANSPORT_OPTIONS.map((t) => <option key={t}>{t}</option>)}
           </select>
         </FormField>
-        <FormField label="Flight #">
-          <input className={inputCls} value={form.flight_number} onChange={(e) => set('flight_number', e.target.value)} placeholder="e.g. WN 1565" />
+        <FormField label="Origin Airport">
+          <input className={inputCls} value={form.origin_airport} onChange={(e) => set('origin_airport', e.target.value.toUpperCase())} placeholder="e.g. ORD, JFK, ATL" maxLength={3} />
         </FormField>
       </div>
+      <FormField label="Flight #">
+        <input className={inputCls} value={form.flight_number} onChange={(e) => set('flight_number', e.target.value)} placeholder="e.g. WN 1565" />
+      </FormField>
       <div className="grid grid-cols-2 gap-4">
         <FormField label="Arrival Date">
           <input type="date" className={inputCls} value={form.arrival_date} onChange={(e) => set('arrival_date', e.target.value)} />
@@ -245,7 +249,7 @@ export default function ArrivalsPanel() {
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-[#21262d]">
-                {['Name', 'Status', 'Transport', 'Arrives', 'Flight #', 'Pickup', 'Notes', ''].map((h) => (
+                {['Name', 'Status', 'Transport', 'From', 'Arrives', 'Flight #', 'Pickup', 'Notes', ''].map((h) => (
                   <th key={h} className="px-4 py-2.5 text-left text-[9px] font-black uppercase tracking-[0.18em] text-[#8B949E]">
                     {h}
                   </th>
@@ -267,6 +271,7 @@ export default function ArrivalsPanel() {
                       <span className="text-xs capitalize">{a.transport}</span>
                     </span>
                   </td>
+                  <td className="px-4 py-3 font-mono text-xs text-[#58A6FF] font-bold">{a.origin_airport || '—'}</td>
                   <td className="px-4 py-3 font-mono text-xs text-[#8B949E]">
                     {a.arrival_date ? `${a.arrival_date}` : '—'}
                     {a.arrival_time ? ` ${a.arrival_time}` : ''}
