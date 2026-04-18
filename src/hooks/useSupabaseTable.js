@@ -75,7 +75,7 @@ export function useSupabaseTable(tableName, { orderBy = 'created_at', ascending 
     async (id, values) => {
       const { data, error: err } = await supabase
         .from(tableName)
-        .update({ ...values, updated_at: new Date().toISOString() })
+        .update(values)
         .eq('id', id)
         .select()
         .single()

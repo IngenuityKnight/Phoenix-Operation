@@ -47,7 +47,7 @@ function FormField({ label, children }) {
 function Modal({ title, onClose, children }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-lg rounded border border-[#30363D] bg-[#161b22] shadow-2xl">
+      <div className="mx-4 w-full max-w-lg rounded border border-[#30363D] bg-[#161b22] shadow-2xl">
         <div className="flex items-center justify-between border-b border-[#30363D] px-5 py-4">
           <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#58A6FF]">{title}</span>
           <button type="button" onClick={onClose} className="text-[#8B949E] hover:text-[#C9D1D9]"><X size={16} /></button>
@@ -237,7 +237,7 @@ export default function ItineraryPanel() {
                           key={item.id}
                           item={item}
                           onEdit={() => setModal({ mode: 'edit', row: item })}
-                          onDelete={() => remove(item.id)}
+                          onDelete={() => { if (window.confirm('Delete this item?')) remove(item.id) }}
                         />
                       ))
                     )}

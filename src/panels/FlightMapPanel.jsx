@@ -249,6 +249,8 @@ export default function FlightMapPanel() {
         })
         overlaysRef.current.push(marker)
       })
+    }).catch((err) => {
+      console.error('Failed to render map overlays:', err)
     })
   }, [arrivals, mapReady])
 
@@ -266,31 +268,33 @@ export default function FlightMapPanel() {
 
   return (
     <div className="flex flex-col md:min-h-0 md:flex-1 md:overflow-hidden">
-      <div className="flex items-center justify-between border-b border-[#30363D] px-6 py-4">
-        <div>
-          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8B949E]">Ops Map</div>
-          <div className="mt-0.5 text-lg font-bold text-[#C9D1D9]">Inbound Flights · PHX</div>
-        </div>
-        <div className="flex items-center gap-6">
-          <div className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-[#3FB950]" />
-            <span className="font-mono text-sm font-black text-[#3FB950]">{arrived}</span>
-            <span className="text-[9px] uppercase tracking-widest text-[#8B949E]">Arrived</span>
+      <div className="border-b border-[#30363D] px-4 py-4 md:px-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8B949E]">Ops Map</div>
+            <div className="mt-0.5 text-lg font-bold text-[#C9D1D9]">Inbound Flights · PHX</div>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-[#A371F7]" />
-            <span className="font-mono text-sm font-black text-[#A371F7]">{landed}</span>
-            <span className="text-[9px] uppercase tracking-widest text-[#8B949E]">Landed</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-[#D29922]" />
-            <span className="font-mono text-sm font-black text-[#D29922]">{enRoute}</span>
-            <span className="text-[9px] uppercase tracking-widest text-[#8B949E]">En Route</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-[#58A6FF]" />
-            <span className="font-mono text-sm font-black text-[#58A6FF]">{confirmed}</span>
-            <span className="text-[9px] uppercase tracking-widest text-[#8B949E]">Confirmed</span>
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-[#3FB950]" />
+              <span className="font-mono text-sm font-black text-[#3FB950]">{arrived}</span>
+              <span className="text-[9px] uppercase tracking-widest text-[#8B949E]">Arrived</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-[#A371F7]" />
+              <span className="font-mono text-sm font-black text-[#A371F7]">{landed}</span>
+              <span className="text-[9px] uppercase tracking-widest text-[#8B949E]">Landed</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-[#D29922]" />
+              <span className="font-mono text-sm font-black text-[#D29922]">{enRoute}</span>
+              <span className="text-[9px] uppercase tracking-widest text-[#8B949E]">En Route</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-[#58A6FF]" />
+              <span className="font-mono text-sm font-black text-[#58A6FF]">{confirmed}</span>
+              <span className="text-[9px] uppercase tracking-widest text-[#8B949E]">Confirmed</span>
+            </div>
           </div>
         </div>
       </div>
@@ -337,7 +341,7 @@ export default function FlightMapPanel() {
           </div>
         </div>
 
-        <div className="flex w-64 flex-col overflow-auto border-l border-[#30363D]">
+        <div className="hidden w-56 flex-col overflow-auto border-l border-[#30363D] md:flex">
           <div className="border-b border-[#30363D] px-4 py-3">
             <div className="text-[9px] font-black uppercase tracking-[0.2em] text-[#4B5563]">Flight Origins</div>
           </div>

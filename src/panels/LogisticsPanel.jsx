@@ -38,7 +38,7 @@ function FormField({ label, children }) {
 function Modal({ title, onClose, children }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="w-full max-w-lg rounded border border-[#30363D] bg-[#161b22] shadow-2xl">
+      <div className="mx-4 w-full max-w-lg rounded border border-[#30363D] bg-[#161b22] shadow-2xl">
         <div className="flex items-center justify-between border-b border-[#30363D] px-5 py-4">
           <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#58A6FF]">{title}</span>
           <button type="button" onClick={onClose} className="text-[#8B949E] hover:text-[#C9D1D9]"><X size={16} /></button>
@@ -103,7 +103,7 @@ function LogisticsItem({ item, onToggle, onEdit, onDelete }) {
         {(item.assignee || item.notes || item.cost > 0) && (
           <div className="mt-0.5 flex items-center gap-3 flex-wrap">
             {item.assignee && <span className="text-[10px] text-[#8B949E]">{item.assignee}</span>}
-            {item.cost > 0 && <span className="font-mono text-[10px] text-[#D29922]">${Number(item.cost).toLocaleString()}</span>}
+            {Number(item.cost) > 0 && <span className="font-mono text-[10px] text-[#D29922]">${Number(item.cost).toLocaleString()}</span>}
             {item.notes && <span className="text-[10px] text-[#4B5563] italic truncate">{item.notes}</span>}
           </div>
         )}
@@ -220,7 +220,7 @@ export default function LogisticsPanel() {
                       item={item}
                       onToggle={() => handleToggle(item)}
                       onEdit={() => setModal({ mode: 'edit', row: item })}
-                      onDelete={() => remove(item.id)}
+                      onDelete={() => { if (window.confirm('Delete this task?')) remove(item.id) }}
                     />
                   ))}
                 </div>
