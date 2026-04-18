@@ -22,9 +22,9 @@ const NAV_ITEMS = [
   { id: 'briefing',  label: 'Briefing',   icon: ScrollText },
   { id: 'itinerary', label: 'Itinerary',  icon: BriefcaseBusiness },
   { id: 'arrivals',  label: 'Arrivals',   icon: Plane },
-  { id: 'map',       label: 'Map',        icon: Map },
+  { id: 'map',       label: 'Map',        icon: Map,         desktopOnly: true },
   { id: 'meals',     label: 'Meals',      icon: UtensilsCrossed },
-  { id: 'logistics', label: 'Logistics',  icon: ClipboardList },
+  { id: 'logistics', label: 'Logistics',  icon: ClipboardList, desktopOnly: true },
   { id: 'budget',    label: 'Budget',     icon: DollarSign },
   { id: 'roster',    label: 'Roster',     icon: Users },
 ]
@@ -44,7 +44,7 @@ function ShellNav({ selectedPage, onSelectPage }) {
         </div>
       </div>
 
-      <nav className="grid grid-cols-4 gap-1 p-2 md:grid-cols-1 md:gap-2 md:p-3">
+      <nav className="grid grid-cols-3 gap-1 p-2 md:grid-cols-1 md:gap-2 md:p-3">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon
           const active = item.id === selectedPage
@@ -54,7 +54,7 @@ function ShellNav({ selectedPage, onSelectPage }) {
               key={item.id}
               type="button"
               onClick={() => onSelectPage(item.id)}
-              className={`flex items-center justify-center gap-2 border px-2 py-3 text-center text-[10px] font-black uppercase tracking-[0.12em] transition-colors md:justify-start md:px-3 md:py-3 md:text-[11px] md:tracking-[0.16em] ${
+              className={`flex items-center justify-center gap-2 border px-2 py-3 text-center text-[10px] font-black uppercase tracking-[0.12em] transition-colors md:justify-start md:px-3 md:py-3 md:text-[11px] md:tracking-[0.16em] ${item.desktopOnly ? 'hidden md:flex' : ''} ${
                 active
                   ? 'border-[#58A6FF] bg-[#58A6FF]/10 text-[#58A6FF]'
                   : 'border-[#30363D] bg-[#161b22] text-[#8B949E] hover:border-[#58A6FF]/40 hover:text-[#C9D1D9]'
