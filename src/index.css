@@ -36,6 +36,39 @@ body {
   font-family: var(--font-sans);
   margin: 0;
   padding: 0;
+  /* Prevent elastic bounce on the body itself */
+  overscroll-behavior-y: none;
+}
+
+/* Remove grey tap flash on iOS */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Eliminate 300ms tap delay on all interactive elements */
+button, a, input, select, textarea, [role="button"] {
+  touch-action: manipulation;
+}
+
+/* Momentum scrolling on iOS for any overflow-auto/scroll container */
+.overflow-auto,
+.overflow-y-auto,
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent iOS Safari from zooming on input focus (requires font-size >= 16px) */
+@media (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Safe area padding for iPhone notch and home indicator */
+@supports (padding: env(safe-area-inset-bottom)) {
+  body {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }
 
 ::-webkit-scrollbar {
