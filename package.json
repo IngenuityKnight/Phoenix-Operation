@@ -9,11 +9,18 @@
     "build": "vite build",
     "preview": "vite preview"
   },
-  "keywords": ["react", "vite", "google-maps", "dashboard", "trip-planner"],
+  "keywords": [
+    "react",
+    "vite",
+    "google-maps",
+    "dashboard",
+    "trip-planner"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
     "@googlemaps/js-api-loader": "^2.0.2",
+    "@supabase/supabase-js": "^2.103.3",
     "clsx": "^2.1.1",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.7.0",
