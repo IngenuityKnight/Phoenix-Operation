@@ -186,24 +186,25 @@ export default function LogisticsPanel() {
             <span className="text-[11px] uppercase tracking-widest text-[#8B949E]">Loading…</span>
           </div>
         ) : (
-          {totalCost > 0 && (
-            <div className="mb-6 rounded border border-[#30363D] bg-[#11161d] p-4">
-              <div className="mb-3 text-[9px] font-black uppercase tracking-[0.18em] text-[#8B949E]">Cost Breakdown · ${Math.ceil(perPerson)}/person</div>
-              <div className="flex flex-wrap gap-4">
-                {CATEGORIES.map((cat) => {
-                  const catCost = items.filter((i) => i.category === cat).reduce((sum, i) => sum + (Number(i.cost) || 0), 0)
-                  if (!catCost) return null
-                  return (
-                    <div key={cat} className="text-center">
-                      <div className={`font-mono text-base font-black ${CATEGORY_COLORS[cat].split(' ')[0]}`}>${catCost.toLocaleString()}</div>
-                      <div className="text-[9px] capitalize text-[#8B949E]">{cat}</div>
-                    </div>
-                  )
-                })}
+          <>
+            {totalCost > 0 && (
+              <div className="mb-6 rounded border border-[#30363D] bg-[#11161d] p-4">
+                <div className="mb-3 text-[9px] font-black uppercase tracking-[0.18em] text-[#8B949E]">Cost Breakdown · ${Math.ceil(perPerson)}/person</div>
+                <div className="flex flex-wrap gap-4">
+                  {CATEGORIES.map((cat) => {
+                    const catCost = items.filter((i) => i.category === cat).reduce((sum, i) => sum + (Number(i.cost) || 0), 0)
+                    if (!catCost) return null
+                    return (
+                      <div key={cat} className="text-center">
+                        <div className={`font-mono text-base font-black ${CATEGORY_COLORS[cat].split(' ')[0]}`}>${catCost.toLocaleString()}</div>
+                        <div className="text-[9px] capitalize text-[#8B949E]">{cat}</div>
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
-            </div>
-          )}
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
+            )}
+            <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
             {CATEGORIES.map((cat) => {
               const catItems = items.filter((i) => i.category === cat)
               if (catItems.length === 0) return null
@@ -238,6 +239,7 @@ export default function LogisticsPanel() {
               </div>
             )}
           </div>
+          </>
         )}
       </div>
 
