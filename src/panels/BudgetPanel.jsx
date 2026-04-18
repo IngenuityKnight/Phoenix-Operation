@@ -120,6 +120,7 @@ function ExpenseForm({ initial, onSave, onCancel, saving }) {
 export default function BudgetPanel() {
   const { rows: expenses, loading, insert, update, remove } = useSupabaseTable('expenses', { orderBy: 'created_at', ascending: false })
   const { rows: paidSettlements, insert: markPaid, remove: unmarkPaid } = useSupabaseTable('settlements_paid', { orderBy: 'created_at' })
+  const { rows: roster } = useSupabaseTable('roster', { orderBy: 'name' })
   const [modal, setModal] = useState(null)
   const [saving, setSaving] = useState(false)
   const [view, setView] = useState('expenses')
@@ -159,7 +160,11 @@ export default function BudgetPanel() {
 
   // Compute totals
   const totalSpent = expenses.reduce((s, e) => s + (Number(e.amount) || 0), 0)
-  const perPerson = totalSpent / HEADCOUNT
+
+  // Use active roster members as the group; fall back to HEADCOUNT if roster is empty
+  const activeRoster = roster.filter((r) => r.status !== 'Ghosting')
+  const groupSize = activeRoster.length > 0 ? activeRoster.length : HEADCOUNT
+  const perPerson = groupSize > 0 ? totalSpent / groupSize : 0
 
   // Category breakdown
   const byCategory = CATEGORIES.reduce((acc, cat) => {
@@ -167,23 +172,7 @@ export default function BudgetPanel() {
     return acc
   }, {})
 
-  // Balance sheet: net per person (paid - owed)
-  const balances = {}
-  expenses.forEach((e) => {
-    const amt = Number(e.amount) || 0
-    const sc = Number(e.split_count) || HEADCOUNT
-    const share = amt / sc
-    const payer = e.paid_by?.trim()
-    if (!payer) return
-    balances[payer] = (balances[payer] || 0) + amt - share
-    // Others each owe their share — we track as negative for "all others"
-    // We represent this as: payer gets credit for (amt - share), everyone else owes share
-    // For settlement we need to track debtors too. We'll approximate:
-    // since we don't have named individuals per expense, we track aggregate owed from "the group"
-  })
-
-  // Simpler model: per-payer ledger
-  // paid_total - fair_share_of_all_expenses
+  // How much each person has paid out
   const payerTotals = {}
   expenses.forEach((e) => {
     const payer = e.paid_by?.trim()
@@ -191,13 +180,19 @@ export default function BudgetPanel() {
     payerTotals[payer] = (payerTotals[payer] || 0) + Number(e.amount)
   })
 
-  // Each person's fair share = totalSpent / HEADCOUNT
-  const namedPayers = Object.keys(payerTotals)
+  // All people in the group: roster members + anyone who appears as a payer
+  // (in case they logged an expense before being added to the roster)
+  const rosterNames = activeRoster.map((r) => r.name.trim())
+  const payerNames = Object.keys(payerTotals)
+  const allPeople = [...new Set([...rosterNames, ...payerNames])]
+
+  // Net balance = what they paid - their fair share of all expenses
   const netBalances = {}
-  namedPayers.forEach((name) => {
+  allPeople.forEach((name) => {
     netBalances[name] = (payerTotals[name] || 0) - perPerson
   })
 
+  const namedPayers = payerNames
   const settlements = computeSettlement(netBalances)
 
   return (
@@ -337,12 +332,12 @@ export default function BudgetPanel() {
             {view === 'balances' && (
               <div className="flex flex-col gap-3">
                 <div className="text-[10px] text-[#8B949E] uppercase tracking-widest mb-1">
-                  Who paid what vs. their fair share (${perPerson.toFixed(2)} each)
+                  Who paid what vs. their fair share (${perPerson.toFixed(2)} each · {groupSize} people)
                 </div>
-                {namedPayers.length === 0 ? (
+                {allPeople.length === 0 ? (
                   <div className="py-12 text-center text-[11px] uppercase tracking-widest text-[#4B5563]">No expenses logged yet</div>
                 ) : (
-                  namedPayers.sort((a, b) => netBalances[b] - netBalances[a]).map((name) => {
+                  allPeople.sort((a, b) => netBalances[b] - netBalances[a]).map((name) => {
                     const net = netBalances[name]
                     const isCreditor = net > 0
                     return (
@@ -352,7 +347,7 @@ export default function BudgetPanel() {
                             <div className="text-sm font-semibold text-[#C9D1D9]">{name}</div>
                             <div className="mt-0.5 text-[10px] text-[#8B949E]">
                               Paid <span className="font-mono text-[#C9D1D9]">${(payerTotals[name] || 0).toFixed(2)}</span>
-                              {' · '}fair share <span className="font-mono text-[#C9D1D9]">${perPerson.toFixed(2)}</span>
+                              {' · '}owes <span className="font-mono text-[#C9D1D9]">${perPerson.toFixed(2)}</span>
                             </div>
                           </div>
                           <div className="text-right">
@@ -381,6 +376,11 @@ export default function BudgetPanel() {
             {/* SETTLE UP VIEW */}
             {view === 'settle' && (
               <div className="flex flex-col gap-3">
+                {activeRoster.length === 0 && (
+                  <div className="rounded border border-[#D29922]/30 bg-[#D29922]/10 p-3 text-[10px] text-[#D29922]">
+                    Add your crew to the <span className="font-bold">Roster</span> tab first — Settle Up needs the full group to calculate who owes what.
+                  </div>
+                )}
                 {settlements.length === 0 ? (
                   <div className="flex flex-col items-center gap-2 py-12 text-[#4B5563]">
                     <div className="text-[11px] uppercase tracking-widest">
