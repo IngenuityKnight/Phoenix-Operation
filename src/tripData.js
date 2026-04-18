@@ -1,26 +1,26 @@
-const STL_AIRBNB_ADDRESS = '2245 Jules St, St. Louis, MO 63104'
-const STL_AIRBNB_COORDINATES = { lat: 38.6090, lng: -90.2388 }
+const SCOTTSDALE_AIRBNB_ADDRESS = '6543 East 3rd Street, Scottsdale, AZ 85251'
+const SCOTTSDALE_AIRBNB_COORDINATES = { lat: 33.4955, lng: -111.9141 }
 
 export const TRIP_META = {
-  title: 'St. Louis Family Weekend',
-  subtitle: 'Sat 5/23 to Tue 5/26',
-  commandName: 'Family Trip Command Center',
+  title: 'Scottsdale Bachelor Weekend',
+  subtitle: 'Wed 5/28 to Sat 5/31',
+  commandName: 'Operation Scottsdale',
   airbnb: {
-    name: 'Jules St Basecamp',
+    name: 'Scottsdale Command House',
     url: null,
     manualUrl: null,
-    location: STL_AIRBNB_ADDRESS,
+    location: SCOTTSDALE_AIRBNB_ADDRESS,
     checkIn: 'Check-in after 4:00 PM',
     checkOut: 'Check-out before 11:00 AM',
-    gateNote: 'Confirm access details with host before Saturday departure.',
-    parkingNote: 'Street parking on Jules St.',
-    directionsNote: '2245 Jules St, St. Louis, MO 63104',
+    gateNote: 'Confirm access details with host before departure.',
+    parkingNote: 'Driveway + street parking available.',
+    directionsNote: '6543 East 3rd Street, Scottsdale, AZ 85251',
     lockNote: null,
     wifiNetwork: null,
     wifiPassword: null,
     hostName: null,
     coHostName: null,
-    guestSummary: null,
+    guestSummary: '14 guests',
     confirmationCode: null,
     vehicleFee: null,
   },
@@ -28,277 +28,169 @@ export const TRIP_META = {
 
 export const MAP_POINTS = [
   {
-    id: 'bwi',
-    label: 'Burdens',
-    caption: 'Baltimore / BWI',
-    familyId: 'burdens',
-    focusDay: 'sat',
-    tone: 'warning',
-    position: { lat: 39.1754, lng: -76.6685 },
-  },
-  {
-    id: 'dtw',
-    label: 'Harvey-Gardners',
-    caption: 'Detroit / DTW',
-    familyId: 'harvey-gardners',
-    focusDay: 'sat',
-    tone: 'critical',
-    position: { lat: 42.2124, lng: -83.3534 },
-  },
-  {
-    id: 'stl-airbnb',
-    label: 'Basecamp',
-    caption: 'St. Louis, MO',
+    id: 'scottsdale-house',
+    label: 'Command House',
+    caption: 'Scottsdale, AZ',
     familyId: 'all',
     focusDay: 'all',
     tone: 'success',
-    position: STL_AIRBNB_COORDINATES,
+    position: SCOTTSDALE_AIRBNB_COORDINATES,
   },
   {
-    id: 'stl-airport',
-    label: 'STL Airport',
-    caption: 'Lambert International',
+    id: 'phx-airport',
+    label: 'PHX',
+    caption: 'Phoenix Sky Harbor',
     familyId: 'all',
-    focusDay: 'sat',
-    tone: 'muted',
-    position: { lat: 38.7487, lng: -90.3700 },
+    focusDay: 'wed',
+    tone: 'info',
+    position: { lat: 33.4373, lng: -112.0078 },
+  },
+  {
+    id: 'old-town',
+    label: 'Old Town',
+    caption: 'Scottsdale Nightlife',
+    familyId: 'all',
+    focusDay: 'all',
+    tone: 'warning',
+    position: { lat: 33.4942, lng: -111.9261 },
   },
 ]
 
-export const MAP_ROUTES = [
-  {
-    id: 'route-bwi-stl',
-    familyId: 'burdens',
-    focusDay: 'sat',
-    tone: 'warning',
-    dashed: true,
-    path: [
-      { lat: 39.1754, lng: -76.6685 },
-      { lat: 39.1, lng: -83.0 },
-      { lat: 38.7487, lng: -90.3700 },
-    ],
-  },
-  {
-    id: 'route-dtw-stl',
-    familyId: 'harvey-gardners',
-    focusDay: 'sat',
-    tone: 'critical',
-    dashed: true,
-    path: [
-      { lat: 42.2124, lng: -83.3534 },
-      { lat: 40.8, lng: -86.8 },
-      { lat: 38.7487, lng: -90.3700 },
-    ],
-  },
-]
+export const MAP_ROUTES = []
 
 export const MAP_FACILITIES = [
   {
-    id: 'stl-alamo',
-    label: 'Alamo Rental',
-    caption: 'Burdens car pickup',
+    id: 'phx',
+    label: 'PHX Airport',
+    caption: 'Main arrival point',
     category: 'logistics',
-    position: { lat: 38.7487, lng: -90.3700 },
+    position: { lat: 33.4373, lng: -112.0078 },
   },
   {
-    id: 'stl-jules',
-    label: 'Jules St',
-    caption: 'Basecamp',
+    id: 'sdl',
+    label: 'SDL Airport',
+    caption: 'Scottsdale Airport',
+    category: 'logistics',
+    position: { lat: 33.6229, lng: -111.9109 },
+  },
+  {
+    id: 'old-town-scottsdale',
+    label: 'Old Town',
+    caption: 'Bars + Restaurants',
     category: 'activity',
-    position: STL_AIRBNB_COORDINATES,
+    position: { lat: 33.4942, lng: -111.9261 },
   },
 ]
 
 export const NAV_ITEMS = [
+  { id: 'arrivals', label: 'Arrivals' },
   { id: 'itinerary', label: 'Itinerary' },
-  { id: 'stay', label: 'Stay' },
   { id: 'meals', label: 'Meals' },
-  { id: 'activities', label: 'Activities' },
-  { id: 'expenses', label: 'Expenses' },
-  { id: 'families', label: 'Families' },
+  { id: 'logistics', label: 'Logistics' },
 ]
 
 export const DAYS = [
   {
+    id: 'wed',
+    shortLabel: 'Wed 5/28',
+    title: 'Arrivals Day',
+    weather: 'Sunny',
+    temperature: '98°F',
+    caution: 'Low',
+  },
+  {
+    id: 'thu',
+    shortLabel: 'Thu 5/29',
+    title: 'Pool + Day 1',
+    weather: 'Sunny',
+    temperature: '100°F',
+    caution: 'Low',
+  },
+  {
+    id: 'fri',
+    shortLabel: 'Fri 5/30',
+    title: 'Golf / Nightlife',
+    weather: 'Sunny',
+    temperature: '101°F',
+    caution: 'Low',
+  },
+  {
     id: 'sat',
-    shortLabel: 'Sat 5/23',
-    title: 'Fly In',
-    weather: 'TBD',
-    temperature: 'TBD',
-    caution: 'Low',
-  },
-  {
-    id: 'sun',
-    shortLabel: 'Sun 5/24',
-    title: 'St. Louis Day 1',
-    weather: 'TBD',
-    temperature: 'TBD',
-    caution: 'Low',
-  },
-  {
-    id: 'mon',
-    shortLabel: 'Mon 5/25',
-    title: 'St. Louis Day 2',
-    weather: 'TBD',
-    temperature: 'TBD',
-    caution: 'Low',
-  },
-  {
-    id: 'tue',
-    shortLabel: 'Tue 5/26',
-    title: 'Fly Home',
-    weather: 'TBD',
-    temperature: 'TBD',
+    shortLabel: 'Sat 5/31',
+    title: 'Last Night / Fly Home',
+    weather: 'Sunny',
+    temperature: '99°F',
     caution: 'Low',
   },
 ]
 
 export const TIME_SLOTS = ['00', '06', '12', '18']
 
-export const INITIAL_FAMILIES = [
-  {
-    id: 'burdens',
-    name: 'Burdens',
-    origin: 'Baltimore',
-    shortOrigin: 'BWI',
-    status: 'Transit',
-    eta: 'Sat midday',
-    driveTime: 'WN 1565',
-    headcount: 'TBD',
-    vehicle: 'Rental (Alamo)',
-    responsibility: 'Car rental + navigation',
-    readiness: 75,
-    routeSummary: 'Southwest WN 1565 from BWI to STL. Alamo car rental pickup on arrival.',
-    checklist: [
-      { id: 'flight-checkin', label: 'Check in to WN 1565', done: false },
-      { id: 'alamo-confirm', label: 'Alamo reservation confirmed', done: false },
-      { id: 'pack-bags', label: 'Bags packed', done: false },
-      { id: 'airbnb-access', label: 'Airbnb check-in details confirmed', done: false },
-    ],
-  },
-  {
-    id: 'harvey-gardners',
-    name: 'Harvey-Gardners',
-    origin: 'Detroit',
-    shortOrigin: 'DTW',
-    status: 'Transit',
-    eta: 'Sat TBD',
-    driveTime: 'TBD',
-    headcount: 'TBD',
-    vehicle: 'TBD',
-    responsibility: 'TBD',
-    readiness: 60,
-    routeSummary: 'Flight from DTW to STL. Flight details TBD.',
-    checklist: [
-      { id: 'flight-confirm', label: 'Flight details confirmed', done: false },
-      { id: 'pack-bags', label: 'Bags packed', done: false },
-      { id: 'ground-transport', label: 'Ground transport from STL arranged', done: false },
-      { id: 'airbnb-access', label: 'Airbnb check-in details confirmed', done: false },
-    ],
-  },
-]
-
+// Legacy exports — kept for tripModel compatibility, not used by new Supabase panels
+export const INITIAL_FAMILIES = []
 export const ITINERARY_ROWS = [
-  {
-    id: 'travel',
-    label: 'Transit',
-    segments: [
-      { id: 'burdens-flight', familyId: 'burdens', start: 1.33, span: 0.42, color: 'warning', label: 'Burdens WN 1565' },
-      { id: 'harvey-gardners-flight', familyId: 'harvey-gardners', start: 1.33, span: 0.42, color: 'critical', label: 'Harvey-Gardners fly in' },
-    ],
-  },
   {
     id: 'activities',
     label: 'Main Ops',
     segments: [
-      { id: 'sat-arrival', start: 1.0, span: 3.0, color: 'critical', label: 'Fly in + check in' },
-      { id: 'sun-day', start: 4, span: 4, color: 'info', label: 'St. Louis Day 1' },
-      { id: 'mon-day', start: 8, span: 4, color: 'warning', label: 'St. Louis Day 2' },
-      { id: 'tue-return', start: 13.0, span: 1.5, color: 'success', label: 'Fly home' },
-    ],
-  },
-  {
-    id: 'support',
-    label: 'Support',
-    segments: [
-      { id: 'airbnb-checkin', start: 2.67, span: 0.5, color: 'muted', label: 'Airbnb check-in' },
-      { id: 'car-pickup', start: 1.75, span: 0.33, color: 'muted', label: 'Alamo pickup' },
+      { id: 'wed-arrivals', start: 1.0, span: 3.0, color: 'critical', label: 'Arrivals + settle in' },
+      { id: 'thu-pool', start: 4, span: 4, color: 'info', label: 'Pool day' },
+      { id: 'fri-golf', start: 8, span: 4, color: 'warning', label: 'Golf / Nightlife' },
+      { id: 'sat-last', start: 12, span: 3, color: 'success', label: 'Last night / fly home' },
     ],
   },
 ]
-
-export const INITIAL_MEALS = [
-  { id: 'sat-dinner', day: 'Saturday', meal: 'TBD — first night in STL', owner: 'TBD', status: 'TBD', note: 'Arrive Saturday, dinner TBD' },
-  { id: 'sun-breakfast', day: 'Sunday', meal: 'TBD', owner: 'TBD', status: 'TBD', note: '' },
-  { id: 'sun-lunch', day: 'Sunday', meal: 'TBD', owner: 'TBD', status: 'TBD', note: '' },
-  { id: 'sun-dinner', day: 'Sunday', meal: 'TBD', owner: 'TBD', status: 'TBD', note: '' },
-  { id: 'mon-breakfast', day: 'Monday', meal: 'TBD', owner: 'TBD', status: 'TBD', note: '' },
-  { id: 'mon-lunch', day: 'Monday', meal: 'TBD', owner: 'TBD', status: 'TBD', note: '' },
-  { id: 'mon-dinner', day: 'Monday', meal: 'TBD', owner: 'TBD', status: 'TBD', note: '' },
-  { id: 'tue-breakfast', day: 'Tuesday', meal: 'TBD — pre-flight', owner: 'TBD', status: 'TBD', note: 'Fly home Tuesday' },
-]
-
-export const INITIAL_EXPENSES = [
-  { id: 'airbnb', label: 'STL Airbnb', payer: 'TBD', amount: 0, split: 'Equal split', settled: false },
-  { id: 'flights', label: 'Flights', payer: 'Each family', amount: 0, split: 'Individual', settled: true },
-  { id: 'car-rental', label: 'Car rental (Alamo)', payer: 'Burdens', amount: 0, split: 'Shared', settled: false },
-  { id: 'activities', label: 'Activities / entry fees', payer: 'Unassigned', amount: 0, split: 'Equal split', settled: false },
-]
-
+export const INITIAL_MEALS = []
+export const INITIAL_EXPENSES = []
 export const ACTIVITIES = [
   {
-    id: 'sat-arrivals',
-    title: 'Fly In + Check In',
+    id: 'wed-arrivals',
+    title: 'Arrivals Day',
     status: 'Go',
-    window: 'Sat / all day',
-    description: 'Both families fly into STL. Burdens on WN 1565 from BWI with Alamo car rental pickup. Harvey-Gardners from DTW. Check in to 2245 Jules St after 4 PM.',
-    backup: 'If flights delayed, coordinate check-in timing and hold dinner loose.',
+    window: 'Wed / all day',
+    description: '14 guys arriving from various cities. PHX is the main hub. House opens at 4 PM.',
+    backup: 'Coordinate airport pickups if needed.',
   },
   {
-    id: 'sun-explore',
-    title: 'St. Louis Day 1',
-    status: 'TBD',
-    window: 'Sun / all day',
-    description: 'Activities TBD. St. Louis has strong options: City Museum, Forest Park, Gateway Arch, Soulard Market.',
+    id: 'thu-pool',
+    title: 'Pool Day',
+    status: 'Go',
+    window: 'Thu / all day',
+    description: 'Full pool day at the house. Activities TBD.',
     backup: 'TBD',
   },
   {
-    id: 'mon-explore',
-    title: 'St. Louis Day 2 — Memorial Day',
+    id: 'fri-golf',
+    title: 'Golf + Nightlife',
     status: 'TBD',
-    window: 'Mon / all day',
-    description: 'Memorial Day. Activity TBD — check what is open. Forest Park free attractions are a safe anchor.',
+    window: 'Fri / all day',
+    description: 'Golf in the morning, nightlife in Old Town Scottsdale.',
     backup: 'TBD',
   },
   {
-    id: 'tue-departure',
-    title: 'Fly Home',
-    status: 'Go',
-    window: 'Tue / morning',
-    description: 'Pack, check out by 11 AM, drive to STL airport, depart.',
-    backup: 'Pre-pack Monday night to reduce Tuesday morning chaos.',
+    id: 'sat-last',
+    title: 'Last Night / Fly Home',
+    status: 'TBD',
+    window: 'Sat',
+    description: 'Final day. Flights TBD. Checkout by 11 AM.',
+    backup: 'Pre-pack Friday night.',
   },
 ]
-
 export const STAY_DETAILS = {
-  commandSummary: 'Basecamp at 2245 Jules St, St. Louis, MO 63104.',
+  commandSummary: '6543 East 3rd Street, Scottsdale, AZ 85251. 14 guests.',
   houseOps: [
-    'Confirm check-in access with host before Saturday departure.',
-    'Stage sleeping assignments before first family arrival.',
-    'Plan activities for Sunday and Monday.',
-    'Pre-pack departure gear Monday night.',
+    'Confirm check-in access with host before departure.',
+    'Stage sleeping assignments before first arrival.',
+    'Confirm pool/amenity access.',
+    'Pre-pack departure gear Friday night.',
   ],
-  rooms: [
-    { label: 'Room 1', assignment: 'Burdens' },
-    { label: 'Room 2', assignment: 'Harvey-Gardners' },
-  ],
+  rooms: [],
 }
-
 export const INITIAL_NOTES = {
-  itinerary: 'Both families fly in Saturday. Activities and meals for Sun / Mon are TBD.',
-  stay: 'Confirm airbnb check-in access before wheels-up Saturday.',
+  itinerary: 'Activities TBD. Use the Itinerary section to plan.',
+  stay: 'Confirm airbnb access before wheels-up.',
   meals: 'Meals TBD — plan before departure.',
-  activities: 'Sunday and Monday activities TBD. City Museum, Forest Park, and the Arch are strong anchors.',
-  expenses: 'Airbnb and car rental are the main shared costs. Track before the trip.',
-  families: 'Burdens on WN 1565 from BWI. Harvey-Gardners from DTW — flight details TBD.',
+  activities: 'Golf, pool, and Old Town Scottsdale nightlife are the main anchors.',
+  expenses: 'Track shared costs before the trip.',
+  families: '14 guys from various cities. See Arrivals for details.',
 }

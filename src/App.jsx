@@ -3,6 +3,7 @@ import { importLibrary, setOptions } from '@googlemaps/js-api-loader'
 import {
   ArrowRight,
   CarFront,
+  CheckSquare,
   Cloud,
   CloudRain,
   Download,
@@ -68,6 +69,10 @@ import {
   updateEntityInCollection,
 } from './tripModel'
 import { fetchWeatherBundle, getMapWeather, getMapWeatherTargets, getTripDayWeather } from './weather'
+import ArrivalsPanel from './panels/ArrivalsPanel'
+import ItineraryPanel from './panels/ItineraryPanel'
+import MealsPanel from './panels/MealsPanel'
+import LogisticsPanel from './panels/LogisticsPanel'
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
 const GOOGLE_MAP_ID = import.meta.env.VITE_GOOGLE_MAP_ID
@@ -79,12 +84,10 @@ function cn(...inputs) {
 }
 
 const PAGE_ICONS = {
+  arrivals: Users,
   itinerary: LayoutGrid,
-  stay: Home,
   meals: Utensils,
-  activities: MapIcon,
-  expenses: Receipt,
-  families: Users,
+  logistics: CheckSquare,
 }
 
 const WEATHER_ICONS = {
@@ -839,7 +842,7 @@ function AppShell({
 }) {
   return (
     <div className="relative flex h-screen w-screen overflow-hidden bg-[#0d1117] font-sans text-[#C9D1D9] antialiased">
-      <div className="flex w-16 flex-col border-r border-[#30363D] bg-[#0d1117]">
+      <div className="hidden md:flex w-16 flex-col border-r border-[#30363D] bg-[#0d1117]">
         <div className="flex h-14 items-center justify-center border-b border-[#30363D] text-[#58A6FF]">
           <img
             src={palantirLogo}
@@ -894,11 +897,11 @@ function AppShell({
         </div>
       </div>
 
-      <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex h-12 items-center justify-between border-b border-[#30363D] bg-[#161b22] px-6">
-          <div className="flex items-center gap-6">
+      <div className="flex min-w-0 flex-1 flex-col pb-16 md:pb-0">
+        <div className="flex h-12 items-center justify-between border-b border-[#30363D] bg-[#161b22] px-4 md:px-6">
+          <div className="flex items-center gap-3 md:gap-6">
             <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#3FB950]">
-              UNCLASSIFIED // FAMILY OPS
+              UNCLASSIFIED // BACHELOR OPS
             </div>
             <div className="h-5 w-px bg-[#30363D]" />
             <div className="text-[10px] font-bold uppercase tracking-widest text-[#8B949E]">
@@ -906,7 +909,7 @@ function AppShell({
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2">
               <div className="text-[9px] font-black uppercase tracking-[0.18em] text-[#8B949E]">
                 Working as
               </div>
@@ -971,7 +974,29 @@ function AppShell({
         </div>
       </div>
 
-      {!activeFamily ? (
+      {/* Mobile bottom nav */}
+      <nav className="fixed bottom-0 left-0 right-0 z-50 flex md:hidden border-t border-[#30363D] bg-[#0d1117]">
+        {NAV_ITEMS.map((item) => {
+          const Icon = PAGE_ICONS[item.id]
+          const active = doc.selectedPage === item.id
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => onSetSelectedPage(item.id)}
+              className={cn(
+                'flex flex-1 flex-col items-center gap-1 py-3 transition-colors',
+                active ? 'text-[#58A6FF]' : 'text-[#4B5563] hover:text-[#8B949E]',
+              )}
+            >
+              {Icon && <Icon size={20} strokeWidth={1.6} />}
+              <span className="text-[9px] font-bold uppercase tracking-widest">{item.label}</span>
+            </button>
+          )
+        })}
+      </nav>
+
+      {families.length > 0 && !activeFamily ? (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-[#0b0f14]/86 backdrop-blur-sm">
           <div className="w-[420px] border border-[#30363D] bg-[#161b22] p-6 shadow-[0_24px_80px_rgba(0,0,0,0.45)]">
             <div className="mb-2 text-[10px] font-black uppercase tracking-[0.22em] text-[#58A6FF]">
@@ -4866,57 +4891,35 @@ function App() {
   }
 
   let content = null
-  if (displayDoc.selectedPage === 'itinerary') {
-    content = (
-      <ItineraryPage
-        {...pageProps}
-        onSetCursor={setTimelineCursor}
-        onUpdateMapUi={updateMapUi}
-        onHydrateRouteDetails={hydrateRouteDetails}
-        weatherDays={timelineWeatherDays}
-        mapWeather={mapWeather}
-        mapWeatherTargets={mapWeatherTargets}
-      />
-    )
-  } else if (displayDoc.selectedPage === 'stay') {
-    content = <StayPage {...pageProps} />
+  if (displayDoc.selectedPage === 'arrivals') {
+    content = <ArrivalsPanel />
+  } else if (displayDoc.selectedPage === 'itinerary') {
+    content = <ItineraryPanel />
   } else if (displayDoc.selectedPage === 'meals') {
-    content = <MealsPage {...pageProps} onToggleMealStatus={toggleMealStatus} />
-  } else if (displayDoc.selectedPage === 'activities') {
-    content = <ActivitiesPage {...pageProps} />
-  } else if (displayDoc.selectedPage === 'expenses') {
-    content = (
-      <ExpensesPage
-        {...pageProps}
-        onToggleExpenseSettled={toggleExpenseSettled}
-        onUpdateExpenseFields={updateExpenseFields}
-        onSetExpenseAllocationMode={setExpenseAllocationMode}
-        onUpdateExpenseAllocation={updateExpenseAllocation}
-        onResetExpenseAllocationsToEqual={resetExpenseAllocationsToEqual}
-        onAddExpense={addExpense}
-      />
-    )
-  } else if (displayDoc.selectedPage === 'families') {
-    content = <FamiliesPage {...pageProps} />
+    content = <MealsPanel />
+  } else if (displayDoc.selectedPage === 'logistics') {
+    content = <LogisticsPanel />
   }
 
   const mainWithInspector = (
-    <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_auto] overflow-hidden">
+    <div className="grid min-h-0 flex-1 grid-cols-1 overflow-hidden md:grid-cols-[minmax(0,1fr)_auto]">
       <div className="flex min-h-0 min-w-0 overflow-hidden">{content}</div>
-      <InspectorRail
-        doc={displayDoc}
-        pageId={displayDoc.selectedPage}
-        selection={selection}
-        activeFamilyId={currentFamilyId}
-        onSelectEntity={selectEntity}
-        onUpdateLocationFields={updateLocationFields}
-        onToggleTask={toggleTask}
-        onUpdateEntityNote={updateEntityNote}
-        onAddTask={addTask}
-        onConvertNoteToTask={convertNoteToTask}
-        onToggleMealStatus={toggleMealStatus}
-        onToggleExpenseSettled={toggleExpenseSettled}
-      />
+      <div className="hidden md:flex">
+        <InspectorRail
+          doc={displayDoc}
+          pageId={displayDoc.selectedPage}
+          selection={selection}
+          activeFamilyId={currentFamilyId}
+          onSelectEntity={selectEntity}
+          onUpdateLocationFields={updateLocationFields}
+          onToggleTask={toggleTask}
+          onUpdateEntityNote={updateEntityNote}
+          onAddTask={addTask}
+          onConvertNoteToTask={convertNoteToTask}
+          onToggleMealStatus={toggleMealStatus}
+          onToggleExpenseSettled={toggleExpenseSettled}
+        />
+      </div>
     </div>
   )
 
