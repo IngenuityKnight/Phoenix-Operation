@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { importLibrary } from '@googlemaps/js-api-loader'
+import { importLibrary, setOptions } from '@googlemaps/js-api-loader'
 import { Plane } from 'lucide-react'
 import { useSupabaseTable } from '../hooks/useSupabaseTable'
 
 const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+const HAS_CONFIGURED_MAPS_KEY =
+  Boolean(GOOGLE_MAPS_API_KEY) && GOOGLE_MAPS_API_KEY !== 'your_browser_maps_key_here'
 
 const DARK_MAP_STYLES = [
   { elementType: 'geometry', stylers: [{ color: '#0b0f14' }] },
@@ -105,61 +107,81 @@ export default function FlightMapPanel() {
   const mapInstanceRef = useRef(null)
   const overlaysRef = useRef([])
   const [mapReady, setMapReady] = useState(false)
+  const [mapError, setMapError] = useState('')
 
   // Initialize map
   useEffect(() => {
-    if (!GOOGLE_MAPS_API_KEY || mapInstanceRef.current) return
+    if (!HAS_CONFIGURED_MAPS_KEY || mapInstanceRef.current || !mapRef.current) return
 
-    importLibrary('maps').then((mapsLib) => {
-      const map = new mapsLib.Map(mapRef.current, {
-        center: { lat: 39.5, lng: -98.35 },
-        zoom: 4,
-        mapTypeId: 'roadmap',
-        disableDefaultUI: true,
-        zoomControl: true,
-        styles: DARK_MAP_STYLES,
-        backgroundColor: '#0b0f14',
-      })
-      mapInstanceRef.current = map
-      setMapReady(true)
+    let cancelled = false
 
-      // PHX marker
-      new mapsLib.Marker({
-        map,
-        position: PHX,
-        title: 'PHX — Phoenix Sky Harbor',
-        icon: {
-          path: mapsLib.SymbolPath.CIRCLE,
-          scale: 10,
-          fillColor: '#F85149',
-          fillOpacity: 1,
-          strokeColor: '#ff7b72',
-          strokeWeight: 2,
-        },
-        zIndex: 10,
-      })
+    async function initMap() {
+      try {
+        setMapError('')
+        setOptions({ apiKey: GOOGLE_MAPS_API_KEY, version: 'weekly' })
+        const mapsLib = await importLibrary('maps')
+        if (cancelled) return
 
-      // Command House marker
-      new mapsLib.Marker({
-        map,
-        position: HOUSE,
-        title: 'Command House — Scottsdale',
-        icon: {
-          path: mapsLib.SymbolPath.CIRCLE,
-          scale: 8,
-          fillColor: '#3FB950',
-          fillOpacity: 1,
-          strokeColor: '#56d364',
-          strokeWeight: 2,
-        },
-        zIndex: 10,
-      })
-    })
+        const map = new mapsLib.Map(mapRef.current, {
+          center: { lat: 39.5, lng: -98.35 },
+          zoom: 4,
+          mapTypeId: 'roadmap',
+          disableDefaultUI: true,
+          zoomControl: true,
+          styles: DARK_MAP_STYLES,
+          backgroundColor: '#0b0f14',
+        })
+        mapInstanceRef.current = map
+        setMapReady(true)
+
+        // PHX marker
+        new mapsLib.Marker({
+          map,
+          position: PHX,
+          title: 'PHX — Phoenix Sky Harbor',
+          icon: {
+            path: mapsLib.SymbolPath.CIRCLE,
+            scale: 10,
+            fillColor: '#F85149',
+            fillOpacity: 1,
+            strokeColor: '#ff7b72',
+            strokeWeight: 2,
+          },
+          zIndex: 10,
+        })
+
+        // Command House marker
+        new mapsLib.Marker({
+          map,
+          position: HOUSE,
+          title: 'Command House — Scottsdale',
+          icon: {
+            path: mapsLib.SymbolPath.CIRCLE,
+            scale: 8,
+            fillColor: '#3FB950',
+            fillOpacity: 1,
+            strokeColor: '#56d364',
+            strokeWeight: 2,
+          },
+          zIndex: 10,
+        })
+      } catch (error) {
+        if (!cancelled) {
+          setMapError(error instanceof Error ? error.message : 'Failed to load Google Maps')
+        }
+      }
+    }
+
+    initMap()
+
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   // Draw arcs whenever arrivals change and map is ready
   useEffect(() => {
-    if (!mapReady || !mapInstanceRef.current) return
+    if (!mapReady || !mapInstanceRef.current || !HAS_CONFIGURED_MAPS_KEY) return
 
     const map = mapInstanceRef.current
 
@@ -264,11 +286,19 @@ export default function FlightMapPanel() {
       <div className="flex min-h-0 flex-1 overflow-hidden">
         {/* Map */}
         <div className="relative flex-1">
-          {!GOOGLE_MAPS_API_KEY && (
+          {!HAS_CONFIGURED_MAPS_KEY && (
             <div className="absolute inset-0 flex items-center justify-center text-[#4B5563]">
               <span className="text-[11px] uppercase tracking-widest">Maps API key not configured</span>
             </div>
           )}
+          {mapError ? (
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#0b0f14]/90 px-6 text-center">
+              <div>
+                <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#F85149]">Google Maps Error</div>
+                <div className="mt-2 text-[12px] text-[#8B949E]">{mapError}</div>
+              </div>
+            </div>
+          ) : null}
           <div ref={mapRef} className="h-full w-full" />
 
           {/* Map legend overlay */}
