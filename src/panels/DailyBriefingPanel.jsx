@@ -1,6 +1,46 @@
 import { useMemo, useState } from 'react'
-import { AlertTriangle, ClipboardList, MapPin, Plane, ShieldAlert, UtensilsCrossed } from 'lucide-react'
+import { AlertTriangle, ClipboardList, Copy, MapPin, Plane, ShieldAlert, UtensilsCrossed } from 'lucide-react'
 import { useSupabaseTable } from '../hooks/useSupabaseTable'
+
+// Keys to surface in the House Intel bar (matched against house_info.key)
+const HOUSE_INTEL_KEYS = ['Airbnb Address', 'Front Door Code', 'WiFi Network', 'WiFi Password', 'Check-in Time', 'Check-out Time']
+
+function HouseIntelBar({ items }) {
+  const [copied, setCopied] = useState(null)
+
+  function copy(key, value) {
+    navigator.clipboard.writeText(value).then(() => {
+      setCopied(key)
+      setTimeout(() => setCopied(null), 1500)
+    })
+  }
+
+  const pinned = HOUSE_INTEL_KEYS
+    .map((k) => items.find((i) => i.key === k))
+    .filter(Boolean)
+
+  if (pinned.length === 0) return null
+
+  return (
+    <div className="border-b border-[#30363D] bg-[#0d1117] px-4 py-3 md:px-6">
+      <div className="mb-2 text-[9px] font-black uppercase tracking-[0.2em] text-[#4B5563]">House Intel</div>
+      <div className="flex flex-wrap gap-x-6 gap-y-2">
+        {pinned.map((item) => (
+          <button
+            key={item.key}
+            type="button"
+            onClick={() => copy(item.key, item.value)}
+            className="flex items-center gap-1.5 text-left group"
+          >
+            <span className="text-[10px] text-[#8B949E]">{item.key}:</span>
+            <span className="font-mono text-[10px] font-semibold text-[#C9D1D9]">{item.value}</span>
+            <Copy size={10} className={`shrink-0 transition-colors ${copied === item.key ? 'text-[#3FB950]' : 'text-[#4B5563] group-hover:text-[#8B949E]'}`} />
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
 
 const DAYS = [
   {
@@ -109,6 +149,7 @@ export default function DailyBriefingPanel() {
   const { rows: itinerary } = useSupabaseTable('itinerary_items', { orderBy: 'start_time' })
   const { rows: meals } = useSupabaseTable('meals', { orderBy: 'day_date' })
   const { rows: logistics } = useSupabaseTable('logistics', { orderBy: 'created_at' })
+  const { rows: houseInfo } = useSupabaseTable('house_info', { orderBy: 'category' })
   const todayStr = new Date().toLocaleDateString('en-CA') // YYYY-MM-DD in local time
   const defaultDate = DAYS.find((d) => d.date === todayStr)?.date ?? DAYS[0].date
   const [selectedDate, setSelectedDate] = useState(defaultDate)
@@ -137,6 +178,7 @@ export default function DailyBriefingPanel() {
 
   return (
     <div className="flex flex-col bg-[#0b0f14] md:min-h-0 md:flex-1 md:overflow-auto">
+      <HouseIntelBar items={houseInfo} />
       <div className="border-b border-[#30363D] px-6 py-5">
         <div className="text-[10px] font-black uppercase tracking-[0.22em] text-[#58A6FF]">
           Daily Briefing
