@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useSupabaseTable } from './hooks/useSupabaseTable'
 
 // ─── UPDATE THIS TO THE ACTUAL WEDDING DATE ───────────────────────────────────
-const WEDDING_DATE = new Date('2026-10-10T16:00:00')
+const WEDDING_DATE = new Date('2026-08-08T16:00:00')
 // ─────────────────────────────────────────────────────────────────────────────
 
 const LAT = 33.4942
