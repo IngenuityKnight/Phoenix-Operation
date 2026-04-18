@@ -1,51 +1,100 @@
-import { useMemo } from 'react'
-import { Home, Plane } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { importLibrary, setOptions } from '@googlemaps/js-api-loader'
+import { Plane } from 'lucide-react'
 import { useSupabaseTable } from '../hooks/useSupabaseTable'
 
-const MAP_WIDTH = 960
-const MAP_HEIGHT = 560
-const PHX_POINT = { x: 662, y: 338, label: 'PHX' }
-const HOUSE_POINT = { x: 702, y: 332, label: 'House' }
+const GOOGLE_MAPS_API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY
+const HAS_CONFIGURED_MAPS_KEY =
+  Boolean(GOOGLE_MAPS_API_KEY) && GOOGLE_MAPS_API_KEY !== 'your_browser_maps_key_here'
+
+const DARK_MAP_STYLES = [
+  { elementType: 'geometry', stylers: [{ color: '#0b0f14' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#0b0f14' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#8b949e' }] },
+  { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [{ color: '#30363d' }] },
+  { featureType: 'administrative.country', elementType: 'geometry.stroke', stylers: [{ color: '#3d4a57' }] },
+  { featureType: 'poi', elementType: 'geometry', stylers: [{ color: '#11161d' }] },
+  { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#0f1712' }] },
+  { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#1f2a34' }] },
+  { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#24313d' }] },
+  { featureType: 'road.highway', elementType: 'geometry.stroke', stylers: [{ color: '#58a6ff' }] },
+  { featureType: 'transit', elementType: 'geometry', stylers: [{ color: '#1b2028' }] },
+  { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#08111d' }] },
+  { featureType: 'water', elementType: 'labels.text.fill', stylers: [{ color: '#58a6ff' }] },
+]
+
+const PHX = { lat: 33.4373, lng: -112.0078 }
+const HOUSE = { lat: 33.4955, lng: -111.9141 }
 
 const AIRPORT_DB = {
-  PHX: { city: 'Phoenix, AZ', x: 662, y: 338 },
-  SDL: { city: 'Scottsdale, AZ', x: 702, y: 332 },
-  ORD: { city: 'Chicago, IL', x: 666, y: 165 },
-  MDW: { city: 'Chicago Midway, IL', x: 655, y: 176 },
-  ATL: { city: 'Atlanta, GA', x: 742, y: 258 },
-  DFW: { city: 'Dallas, TX', x: 596, y: 284 },
-  DAL: { city: 'Dallas Love, TX', x: 589, y: 282 },
-  LAX: { city: 'Los Angeles, CA', x: 134, y: 318 },
-  SFO: { city: 'San Francisco, CA', x: 116, y: 165 },
-  JFK: { city: 'New York, NY', x: 848, y: 132 },
-  LGA: { city: 'New York LaGuardia, NY', x: 840, y: 127 },
-  EWR: { city: 'Newark, NJ', x: 834, y: 138 },
-  BOS: { city: 'Boston, MA', x: 874, y: 111 },
-  MIA: { city: 'Miami, FL', x: 844, y: 410 },
-  DEN: { city: 'Denver, CO', x: 450, y: 205 },
-  SEA: { city: 'Seattle, WA', x: 104, y: 70 },
-  MSP: { city: 'Minneapolis, MN', x: 563, y: 126 },
-  DTW: { city: 'Detroit, MI', x: 720, y: 146 },
-  BWI: { city: 'Baltimore, MD', x: 813, y: 182 },
-  IAD: { city: 'Washington Dulles, DC', x: 798, y: 188 },
-  DCA: { city: 'Washington Reagan, DC', x: 806, y: 190 },
-  STL: { city: 'St. Louis, MO', x: 600, y: 206 },
-  LAS: { city: 'Las Vegas, NV', x: 228, y: 280 },
-  SAN: { city: 'San Diego, CA', x: 136, y: 354 },
-  HOU: { city: 'Houston Hobby, TX', x: 612, y: 348 },
-  IAH: { city: 'Houston, TX', x: 603, y: 336 },
-  MSY: { city: 'New Orleans, LA', x: 684, y: 346 },
-  CLT: { city: 'Charlotte, NC', x: 777, y: 244 },
-  PHL: { city: 'Philadelphia, PA', x: 832, y: 158 },
-  PIT: { city: 'Pittsburgh, PA', x: 776, y: 153 },
-  IND: { city: 'Indianapolis, IN', x: 640, y: 189 },
-  MCI: { city: 'Kansas City, MO', x: 538, y: 212 },
-  MKE: { city: 'Milwaukee, WI', x: 646, y: 145 },
-  OAK: { city: 'Oakland, CA', x: 114, y: 171 },
-  SJC: { city: 'San Jose, CA', x: 122, y: 185 },
-  PDX: { city: 'Portland, OR', x: 109, y: 94 },
-  CLE: { city: 'Cleveland, OH', x: 735, y: 153 },
-  CMH: { city: 'Columbus, OH', x: 715, y: 171 },
+  PHX: { lat: 33.4373, lng: -112.0078, city: 'Phoenix, AZ' },
+  SDL: { lat: 33.6229, lng: -111.9109, city: 'Scottsdale, AZ' },
+  ORD: { lat: 41.9742, lng: -87.9073, city: 'Chicago, IL' },
+  MDW: { lat: 41.7868, lng: -87.7522, city: 'Chicago Midway, IL' },
+  ATL: { lat: 33.6367, lng: -84.4281, city: 'Atlanta, GA' },
+  DFW: { lat: 32.8998, lng: -97.0403, city: 'Dallas, TX' },
+  DAL: { lat: 32.8474, lng: -96.8517, city: 'Dallas Love, TX' },
+  LAX: { lat: 33.9425, lng: -118.4081, city: 'Los Angeles, CA' },
+  SFO: { lat: 37.6213, lng: -122.379, city: 'San Francisco, CA' },
+  JFK: { lat: 40.6413, lng: -73.7781, city: 'New York, NY' },
+  LGA: { lat: 40.7769, lng: -73.874, city: 'New York LaGuardia, NY' },
+  EWR: { lat: 40.6895, lng: -74.1745, city: 'Newark, NJ' },
+  BOS: { lat: 42.3656, lng: -71.0096, city: 'Boston, MA' },
+  MIA: { lat: 25.7959, lng: -80.287, city: 'Miami, FL' },
+  DEN: { lat: 39.8561, lng: -104.6737, city: 'Denver, CO' },
+  SEA: { lat: 47.4502, lng: -122.3088, city: 'Seattle, WA' },
+  MSP: { lat: 44.8848, lng: -93.2223, city: 'Minneapolis, MN' },
+  DTW: { lat: 42.2162, lng: -83.3554, city: 'Detroit, MI' },
+  BWI: { lat: 39.1754, lng: -76.6684, city: 'Baltimore, MD' },
+  IAD: { lat: 38.9531, lng: -77.4565, city: 'Washington Dulles, DC' },
+  DCA: { lat: 38.8521, lng: -77.0377, city: 'Washington Reagan, DC' },
+  STL: { lat: 38.7487, lng: -90.37, city: 'St. Louis, MO' },
+  LAS: { lat: 36.084, lng: -115.1537, city: 'Las Vegas, NV' },
+  SAN: { lat: 32.7338, lng: -117.1933, city: 'San Diego, CA' },
+  HOU: { lat: 29.6454, lng: -95.2789, city: 'Houston Hobby, TX' },
+  IAH: { lat: 29.9902, lng: -95.3368, city: 'Houston, TX' },
+  MSY: { lat: 29.9934, lng: -90.258, city: 'New Orleans, LA' },
+  CLT: { lat: 35.214, lng: -80.9431, city: 'Charlotte, NC' },
+  PHL: { lat: 39.8721, lng: -75.2411, city: 'Philadelphia, PA' },
+  PIT: { lat: 40.4919, lng: -80.2329, city: 'Pittsburgh, PA' },
+  IND: { lat: 39.7173, lng: -86.2944, city: 'Indianapolis, IN' },
+  MCI: { lat: 39.2976, lng: -94.7139, city: 'Kansas City, MO' },
+  MKE: { lat: 42.9472, lng: -87.8966, city: 'Milwaukee, WI' },
+  OAK: { lat: 37.7213, lng: -122.2208, city: 'Oakland, CA' },
+  SJC: { lat: 37.3626, lng: -121.9291, city: 'San Jose, CA' },
+  PDX: { lat: 45.5898, lng: -122.5951, city: 'Portland, OR' },
+  CLE: { lat: 41.4117, lng: -81.8498, city: 'Cleveland, OH' },
+  CMH: { lat: 39.9998, lng: -82.8919, city: 'Columbus, OH' },
+}
+
+function greatCirclePoints(from, to, steps = 80) {
+  const toRad = (d) => (d * Math.PI) / 180
+  const toDeg = (r) => (r * 180) / Math.PI
+
+  const lat1 = toRad(from.lat)
+  const lng1 = toRad(from.lng)
+  const lat2 = toRad(to.lat)
+  const lng2 = toRad(to.lng)
+
+  const d = 2 * Math.asin(Math.sqrt(
+    Math.sin((lat2 - lat1) / 2) ** 2 +
+    Math.cos(lat1) * Math.cos(lat2) * Math.sin((lng2 - lng1) / 2) ** 2
+  ))
+
+  const points = []
+  for (let i = 0; i <= steps; i += 1) {
+    const f = i / steps
+    const A = Math.sin((1 - f) * d) / Math.sin(d)
+    const B = Math.sin(f * d) / Math.sin(d)
+    const x = A * Math.cos(lat1) * Math.cos(lng1) + B * Math.cos(lat2) * Math.cos(lng2)
+    const y = A * Math.cos(lat1) * Math.sin(lng1) + B * Math.cos(lat2) * Math.sin(lng2)
+    const z = A * Math.sin(lat1) + B * Math.sin(lat2)
+    points.push({
+      lat: toDeg(Math.atan2(z, Math.sqrt(x ** 2 + y ** 2))),
+      lng: toDeg(Math.atan2(y, x)),
+    })
+  }
+  return points
 }
 
 const STATUS_COLORS = {
@@ -56,258 +105,274 @@ const STATUS_COLORS = {
   Arrived: '#3FB950',
 }
 
-const US_OUTLINE_PATH = `
-  M116 104
-  L136 88 L165 86 L196 78 L242 74 L278 81 L310 76 L362 92 L406 93
-  L450 107 L498 103 L551 119 L604 124 L666 136 L718 148 L756 155
-  L804 170 L840 195 L866 233 L858 270 L883 311 L877 343 L853 364
-  L844 401 L812 426 L776 425 L742 409 L694 395 L655 402 L622 393
-  L572 392 L530 384 L487 377 L459 359 L429 347 L396 344 L351 330
-  L327 342 L285 348 L244 336 L208 337 L184 322 L160 304 L145 280
-  L126 248 L112 220 L104 184 Z
-`
-
-function formatDateTime(value) {
-  if (!value) return '—'
-  const parsed = new Date(value)
-  if (Number.isNaN(parsed.getTime())) return value
-  return parsed.toLocaleString('en-US', {
-    month: 'numeric',
-    day: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  })
-}
-
-function buildArcPath(from, to) {
-  const dx = to.x - from.x
-  const dy = to.y - from.y
-  const midpointX = from.x + dx / 2
-  const midpointY = from.y + dy / 2
-  const distance = Math.hypot(dx, dy)
-  const lift = Math.max(28, Math.min(110, distance * 0.18))
-  const controlY = midpointY - lift
-  return `M ${from.x} ${from.y} Q ${midpointX} ${controlY} ${to.x} ${to.y}`
-}
-
-function FlightPath({ from, to, color }) {
-  return (
-    <>
-      <path d={buildArcPath(from, to)} fill="none" stroke={`${color}28`} strokeWidth="8" />
-      <path
-        d={buildArcPath(from, to)}
-        fill="none"
-        stroke={color}
-        strokeWidth="2"
-        strokeDasharray="6 6"
-        strokeLinecap="round"
-      />
-    </>
-  )
-}
-
 export default function FlightMapPanel() {
   const { rows: arrivals } = useSupabaseTable('arrivals', { orderBy: 'arrival_date', ascending: true })
+  const mapRef = useRef(null)
+  const mapInstanceRef = useRef(null)
+  const overlaysRef = useRef([])
+  const [mapReady, setMapReady] = useState(false)
+  const [mapError, setMapError] = useState('')
 
-  const groupedOrigins = useMemo(() => {
-    const groups = new Map()
+  useEffect(() => {
+    if (!HAS_CONFIGURED_MAPS_KEY || mapInstanceRef.current || !mapRef.current) return
 
-    arrivals.forEach((arrival) => {
-      const code = (arrival.origin_airport || '').toUpperCase().trim()
-      const airport = AIRPORT_DB[code]
-      if (!airport || code === 'PHX' || code === 'SDL') return
+    let cancelled = false
 
-      if (!groups.has(code)) {
-        groups.set(code, {
-          code,
-          airport,
-          people: [],
-          strongestStatus: arrival.status || 'TBD',
+    async function initMap() {
+      try {
+        setMapError('')
+        setOptions({ apiKey: GOOGLE_MAPS_API_KEY, version: 'weekly' })
+        const [mapsLib, markerLib, coreLib] = await Promise.all([
+          importLibrary('maps'),
+          importLibrary('marker'),
+          importLibrary('core'),
+        ])
+        if (cancelled) return
+
+        const { Marker } = markerLib
+        const { SymbolPath } = coreLib
+
+        const map = new mapsLib.Map(mapRef.current, {
+          center: { lat: 39.5, lng: -98.35 },
+          zoom: 4,
+          mapTypeId: 'roadmap',
+          disableDefaultUI: true,
+          zoomControl: true,
+          styles: DARK_MAP_STYLES,
+          backgroundColor: '#0b0f14',
         })
-      }
+        mapInstanceRef.current = map
+        setMapReady(true)
 
-      const entry = groups.get(code)
-      entry.people.push(arrival)
+        new Marker({
+          map,
+          position: PHX,
+          title: 'PHX — Phoenix Sky Harbor',
+          icon: {
+            path: SymbolPath.CIRCLE,
+            scale: 10,
+            fillColor: '#F85149',
+            fillOpacity: 1,
+            strokeColor: '#ff7b72',
+            strokeWeight: 2,
+          },
+          zIndex: 10,
+        })
 
-      const score = ['TBD', 'Confirmed', 'En Route', 'Landed', 'Arrived']
-      if (score.indexOf(arrival.status || 'TBD') > score.indexOf(entry.strongestStatus)) {
-        entry.strongestStatus = arrival.status || 'TBD'
+        new Marker({
+          map,
+          position: HOUSE,
+          title: 'Command House — Scottsdale',
+          icon: {
+            path: SymbolPath.CIRCLE,
+            scale: 8,
+            fillColor: '#3FB950',
+            fillOpacity: 1,
+            strokeColor: '#56d364',
+            strokeWeight: 2,
+          },
+          zIndex: 10,
+        })
+      } catch (error) {
+        if (!cancelled) {
+          setMapError(error instanceof Error ? error.message : 'Failed to load Google Maps')
+        }
       }
+    }
+
+    initMap()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!mapReady || !mapInstanceRef.current || !HAS_CONFIGURED_MAPS_KEY) return
+
+    const map = mapInstanceRef.current
+    overlaysRef.current.forEach((overlay) => overlay.setMap(null))
+    overlaysRef.current = []
+
+    Promise.all([
+      importLibrary('maps'),
+      importLibrary('marker'),
+      importLibrary('core'),
+    ]).then(([mapsLib, markerLib, coreLib]) => {
+      const { Marker } = markerLib
+      const { SymbolPath } = coreLib
+      const seen = new Map()
+
+      arrivals.forEach((arrival) => {
+        const code = (arrival.origin_airport || '').toUpperCase().trim()
+        if (!code || code === 'PHX' || code === 'SDL') return
+        const airport = AIRPORT_DB[code]
+        if (!airport || seen.has(code)) return
+
+        const arcPoints = greatCirclePoints(airport, PHX)
+        const color = STATUS_COLORS[arrival.status] || STATUS_COLORS.TBD
+
+        const polyline = new mapsLib.Polyline({
+          map,
+          path: arcPoints,
+          strokeColor: color,
+          strokeOpacity: 0,
+          strokeWeight: 0,
+          icons: [
+            {
+              icon: {
+                path: 'M 0,-1 0,1',
+                strokeOpacity: 0.7,
+                scale: 2,
+                strokeColor: color,
+              },
+              offset: '0',
+              repeat: '12px',
+            },
+          ],
+        })
+        overlaysRef.current.push(polyline)
+        seen.set(code, polyline)
+
+        const marker = new Marker({
+          map,
+          position: airport,
+          title: `${code} — ${airport.city}`,
+          icon: {
+            path: SymbolPath.CIRCLE,
+            scale: 5,
+            fillColor: color,
+            fillOpacity: 0.9,
+            strokeColor: '#0b0f14',
+            strokeWeight: 1,
+          },
+        })
+        overlaysRef.current.push(marker)
+      })
     })
+  }, [arrivals, mapReady])
 
-    return [...groups.values()].sort((left, right) => left.code.localeCompare(right.code))
-  }, [arrivals])
+  const byOrigin = arrivals.reduce((acc, arrival) => {
+    const code = (arrival.origin_airport || '').toUpperCase().trim() || '—'
+    if (!acc[code]) acc[code] = []
+    acc[code].push(arrival)
+    return acc
+  }, {})
 
-  const stats = useMemo(
-    () => ({
-      arrived: arrivals.filter((item) => item.status === 'Arrived').length,
-      landed: arrivals.filter((item) => item.status === 'Landed').length,
-      enRoute: arrivals.filter((item) => item.status === 'En Route').length,
-      tracked: arrivals.filter((item) => item.transport === 'flight').length,
-    }),
-    [arrivals],
-  )
+  const arrived = arrivals.filter((item) => item.status === 'Arrived').length
+  const landed = arrivals.filter((item) => item.status === 'Landed').length
+  const enRoute = arrivals.filter((item) => item.status === 'En Route').length
+  const confirmed = arrivals.filter((item) => item.status === 'Confirmed').length
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       <div className="flex items-center justify-between border-b border-[#30363D] px-6 py-4">
         <div>
           <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8B949E]">Ops Map</div>
-          <div className="mt-0.5 text-lg font-bold text-[#C9D1D9]">Inbound Command Board</div>
+          <div className="mt-0.5 text-lg font-bold text-[#C9D1D9]">Inbound Flights · PHX</div>
         </div>
         <div className="flex items-center gap-6">
-          <div className="text-center">
-            <div className="font-mono text-xl font-black text-[#3FB950]">{stats.arrived}</div>
-            <div className="text-[9px] uppercase tracking-widest text-[#8B949E]">Arrived</div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-[#3FB950]" />
+            <span className="font-mono text-sm font-black text-[#3FB950]">{arrived}</span>
+            <span className="text-[9px] uppercase tracking-widest text-[#8B949E]">Arrived</span>
           </div>
-          <div className="text-center">
-            <div className="font-mono text-xl font-black text-[#A371F7]">{stats.landed}</div>
-            <div className="text-[9px] uppercase tracking-widest text-[#8B949E]">Landed</div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-[#A371F7]" />
+            <span className="font-mono text-sm font-black text-[#A371F7]">{landed}</span>
+            <span className="text-[9px] uppercase tracking-widest text-[#8B949E]">Landed</span>
           </div>
-          <div className="text-center">
-            <div className="font-mono text-xl font-black text-[#D29922]">{stats.enRoute}</div>
-            <div className="text-[9px] uppercase tracking-widest text-[#8B949E]">En Route</div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-[#D29922]" />
+            <span className="font-mono text-sm font-black text-[#D29922]">{enRoute}</span>
+            <span className="text-[9px] uppercase tracking-widest text-[#8B949E]">En Route</span>
           </div>
-          <div className="text-center">
-            <div className="font-mono text-xl font-black text-[#58A6FF]">{stats.tracked}</div>
-            <div className="text-[9px] uppercase tracking-widest text-[#8B949E]">Tracked</div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-[#58A6FF]" />
+            <span className="font-mono text-sm font-black text-[#58A6FF]">{confirmed}</span>
+            <span className="text-[9px] uppercase tracking-widest text-[#8B949E]">Confirmed</span>
           </div>
         </div>
       </div>
 
       <div className="flex min-h-0 flex-1 overflow-hidden">
-        <div className="relative flex-1 overflow-hidden bg-[radial-gradient(circle_at_top_left,rgba(88,166,255,0.14),transparent_36%),linear-gradient(180deg,#091019,#06090f)]">
-          <div className="absolute inset-0 bg-[radial-gradient(rgba(88,166,255,0.08)_1px,transparent_1px)] [background-size:26px_26px]" />
-          <svg viewBox={`0 0 ${MAP_WIDTH} ${MAP_HEIGHT}`} className="h-full w-full">
-            <defs>
-              <linearGradient id="commandGlow" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#58A6FF" stopOpacity="0.26" />
-                <stop offset="100%" stopColor="#58A6FF" stopOpacity="0.02" />
-              </linearGradient>
-            </defs>
-
-            <path d={US_OUTLINE_PATH} fill="url(#commandGlow)" stroke="#24313D" strokeWidth="2" />
-
-            {groupedOrigins.map((group) => (
-              <FlightPath
-                key={group.code}
-                from={group.airport}
-                to={PHX_POINT}
-                color={STATUS_COLORS[group.strongestStatus] || STATUS_COLORS.TBD}
-              />
-            ))}
-
-            {groupedOrigins.map((group) => (
-              <g key={`${group.code}-origin`}>
-                <circle
-                  cx={group.airport.x}
-                  cy={group.airport.y}
-                  r="6"
-                  fill={STATUS_COLORS[group.strongestStatus] || STATUS_COLORS.TBD}
-                  stroke="#0B0F14"
-                  strokeWidth="2"
-                />
-                <text x={group.airport.x + 10} y={group.airport.y - 8} fill="#8B949E" fontSize="11" fontWeight="700">
-                  {group.code}
-                </text>
-              </g>
-            ))}
-
-            <g>
-              <circle cx={PHX_POINT.x} cy={PHX_POINT.y} r="10" fill="#F85149" stroke="#FF7B72" strokeWidth="3" />
-              <text x={PHX_POINT.x + 16} y={PHX_POINT.y - 10} fill="#F0F6FC" fontSize="13" fontWeight="900">
-                PHX
-              </text>
-              <text x={PHX_POINT.x + 16} y={PHX_POINT.y + 8} fill="#8B949E" fontSize="11" fontWeight="700">
-                Phoenix Sky Harbor
-              </text>
-            </g>
-
-            <g>
-              <circle cx={HOUSE_POINT.x} cy={HOUSE_POINT.y} r="8" fill="#3FB950" stroke="#8AE6A0" strokeWidth="2" />
-              <text x={HOUSE_POINT.x + 14} y={HOUSE_POINT.y + 4} fill="#C9D1D9" fontSize="11" fontWeight="800">
-                Scottsdale House
-              </text>
-            </g>
-          </svg>
-
-          <div className="absolute bottom-4 left-4 border border-[#30363D] bg-[#0D1117]/92 px-4 py-3 backdrop-blur">
-            <div className="text-[8px] font-black uppercase tracking-[0.2em] text-[#58A6FF]">Map Layer</div>
-            <div className="mt-2 space-y-2 text-[10px] text-[#8B949E]">
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-[#F85149]" />
-                PHX arrival hub
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="h-2 w-2 rounded-full bg-[#3FB950]" />
-                Scottsdale command house
-              </div>
-              <div className="flex items-center gap-2">
-                <svg width="16" height="4">
-                  <line x1="0" y1="2" x2="16" y2="2" stroke="#58A6FF" strokeWidth="2" strokeDasharray="5 4" />
-                </svg>
-                inbound flight lane
+        <div className="relative flex-1">
+          {!HAS_CONFIGURED_MAPS_KEY ? (
+            <div className="absolute inset-0 flex items-center justify-center text-[#4B5563]">
+              <span className="text-[11px] uppercase tracking-widest">Maps API key not configured</span>
+            </div>
+          ) : null}
+          {mapError ? (
+            <div className="absolute inset-0 z-10 flex items-center justify-center bg-[#0b0f14]/90 px-6 text-center">
+              <div>
+                <div className="text-[11px] font-black uppercase tracking-[0.18em] text-[#F85149]">Google Maps Error</div>
+                <div className="mt-2 text-[12px] text-[#8B949E]">{mapError}</div>
               </div>
             </div>
+          ) : null}
+          <div ref={mapRef} className="h-full w-full" />
+
+          <div className="absolute bottom-4 left-4 flex flex-col gap-1.5 rounded border border-[#30363D] bg-[#0d1117]/90 p-3 backdrop-blur-sm">
+            <div className="text-[8px] font-black uppercase tracking-[0.2em] text-[#4B5563]">Legend</div>
+            {[
+              { color: '#F85149', label: 'PHX Airport' },
+              { color: '#3FB950', label: 'Command House' },
+              { color: '#3FB950', label: 'Arrived', dashed: true },
+              { color: '#A371F7', label: 'Landed', dashed: true },
+              { color: '#D29922', label: 'En Route', dashed: true },
+              { color: '#58A6FF', label: 'Confirmed', dashed: true },
+              { color: '#8B949E', label: 'TBD', dashed: true },
+            ].map((item) => (
+              <div key={item.label} className="flex items-center gap-2">
+                {item.dashed ? (
+                  <svg width="16" height="4" className="shrink-0">
+                    <line x1="0" y1="2" x2="16" y2="2" stroke={item.color} strokeWidth="2" strokeDasharray="3 2" />
+                  </svg>
+                ) : (
+                  <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: item.color }} />
+                )}
+                <span className="text-[9px] text-[#8B949E]">{item.label}</span>
+              </div>
+            ))}
           </div>
         </div>
 
-        <div className="flex w-80 flex-col overflow-auto border-l border-[#30363D] bg-[#0D1117]">
+        <div className="flex w-64 flex-col overflow-auto border-l border-[#30363D]">
           <div className="border-b border-[#30363D] px-4 py-3">
-            <div className="text-[9px] font-black uppercase tracking-[0.2em] text-[#58A6FF]">Origin Feed</div>
+            <div className="text-[9px] font-black uppercase tracking-[0.2em] text-[#4B5563]">Flight Origins</div>
           </div>
-
-          {!groupedOrigins.length ? (
-            <div className="flex flex-1 items-center justify-center px-6 text-center text-[10px] uppercase tracking-widest text-[#4B5563]">
-              No flight arrivals are currently tracked.
+          {arrivals.length === 0 ? (
+            <div className="flex flex-1 items-center justify-center text-[10px] uppercase tracking-widest text-[#4B5563]">
+              No arrivals tracked
             </div>
           ) : (
-            <div className="divide-y divide-[#21262D]">
-              {groupedOrigins.map((group) => (
-                <div key={group.code} className="px-4 py-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <Plane size={12} className="text-[#58A6FF]" />
-                        <span className="font-mono text-[12px] font-black text-[#58A6FF]">{group.code}</span>
-                      </div>
-                      <div className="mt-1 text-[10px] text-[#8B949E]">{group.airport.city}</div>
+            <div className="flex flex-col divide-y divide-[#21262d]">
+              {Object.entries(byOrigin).map(([code, people]) => {
+                const airport = AIRPORT_DB[code]
+                return (
+                  <div key={code} className="px-4 py-3">
+                    <div className="mb-1.5 flex items-center gap-2">
+                      <Plane size={10} className="shrink-0 text-[#58A6FF]" />
+                      <span className="font-mono text-[11px] font-black text-[#58A6FF]">{code}</span>
+                      {airport ? <span className="truncate text-[9px] text-[#4B5563]">{airport.city}</span> : null}
                     </div>
-                    <div
-                      className="rounded px-2 py-0.5 text-[9px] font-black uppercase tracking-wider"
-                      style={{
-                        color: STATUS_COLORS[group.strongestStatus] || STATUS_COLORS.TBD,
-                        backgroundColor: `${STATUS_COLORS[group.strongestStatus] || STATUS_COLORS.TBD}1A`,
-                      }}
-                    >
-                      {group.strongestStatus}
-                    </div>
-                  </div>
-
-                  <div className="mt-3 space-y-2">
-                    {group.people.map((person) => (
-                      <div key={person.id} className="border border-[#30363D] bg-[#11161D] px-3 py-2">
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="text-[11px] font-bold text-[#C9D1D9]">{person.name}</div>
-                          <div className="text-[10px] text-[#8B949E]">{person.flight_number || 'Flight TBD'}</div>
-                        </div>
-                        <div className="mt-1 text-[10px] text-[#8B949E]">
-                          {person.arrival_date || 'Date TBD'} {person.arrival_time || ''}
-                        </div>
-                        {person.actual_landed_at ? (
-                          <div className="mt-1 text-[10px] text-[#A371F7]">
-                            Landed {formatDateTime(person.actual_landed_at)}
-                          </div>
-                        ) : null}
-                        <div className="mt-2 flex items-center gap-2 text-[10px] text-[#8B949E]">
-                          {person.pickup_needed ? <Home size={11} className="text-[#D29922]" /> : null}
-                          <span>{person.pickup_needed ? 'Pickup required' : 'Self-transport / TBD'}</span>
-                        </div>
+                    {people.map((person) => (
+                      <div key={person.id} className="flex items-center justify-between py-0.5">
+                        <span className="text-[11px] text-[#C9D1D9]">{person.name}</span>
+                        <span
+                          className="rounded px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider"
+                          style={{
+                            color: STATUS_COLORS[person.status] || STATUS_COLORS.TBD,
+                            background: `${STATUS_COLORS[person.status] || STATUS_COLORS.TBD}20`,
+                          }}
+                        >
+                          {person.status}
+                        </span>
                       </div>
                     ))}
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>
