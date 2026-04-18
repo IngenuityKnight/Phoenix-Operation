@@ -174,12 +174,21 @@ export default function MealsPanel() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <div className="flex items-center justify-between border-b border-[#30363D] px-6 py-4">
-        <div>
-          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8B949E]">Meals Coordinator</div>
-          <div className="mt-0.5 text-lg font-bold text-[#C9D1D9]">May 28–31 · Scottsdale</div>
+      <div className="border-b border-[#30363D] px-4 py-4 md:px-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8B949E]">Meals Coordinator</div>
+            <div className="mt-0.5 text-lg font-bold text-[#C9D1D9]">May 28–31 · Scottsdale</div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setModal({ mode: 'add' })}
+            className="flex items-center gap-2 rounded border border-[#30363D] bg-[#161b22] px-4 py-3 text-xs font-bold uppercase tracking-wider text-[#58A6FF] hover:border-[#58A6FF] hover:bg-[#1f2a34]"
+          >
+            <Plus size={14} /> Add Meal
+          </button>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="mt-3 flex flex-wrap gap-4">
           <div className="text-center">
             <div className="font-mono text-xl font-black text-[#C9D1D9]">{meals.length}</div>
             <div className="text-[9px] uppercase tracking-widest text-[#8B949E]">Planned</div>
@@ -190,13 +199,6 @@ export default function MealsPanel() {
               <div className="text-[9px] uppercase tracking-widest text-[#8B949E]">Est. Total</div>
             </div>
           )}
-          <button
-            type="button"
-            onClick={() => setModal({ mode: 'add' })}
-            className="flex items-center gap-2 rounded border border-[#30363D] bg-[#161b22] px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-[#58A6FF] hover:border-[#58A6FF] hover:bg-[#1f2a34]"
-          >
-            <Plus size={14} /> Add Meal
-          </button>
         </div>
       </div>
 

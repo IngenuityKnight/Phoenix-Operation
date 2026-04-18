@@ -170,26 +170,26 @@ export default function ItineraryPanel() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-      <div className="flex items-center justify-between border-b border-[#30363D] px-6 py-4">
-        <div>
-          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8B949E]">Itinerary</div>
-          <div className="mt-0.5 text-lg font-bold text-[#C9D1D9]">May 28–31 · Scottsdale</div>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="flex flex-wrap gap-2">
-            {CATEGORIES.map((c) => (
-              <span key={c} className={`rounded border px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${CATEGORY_COLORS[c]}`}>
-                {c}
-              </span>
-            ))}
+      <div className="border-b border-[#30363D] px-4 py-4 md:px-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8B949E]">Itinerary</div>
+            <div className="mt-0.5 text-lg font-bold text-[#C9D1D9]">May 28–31 · Scottsdale</div>
           </div>
           <button
             type="button"
             onClick={() => setModal({ mode: 'add' })}
-            className="flex items-center gap-2 rounded border border-[#30363D] bg-[#161b22] px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-[#58A6FF] hover:border-[#58A6FF] hover:bg-[#1f2a34]"
+            className="flex items-center gap-2 rounded border border-[#30363D] bg-[#161b22] px-4 py-3 text-xs font-bold uppercase tracking-wider text-[#58A6FF] hover:border-[#58A6FF] hover:bg-[#1f2a34]"
           >
             <Plus size={14} /> Add Item
           </button>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {CATEGORIES.map((c) => (
+            <span key={c} className={`rounded border px-2 py-0.5 text-[9px] font-black uppercase tracking-wider ${CATEGORY_COLORS[c]}`}>
+              {c}
+            </span>
+          ))}
         </div>
       </div>
 
@@ -199,7 +199,7 @@ export default function ItineraryPanel() {
             <span className="text-[11px] uppercase tracking-widest text-[#8B949E]">Loading…</span>
           </div>
         ) : (
-          <div className="grid h-full grid-cols-1 divide-x divide-[#21262d] lg:grid-cols-4">
+          <div className="grid grid-cols-1 divide-y divide-[#21262d] lg:grid-cols-4 lg:divide-x lg:divide-y-0">
             {DAYS.map((day) => {
               const dayItems = items
                 .filter((i) => i.day_date === day.date)

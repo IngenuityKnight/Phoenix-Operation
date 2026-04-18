@@ -169,12 +169,22 @@ export default function ArrivalsPanel() {
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-[#30363D] px-6 py-4">
-        <div>
-          <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8B949E]">Arrivals Tracker</div>
-          <div className="mt-0.5 text-lg font-bold text-[#C9D1D9]">14 Guys · Scottsdale</div>
+      <div className="border-b border-[#30363D] px-4 py-4 md:px-6">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8B949E]">Arrivals Tracker</div>
+            <div className="mt-0.5 text-lg font-bold text-[#C9D1D9]">14 Guys · Scottsdale</div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setModal({ mode: 'add' })}
+            className="flex items-center gap-2 rounded border border-[#30363D] bg-[#161b22] px-4 py-3 text-xs font-bold uppercase tracking-wider text-[#58A6FF] hover:border-[#58A6FF] hover:bg-[#1f2a34]"
+          >
+            <Plus size={14} />
+            Add Guy
+          </button>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="mt-3 flex flex-wrap gap-4">
           <div className="text-center">
             <div className="font-mono text-xl font-black text-[#3FB950]">{arrived}</div>
             <div className="text-[9px] uppercase tracking-widest text-[#8B949E]">Arrived</div>
@@ -191,14 +201,6 @@ export default function ArrivalsPanel() {
             <div className="font-mono text-xl font-black text-[#C9D1D9]">{arrivals.length}</div>
             <div className="text-[9px] uppercase tracking-widest text-[#8B949E]">Tracked</div>
           </div>
-          <button
-            type="button"
-            onClick={() => setModal({ mode: 'add' })}
-            className="flex items-center gap-2 rounded border border-[#30363D] bg-[#161b22] px-3 py-2 text-[11px] font-bold uppercase tracking-wider text-[#58A6FF] hover:border-[#58A6FF] hover:bg-[#1f2a34]"
-          >
-            <Plus size={14} />
-            Add Guy
-          </button>
         </div>
       </div>
 
@@ -230,7 +232,7 @@ export default function ArrivalsPanel() {
         </div>
       )}
 
-      {/* Table */}
+      {/* Content */}
       <div className="flex-1 overflow-auto">
         {loading ? (
           <div className="flex h-48 items-center justify-center text-[#8B949E]">
@@ -248,67 +250,99 @@ export default function ArrivalsPanel() {
             </button>
           </div>
         ) : (
-          <table className="w-full border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-[#21262d]">
-                {['Name', 'Status', 'Transport', 'Arrives', 'Flight #', 'Pickup', 'Notes', ''].map((h) => (
-                  <th key={h} className="px-4 py-2.5 text-left text-[9px] font-black uppercase tracking-[0.18em] text-[#8B949E]">
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
+          <>
+            {/* Mobile cards */}
+            <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 md:hidden">
               {arrivals.map((a) => (
-                <tr key={a.id} className="border-b border-[#21262d] hover:bg-[#1f2935]">
-                  <td className="px-4 py-3 font-semibold text-[#C9D1D9]">{a.name}</td>
-                  <td className="px-4 py-3">
-                    <span className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${STATUS_COLORS[a.status] || STATUS_COLORS.TBD}`}>
+                <div key={a.id} className="rounded border border-[#21262d] bg-[#0d1117] p-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="font-bold text-base text-[#C9D1D9]">{a.name}</div>
+                    <span className={`shrink-0 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${STATUS_COLORS[a.status] || STATUS_COLORS.TBD}`}>
                       {a.status}
                     </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="flex items-center gap-1.5 text-[#8B949E]">
-                      {a.transport === 'flight' ? <Plane size={12} /> : <Car size={12} />}
-                      <span className="text-xs capitalize">{a.transport}</span>
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 font-mono text-xs text-[#8B949E]">
-                    {a.arrival_date ? `${a.arrival_date}` : '—'}
-                    {a.arrival_time ? ` ${a.arrival_time}` : ''}
-                  </td>
-                  <td className="px-4 py-3 font-mono text-xs text-[#8B949E]">{a.flight_number || '—'}</td>
-                  <td className="px-4 py-3">
-                    {a.pickup_needed ? (
-                      <span className="text-[10px] font-bold uppercase tracking-wider text-[#D29922]">Yes</span>
-                    ) : (
-                      <span className="text-[10px] text-[#4B5563]">—</span>
-                    )}
-                  </td>
-                  <td className="max-w-[180px] truncate px-4 py-3 text-xs text-[#8B949E]">{a.notes || a.pickup_notes || '—'}</td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setModal({ mode: 'edit', row: a })}
-                        className="text-[#4B5563] hover:text-[#58A6FF]"
-                      >
-                        <Edit2 size={13} />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(a.id)}
-                        disabled={deletingId === a.id}
-                        className="text-[#4B5563] hover:text-[#F85149] disabled:opacity-40"
-                      >
-                        <Trash2 size={13} />
-                      </button>
+                  </div>
+                  <div className="mt-2 flex items-center gap-2 text-sm text-[#8B949E]">
+                    {a.transport === 'flight' ? <Plane size={13} /> : <Car size={13} />}
+                    <span className="capitalize">{a.transport}</span>
+                    {a.flight_number && <span className="font-mono text-[#58A6FF]">{a.flight_number}</span>}
+                  </div>
+                  {(a.arrival_date || a.arrival_time) && (
+                    <div className="mt-1 font-mono text-sm text-[#8B949E]">
+                      {a.arrival_date || ''}{a.arrival_time ? ` · ${a.arrival_time.slice(0, 5)}` : ''}
                     </div>
-                  </td>
-                </tr>
+                  )}
+                  {a.pickup_needed && (
+                    <div className="mt-2 text-sm font-bold uppercase tracking-wider text-[#D29922]">Needs pickup</div>
+                  )}
+                  {(a.notes || a.pickup_notes) && (
+                    <div className="mt-1 text-sm text-[#4B5563] italic">{a.notes || a.pickup_notes}</div>
+                  )}
+                  <div className="mt-3 flex items-center gap-3">
+                    <button type="button" onClick={() => setModal({ mode: 'edit', row: a })} className="flex items-center gap-1.5 text-xs text-[#4B5563] hover:text-[#58A6FF]">
+                      <Edit2 size={13} /> Edit
+                    </button>
+                    <button type="button" onClick={() => handleDelete(a.id)} disabled={deletingId === a.id} className="flex items-center gap-1.5 text-xs text-[#4B5563] hover:text-[#F85149] disabled:opacity-40">
+                      <Trash2 size={13} /> Remove
+                    </button>
+                  </div>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+
+            {/* Desktop table */}
+            <table className="hidden w-full border-collapse text-sm md:table">
+              <thead>
+                <tr className="border-b border-[#21262d]">
+                  {['Name', 'Status', 'Transport', 'Arrives', 'Flight #', 'Pickup', 'Notes', ''].map((h) => (
+                    <th key={h} className="px-4 py-2.5 text-left text-[9px] font-black uppercase tracking-[0.18em] text-[#8B949E]">
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {arrivals.map((a) => (
+                  <tr key={a.id} className="border-b border-[#21262d] hover:bg-[#1f2935]">
+                    <td className="px-4 py-3 font-semibold text-[#C9D1D9]">{a.name}</td>
+                    <td className="px-4 py-3">
+                      <span className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${STATUS_COLORS[a.status] || STATUS_COLORS.TBD}`}>
+                        {a.status}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className="flex items-center gap-1.5 text-[#8B949E]">
+                        {a.transport === 'flight' ? <Plane size={12} /> : <Car size={12} />}
+                        <span className="text-xs capitalize">{a.transport}</span>
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 font-mono text-xs text-[#8B949E]">
+                      {a.arrival_date ? `${a.arrival_date}` : '—'}
+                      {a.arrival_time ? ` ${a.arrival_time}` : ''}
+                    </td>
+                    <td className="px-4 py-3 font-mono text-xs text-[#8B949E]">{a.flight_number || '—'}</td>
+                    <td className="px-4 py-3">
+                      {a.pickup_needed ? (
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#D29922]">Yes</span>
+                      ) : (
+                        <span className="text-[10px] text-[#4B5563]">—</span>
+                      )}
+                    </td>
+                    <td className="max-w-[180px] truncate px-4 py-3 text-xs text-[#8B949E]">{a.notes || a.pickup_notes || '—'}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <button type="button" onClick={() => setModal({ mode: 'edit', row: a })} className="text-[#4B5563] hover:text-[#58A6FF]">
+                          <Edit2 size={13} />
+                        </button>
+                        <button type="button" onClick={() => handleDelete(a.id)} disabled={deletingId === a.id} className="text-[#4B5563] hover:text-[#F85149] disabled:opacity-40">
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
         )}
       </div>
 

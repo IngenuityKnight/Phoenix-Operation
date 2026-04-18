@@ -26,19 +26,19 @@ const NAV_ITEMS = [
 function ShellNav({ selectedPage, onSelectPage }) {
   return (
     <aside className="flex w-full shrink-0 flex-col border-b border-[#30363D] bg-[#0d1117] md:w-72 md:border-b-0 md:border-r">
-      <div className="border-b border-[#30363D] px-5 py-5">
+      <div className="border-b border-[#30363D] px-4 py-4 md:px-5 md:py-5">
         <div className="text-[10px] font-black uppercase tracking-[0.24em] text-[#58A6FF]">
           Phoenix Bachelor Command
         </div>
-        <div className="mt-2 text-xl font-black uppercase tracking-[0.08em] text-[#F0F6FC]">
+        <div className="mt-1 text-lg font-black uppercase tracking-[0.08em] text-[#F0F6FC] md:mt-2 md:text-xl">
           Scottsdale Ops
         </div>
-        <div className="mt-2 text-[11px] leading-relaxed text-[#8B949E]">
+        <div className="mt-1 hidden text-[11px] leading-relaxed text-[#8B949E] md:mt-2 md:block">
           May 28 to May 31. One house, one roster, one clean command surface.
         </div>
       </div>
 
-      <nav className="grid grid-cols-2 gap-2 p-3 md:grid-cols-1">
+      <nav className="grid grid-cols-3 gap-1.5 p-2 md:grid-cols-1 md:gap-2 md:p-3">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon
           const active = item.id === selectedPage
@@ -48,14 +48,14 @@ function ShellNav({ selectedPage, onSelectPage }) {
               key={item.id}
               type="button"
               onClick={() => onSelectPage(item.id)}
-              className={`flex items-center gap-3 border px-3 py-3 text-left text-[11px] font-black uppercase tracking-[0.16em] transition-colors ${
+              className={`flex items-center justify-center gap-2 border px-2 py-3 text-center text-[10px] font-black uppercase tracking-[0.12em] transition-colors md:justify-start md:px-3 md:py-3 md:text-[11px] md:tracking-[0.16em] ${
                 active
                   ? 'border-[#58A6FF] bg-[#58A6FF]/10 text-[#58A6FF]'
                   : 'border-[#30363D] bg-[#161b22] text-[#8B949E] hover:border-[#58A6FF]/40 hover:text-[#C9D1D9]'
               }`}
             >
-              <Icon size={15} />
-              <span>{item.label}</span>
+              <Icon size={16} />
+              <span className="leading-tight">{item.label}</span>
             </button>
           )
         })}
@@ -71,7 +71,7 @@ function AppHeader({ selectedPage }) {
   )
 
   return (
-    <header className="flex items-center justify-between border-b border-[#30363D] bg-[#11161d] px-6 py-4">
+    <header className="hidden items-center justify-between border-b border-[#30363D] bg-[#11161d] px-6 py-4 md:flex">
       <div>
         <div className="text-[10px] font-black uppercase tracking-[0.22em] text-[#8B949E]">
           Phoenix Command Center
@@ -103,11 +103,11 @@ export default function App() {
   if (selectedPage === 'logistics') content = <LogisticsPanel />
 
   return (
-    <div className="flex min-h-screen bg-[#0b0f14] text-[#C9D1D9] md:h-screen md:min-h-0">
+    <div className="flex flex-col bg-[#0b0f14] text-[#C9D1D9] md:h-screen md:flex-row">
       <ShellNav selectedPage={selectedPage} onSelectPage={setSelectedPage} />
-      <main className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <main className="flex flex-1 flex-col md:min-h-0 md:overflow-hidden">
         <AppHeader selectedPage={selectedPage} />
-        <div className="flex min-h-0 flex-1 overflow-hidden">{content}</div>
+        <div className="flex flex-1 overflow-auto md:min-h-0 md:overflow-hidden">{content}</div>
       </main>
     </div>
   )

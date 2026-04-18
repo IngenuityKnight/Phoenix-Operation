@@ -148,15 +148,15 @@ export default function DailyBriefingPanel() {
         </div>
       </div>
 
-      <div className="grid gap-4 px-6 py-6 lg:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 px-4 py-4 md:px-6 md:py-6 lg:grid-cols-4">
         <StatCard icon={Plane} label="Tracked Arrivals" value={arrivals.length} />
         <StatCard icon={ShieldAlert} label="Need Pickup" value={pendingPickups} tone="amber" />
         <StatCard icon={ClipboardList} label="Open Tasks" value={openTasks} tone="red" />
         <StatCard icon={UtensilsCrossed} label="Arrived On Site" value={arrivedCount} tone="green" />
       </div>
 
-      <div className="px-6">
-        <div className="flex flex-wrap gap-2">
+      <div className="px-4 md:px-6">
+        <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
           {DAYS.map((day) => {
             const active = day.date === briefingDay.date
             return (
@@ -164,7 +164,7 @@ export default function DailyBriefingPanel() {
                 key={day.date}
                 type="button"
                 onClick={() => setSelectedDate(day.date)}
-                className={`border px-4 py-2 text-[10px] font-black uppercase tracking-[0.18em] transition-colors ${
+                className={`border px-3 py-3 text-[10px] font-black uppercase tracking-[0.18em] transition-colors sm:px-4 sm:py-2 ${
                   active
                     ? 'border-[#58A6FF] bg-[#58A6FF]/10 text-[#58A6FF]'
                     : 'border-[#30363D] bg-[#11161d] text-[#8B949E] hover:border-[#58A6FF]/40 hover:text-[#C9D1D9]'
@@ -177,7 +177,7 @@ export default function DailyBriefingPanel() {
         </div>
       </div>
 
-      <div className="grid gap-6 px-6 py-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+      <div className="grid gap-6 px-4 py-6 md:px-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
         <div className="space-y-6">
           <PanelSection eyebrow={briefingDay.label} title={briefingDay.title}>
             <div className="text-[13px] leading-7 text-[#C9D1D9]">{briefingDay.mission}</div>
