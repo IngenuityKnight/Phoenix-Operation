@@ -102,7 +102,7 @@ function ExpenseForm({ initial, onSave, onCancel, saving }) {
         <input className={inputCls} value={form.paid_by} onChange={(e) => set('paid_by', e.target.value)} placeholder="Who fronted the money?" required />
       </FormField>
       <FormField label={`Split Among (# of people, max ${HEADCOUNT})`}>
-        <input type="number" className={inputCls} value={form.split_count} onChange={(e) => set('split_count', Math.min(HEADCOUNT, Math.max(1, Number(e.target.value))))} min={1} max={HEADCOUNT} />
+        <input type="number" className={inputCls} value={form.split_count} onChange={(e) => set('split_count', e.target.value)} min={1} max={HEADCOUNT} />
       </FormField>
       <FormField label="Notes">
         <input className={inputCls} value={form.notes} onChange={(e) => set('notes', e.target.value)} placeholder="Receipt #, context…" />
@@ -148,7 +148,7 @@ export default function BudgetPanel() {
       amount: Number(form.amount),
       paid_by: form.paid_by.trim(),
       category: form.category,
-      split_count: Number(form.split_count) || HEADCOUNT,
+      split_count: Math.min(HEADCOUNT, Math.max(1, Number(form.split_count) || HEADCOUNT)),
       notes: form.notes,
     }
     if (modal?.mode === 'edit') await update(modal.row.id, payload)
