@@ -119,8 +119,15 @@ export default function FlightMapPanel() {
       try {
         setMapError('')
         setOptions({ apiKey: GOOGLE_MAPS_API_KEY, version: 'weekly' })
-        const mapsLib = await importLibrary('maps')
+        const [mapsLib, markerLib, coreLib] = await Promise.all([
+          importLibrary('maps'),
+          importLibrary('marker'),
+          importLibrary('core'),
+        ])
         if (cancelled) return
+
+        const { Marker } = markerLib
+        const { SymbolPath } = coreLib
 
         const map = new mapsLib.Map(mapRef.current, {
           center: { lat: 39.5, lng: -98.35 },
@@ -140,7 +147,7 @@ export default function FlightMapPanel() {
           position: PHX,
           title: 'PHX — Phoenix Sky Harbor',
           icon: {
-            path: mapsLib.SymbolPath.CIRCLE,
+            path: SymbolPath.CIRCLE,
             scale: 10,
             fillColor: '#F85149',
             fillOpacity: 1,
@@ -156,7 +163,7 @@ export default function FlightMapPanel() {
           position: HOUSE,
           title: 'Command House — Scottsdale',
           icon: {
-            path: mapsLib.SymbolPath.CIRCLE,
+            path: SymbolPath.CIRCLE,
             scale: 8,
             fillColor: '#3FB950',
             fillOpacity: 1,
@@ -189,7 +196,11 @@ export default function FlightMapPanel() {
     overlaysRef.current.forEach((o) => o.setMap(null))
     overlaysRef.current = []
 
-    importLibrary('maps').then((mapsLib) => {
+    Promise.all([
+      importLibrary('maps'),
+      importLibrary('marker'),
+    ]).then(([mapsLib, markerLib]) => {
+      const { Marker } = markerLib
       const seen = new Map() // airport code → polyline (deduplicate)
 
       arrivals.forEach((arrival) => {
