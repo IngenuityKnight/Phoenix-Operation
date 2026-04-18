@@ -12,11 +12,14 @@ const CATEGORY_COLORS = {
   other: 'text-[#8B949E] bg-[#8B949E]/10 border-[#8B949E]/30',
 }
 
+const HEADCOUNT = 14
+
 const EMPTY_FORM = {
   category: 'other',
   title: '',
   assignee: '',
   notes: '',
+  cost: '',
   done: false,
 }
 
@@ -52,19 +55,22 @@ function ItemForm({ initial, onSave, onCancel, saving }) {
 
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSave(form) }} className="flex flex-col gap-4">
+      <FormField label="Category">
+        <select className={selectCls} value={form.category} onChange={(e) => set('category', e.target.value)}>
+          {CATEGORIES.map((c) => <option key={c} className="capitalize">{c}</option>)}
+        </select>
+      </FormField>
+      <FormField label="Task">
+        <input className={inputCls} value={form.title} onChange={(e) => set('title', e.target.value)} placeholder="What needs to happen?" required />
+      </FormField>
       <div className="grid grid-cols-2 gap-4">
-        <FormField label="Category">
-          <select className={selectCls} value={form.category} onChange={(e) => set('category', e.target.value)}>
-            {CATEGORIES.map((c) => <option key={c} className="capitalize">{c}</option>)}
-          </select>
+        <FormField label="Est. Cost ($)">
+          <input type="number" className={inputCls} value={form.cost} onChange={(e) => set('cost', e.target.value)} placeholder="0" min={0} />
         </FormField>
         <FormField label="Assigned To">
           <input className={inputCls} value={form.assignee} onChange={(e) => set('assignee', e.target.value)} placeholder="Who's on it?" />
         </FormField>
       </div>
-      <FormField label="Task">
-        <input className={inputCls} value={form.title} onChange={(e) => set('title', e.target.value)} placeholder="What needs to happen?" required />
-      </FormField>
       <FormField label="Notes">
         <input className={inputCls} value={form.notes} onChange={(e) => set('notes', e.target.value)} placeholder="Details, links, quantities…" />
       </FormField>
@@ -94,9 +100,10 @@ function LogisticsItem({ item, onToggle, onEdit, onDelete }) {
             {item.title}
           </span>
         </div>
-        {(item.assignee || item.notes) && (
-          <div className="mt-0.5 flex items-center gap-3">
+        {(item.assignee || item.notes || item.cost > 0) && (
+          <div className="mt-0.5 flex items-center gap-3 flex-wrap">
             {item.assignee && <span className="text-[10px] text-[#8B949E]">{item.assignee}</span>}
+            {item.cost > 0 && <span className="font-mono text-[10px] text-[#D29922]">${Number(item.cost).toLocaleString()}</span>}
             {item.notes && <span className="text-[10px] text-[#4B5563] italic truncate">{item.notes}</span>}
           </div>
         )}
@@ -116,8 +123,9 @@ export default function LogisticsPanel() {
 
   async function handleSave(form) {
     setSaving(true)
-    if (modal?.mode === 'edit') await update(modal.row.id, form)
-    else await insert(form)
+    const payload = { ...form, cost: form.cost !== '' ? Number(form.cost) : null }
+    if (modal?.mode === 'edit') await update(modal.row.id, payload)
+    else await insert(payload)
     setSaving(false)
     setModal(null)
   }
@@ -128,6 +136,8 @@ export default function LogisticsPanel() {
 
   const done = items.filter((i) => i.done).length
   const total = items.length
+  const totalCost = items.reduce((sum, i) => sum + (Number(i.cost) || 0), 0)
+  const perPerson = totalCost / HEADCOUNT
 
   return (
     <div className="flex flex-col md:min-h-0 md:flex-1 md:overflow-hidden">
@@ -145,7 +155,7 @@ export default function LogisticsPanel() {
             <Plus size={14} /> Add Task
           </button>
         </div>
-        <div className="mt-3 flex flex-wrap gap-4">
+        <div className="mt-3 flex flex-wrap gap-6">
           <div className="text-center">
             <div className="font-mono text-xl font-black text-[#3FB950]">{done}</div>
             <div className="text-[9px] uppercase tracking-widest text-[#8B949E]">Done</div>
@@ -154,6 +164,19 @@ export default function LogisticsPanel() {
             <div className="font-mono text-xl font-black text-[#C9D1D9]">{total - done}</div>
             <div className="text-[9px] uppercase tracking-widest text-[#8B949E]">Remaining</div>
           </div>
+          {totalCost > 0 && (
+            <>
+              <div className="h-8 w-px self-center bg-[#21262d]" />
+              <div className="text-center">
+                <div className="font-mono text-xl font-black text-[#D29922]">${totalCost.toLocaleString()}</div>
+                <div className="text-[9px] uppercase tracking-widest text-[#8B949E]">Est. Total</div>
+              </div>
+              <div className="text-center">
+                <div className="font-mono text-xl font-black text-[#A371F7]">${Math.ceil(perPerson)}</div>
+                <div className="text-[9px] uppercase tracking-widest text-[#8B949E]">Per Person</div>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -163,6 +186,23 @@ export default function LogisticsPanel() {
             <span className="text-[11px] uppercase tracking-widest text-[#8B949E]">Loading…</span>
           </div>
         ) : (
+          {totalCost > 0 && (
+            <div className="mb-6 rounded border border-[#30363D] bg-[#11161d] p-4">
+              <div className="mb-3 text-[9px] font-black uppercase tracking-[0.18em] text-[#8B949E]">Cost Breakdown · ${Math.ceil(perPerson)}/person</div>
+              <div className="flex flex-wrap gap-4">
+                {CATEGORIES.map((cat) => {
+                  const catCost = items.filter((i) => i.category === cat).reduce((sum, i) => sum + (Number(i.cost) || 0), 0)
+                  if (!catCost) return null
+                  return (
+                    <div key={cat} className="text-center">
+                      <div className={`font-mono text-base font-black ${CATEGORY_COLORS[cat].split(' ')[0]}`}>${catCost.toLocaleString()}</div>
+                      <div className="text-[9px] capitalize text-[#8B949E]">{cat}</div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-3">
             {CATEGORIES.map((cat) => {
               const catItems = items.filter((i) => i.category === cat)

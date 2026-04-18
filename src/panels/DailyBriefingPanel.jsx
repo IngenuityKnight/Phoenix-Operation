@@ -109,7 +109,9 @@ export default function DailyBriefingPanel() {
   const { rows: itinerary } = useSupabaseTable('itinerary_items', { orderBy: 'start_time' })
   const { rows: meals } = useSupabaseTable('meals', { orderBy: 'day_date' })
   const { rows: logistics } = useSupabaseTable('logistics', { orderBy: 'created_at' })
-  const [selectedDate, setSelectedDate] = useState(DAYS[0].date)
+  const todayStr = new Date().toLocaleDateString('en-CA') // YYYY-MM-DD in local time
+  const defaultDate = DAYS.find((d) => d.date === todayStr)?.date ?? DAYS[0].date
+  const [selectedDate, setSelectedDate] = useState(defaultDate)
 
   const briefingDay = useMemo(
     () => DAYS.find((day) => day.date === selectedDate) || DAYS[0],

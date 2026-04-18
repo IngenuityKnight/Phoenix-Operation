@@ -206,9 +206,10 @@ export default function ArrivalsPanel() {
 
       {/* I'm Here Check-In */}
       {!loading && arrivals.length > 0 && (
-        <div className="border-b border-[#30363D] px-6 py-4">
-          <div className="mb-2 text-[9px] font-black uppercase tracking-[0.2em] text-[#4B5563]">Tap your name when you land</div>
-          <div className="flex flex-wrap gap-2">
+        <div className="border-b border-[#30363D] bg-[#0d1117] px-4 py-5 md:px-6">
+          <div className="mb-1 text-[10px] font-black uppercase tracking-[0.2em] text-[#58A6FF]">I'm Here</div>
+          <div className="mb-4 text-xs text-[#8B949E]">Tap your name when you land at PHX</div>
+          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
             {arrivals.map((a) => {
               const isArrived = a.status === 'Arrived'
               const isChecking = checkingInId === a.id
@@ -218,10 +219,10 @@ export default function ArrivalsPanel() {
                   type="button"
                   disabled={isArrived || isChecking}
                   onClick={() => handleCheckIn(a)}
-                  className={`rounded border px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider transition-colors ${
+                  className={`rounded border px-3 py-4 text-sm font-bold uppercase tracking-wider transition-colors sm:py-2 ${
                     isArrived
                       ? 'border-[#3FB950]/40 bg-[#3FB950]/10 text-[#3FB950] cursor-default'
-                      : 'border-[#30363D] bg-[#161b22] text-[#8B949E] hover:border-[#58A6FF] hover:text-[#58A6FF]'
+                      : 'border-[#30363D] bg-[#161b22] text-[#8B949E] active:border-[#58A6FF] active:text-[#58A6FF]'
                   } disabled:opacity-60`}
                 >
                   {isChecking ? '…' : isArrived ? `✓ ${a.name}` : a.name}
