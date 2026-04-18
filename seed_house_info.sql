@@ -1,0 +1,17 @@
+insert into house_info (category, key, value, notes) values
+  ('access',    'Front Door Code',   'TBD — confirm with host',    'Usually a keypad on front door'),
+  ('access',    'Check-in Time',     '3:00 PM on Wed 5/28',        'Host will confirm'),
+  ('access',    'Check-out Time',    '11:00 AM on Sat 5/31',       'Leave keys inside'),
+  ('access',    'Airbnb Address',    '6543 E 3rd St, Scottsdale AZ 85251', null),
+  ('utilities', 'WiFi Network',      'TBD — check router on arrival', null),
+  ('utilities', 'WiFi Password',     'TBD — check router on arrival', null),
+  ('utilities', 'Pool Hours',        'Dawn to dusk (HOA rules vary)', 'Check with host for specifics'),
+  ('local',     'Nearest Urgent Care', 'Honor Health Urgent Care — 9520 E Talking Stick Way', '3 min drive from house'),
+  ('local',     'Nearest Grocery',  'Fry''s Food Store — 4726 E Shea Blvd',   '8 min drive'),
+  ('local',     'Nearest Costco',   'Costco — 3801 N Arizona Ave, Chandler',  '15 min drive'),
+  ('local',     'Alcohol Delivery',  'Drizly or Total Wine delivery',          'Drizly fastest in Scottsdale'),
+  ('local',     'Uber/Lyft',         'Both active in Scottsdale — surge on weekends', '10–15 min wait on weekend nights'),
+  ('rules',     'Quiet Hours',       'Check with host',             'Scottsdale noise ordinance: 10pm weekdays, 11pm weekends'),
+  ('rules',     'Max Guests',        '14 confirmed',                'Do not exceed Airbnb max occupancy'),
+  ('rules',     'Parking',           'Check with host for garage/driveway spots', null),
+  ('other',     'Host Contact',      'TBD — Airbnb messaging',     'Message through Airbnb app for fastest response');

@@ -161,3 +161,84 @@ insert into itinerary_items (day_date, start_time, end_time, title, category, lo
   ('2026-05-31', '15:00', '16:00', 'Pack up, check out prep', 'other', 'House', null, 'Clean up, luggage out'),
   ('2026-05-31', '18:00', '20:00', 'Final dinner out', 'food', 'Scottsdale', null, 'Go big for the last night'),
   ('2026-05-31', '21:00', null, 'Last night out', 'nightlife', 'Scottsdale', null, 'Send it');
+
+-- ============================================================
+-- TABLE: expenses (Budget / Cost Split)
+-- ============================================================
+
+create table if not exists expenses (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz default now(),
+  description text not null,
+  amount numeric not null,
+  paid_by text not null,
+  category text not null default 'other' check (category in ('house','golf','food','drinks','transport','activities','other')),
+  split_count int not null default 14,
+  notes text
+);
+
+alter table expenses enable row level security;
+create policy "anon full access" on expenses for all to anon using (true) with check (true);
+
+alter publication supabase_realtime add table expenses;
+
+-- ============================================================
+-- TABLE: roster (Headcount / RSVP)
+-- ============================================================
+
+create table if not exists roster (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz default now(),
+  name text not null,
+  status text not null default 'Confirmed' check (status in ('Confirmed','Maybe','Ghosting')),
+  arrival_window text default 'TBD',
+  phone text,
+  venmo_handle text,
+  dietary_notes text,
+  notes text
+);
+
+alter table roster enable row level security;
+create policy "anon full access" on roster for all to anon using (true) with check (true);
+
+alter publication supabase_realtime add table roster;
+
+-- ============================================================
+-- TABLE: house_info (House Info Board)
+-- ============================================================
+
+create table if not exists house_info (
+  id uuid primary key default gen_random_uuid(),
+  created_at timestamptz default now(),
+  category text not null default 'other' check (category in ('access','utilities','local','rules','other')),
+  key text not null,
+  value text not null,
+  notes text
+);
+
+alter table house_info enable row level security;
+create policy "anon full access" on house_info for all to anon using (true) with check (true);
+
+alter publication supabase_realtime add table house_info;
+
+-- ============================================================
+-- SEED: HOUSE INFO (starter entries — update with real values)
+-- ============================================================
+
+insert into house_info (category, key, value, notes) values
+  ('access',    'Front Door Code',   'TBD — confirm with host',    'Usually a keypad on front door'),
+  ('access',    'Check-in Time',     '3:00 PM on Wed 5/28',        'Host will confirm'),
+  ('access',    'Check-out Time',    '11:00 AM on Sat 5/31',       'Leave keys inside'),
+  ('access',    'Airbnb Address',    '6543 E 3rd St, Scottsdale AZ 85251', null),
+  ('utilities', 'WiFi Network',      'TBD — check router on arrival', null),
+  ('utilities', 'WiFi Password',     'TBD — check router on arrival', null),
+  ('utilities', 'Pool Hours',        'Dawn to dusk (HOA rules vary)', 'Check with host for specifics'),
+  ('local',     'Nearest Urgent Care', 'Honor Health Urgent Care — 9520 E Talking Stick Way', '3 min drive from house'),
+  ('local',     'Nearest Grocery',  'Fry''s Food Store — 4726 E Shea Blvd',   '8 min drive'),
+  ('local',     'Nearest Costco',   'Costco — 3801 N Arizona Ave, Chandler',  '15 min drive'),
+  ('local',     'Alcohol Delivery',  'Drizly or Total Wine delivery',          'Drizly fastest in Scottsdale'),
+  ('local',     'Uber/Lyft',         'Both active in Scottsdale — surge on weekends', '10–15 min wait on weekend nights'),
+  ('rules',     'Quiet Hours',       'Check with host',             'Scottsdale noise ordinance: 10pm weekdays, 11pm weekends'),
+  ('rules',     'Max Guests',        '14 confirmed',                'Do not exceed Airbnb max occupancy'),
+  ('rules',     'Parking',           'Check with host for garage/driveway spots', null),
+  ('other',     'Host Contact',      'TBD — Airbnb messaging',     'Message through Airbnb app for fastest response');

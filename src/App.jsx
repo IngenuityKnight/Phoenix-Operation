@@ -2,25 +2,37 @@ import { useMemo, useState } from 'react'
 import {
   BriefcaseBusiness,
   ClipboardList,
+  CloudSun,
+  DollarSign,
+  Home,
   Map,
   Plane,
   ScrollText,
+  Users,
   UtensilsCrossed,
 } from 'lucide-react'
 import ArrivalsPanel from './panels/ArrivalsPanel'
+import BudgetPanel from './panels/BudgetPanel'
 import DailyBriefingPanel from './panels/DailyBriefingPanel'
 import FlightMapPanel from './panels/FlightMapPanel'
+import HousePanel from './panels/HousePanel'
 import ItineraryPanel from './panels/ItineraryPanel'
 import LogisticsPanel from './panels/LogisticsPanel'
 import MealsPanel from './panels/MealsPanel'
+import RosterPanel from './panels/RosterPanel'
+import WeatherPanel from './panels/WeatherPanel'
 
 const NAV_ITEMS = [
-  { id: 'briefing', label: 'Daily Briefing', icon: ScrollText },
-  { id: 'itinerary', label: 'Itinerary', icon: BriefcaseBusiness },
-  { id: 'arrivals', label: 'Arrivals', icon: Plane },
-  { id: 'map', label: 'Ops Map', icon: Map },
-  { id: 'meals', label: 'Meals', icon: UtensilsCrossed },
-  { id: 'logistics', label: 'Logistics', icon: ClipboardList },
+  { id: 'briefing',  label: 'Daily Briefing', icon: ScrollText },
+  { id: 'itinerary', label: 'Itinerary',       icon: BriefcaseBusiness },
+  { id: 'arrivals',  label: 'Arrivals',         icon: Plane },
+  { id: 'map',       label: 'Ops Map',          icon: Map },
+  { id: 'meals',     label: 'Meals',            icon: UtensilsCrossed },
+  { id: 'logistics', label: 'Logistics',        icon: ClipboardList },
+  { id: 'budget',    label: 'Budget',           icon: DollarSign },
+  { id: 'roster',    label: 'Roster',           icon: Users },
+  { id: 'house',     label: 'House Info',       icon: Home },
+  { id: 'weather',   label: 'Weather',          icon: CloudSun },
 ]
 
 function ShellNav({ selectedPage, onSelectPage }) {
@@ -38,7 +50,7 @@ function ShellNav({ selectedPage, onSelectPage }) {
         </div>
       </div>
 
-      <nav className="grid grid-cols-3 gap-1.5 p-2 md:grid-cols-1 md:gap-2 md:p-3">
+      <nav className="grid grid-cols-5 gap-1 p-2 md:grid-cols-1 md:gap-2 md:p-3">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon
           const active = item.id === selectedPage
@@ -97,10 +109,14 @@ export default function App() {
 
   let content = <DailyBriefingPanel />
   if (selectedPage === 'itinerary') content = <ItineraryPanel />
-  if (selectedPage === 'arrivals') content = <ArrivalsPanel />
-  if (selectedPage === 'map') content = <FlightMapPanel />
-  if (selectedPage === 'meals') content = <MealsPanel />
+  if (selectedPage === 'arrivals')  content = <ArrivalsPanel />
+  if (selectedPage === 'map')       content = <FlightMapPanel />
+  if (selectedPage === 'meals')     content = <MealsPanel />
   if (selectedPage === 'logistics') content = <LogisticsPanel />
+  if (selectedPage === 'budget')    content = <BudgetPanel />
+  if (selectedPage === 'roster')    content = <RosterPanel />
+  if (selectedPage === 'house')     content = <HousePanel />
+  if (selectedPage === 'weather')   content = <WeatherPanel />
 
   return (
     <div className="flex flex-col bg-[#0b0f14] text-[#C9D1D9] md:h-screen md:flex-row">
