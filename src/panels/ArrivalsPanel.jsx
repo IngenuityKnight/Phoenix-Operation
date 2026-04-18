@@ -1,28 +1,48 @@
-import { useState } from 'react'
-import { Car, Edit2, Plane, Plus, Trash2, X } from 'lucide-react'
+import { useMemo, useState } from 'react'
+import { BellRing, Car, Edit2, Plane, Plus, Radar, Trash2, X } from 'lucide-react'
 import { useSupabaseTable } from '../hooks/useSupabaseTable'
 
 const TRANSPORT_OPTIONS = ['flight', 'drive', 'rideshare', 'TBD']
-const STATUS_OPTIONS = ['TBD', 'Confirmed', 'En Route', 'Arrived']
+const STATUS_OPTIONS = ['TBD', 'Confirmed', 'En Route', 'Landed', 'Arrived']
 
 const STATUS_COLORS = {
   TBD: 'text-[#8B949E] bg-[#8B949E]/10',
   Confirmed: 'text-[#58A6FF] bg-[#58A6FF]/10',
   'En Route': 'text-[#D29922] bg-[#D29922]/10',
+  Landed: 'text-[#A371F7] bg-[#A371F7]/10',
   Arrived: 'text-[#3FB950] bg-[#3FB950]/10',
 }
 
 const EMPTY_FORM = {
   name: '',
   transport: 'flight',
+  airline_iata: '',
   origin_airport: '',
+  destination_airport: 'PHX',
   arrival_date: '',
   arrival_time: '',
   flight_number: '',
+  flight_watch_enabled: true,
   pickup_needed: false,
   pickup_notes: '',
   status: 'TBD',
+  status_source: 'manual',
+  aviationstack_status: '',
+  last_checked_at: '',
+  actual_landed_at: '',
   notes: '',
+}
+
+function formatDateTime(value) {
+  if (!value) return '—'
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) return value
+  return parsed.toLocaleString('en-US', {
+    month: 'numeric',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  })
 }
 
 function Modal({ title, onClose, children }) {
@@ -83,8 +103,16 @@ function ArrivalForm({ initial, onSave, onCancel, saving }) {
             {TRANSPORT_OPTIONS.map((t) => <option key={t}>{t}</option>)}
           </select>
         </FormField>
+        <FormField label="Airline IATA">
+          <input className={inputCls} value={form.airline_iata || ''} onChange={(e) => set('airline_iata', e.target.value.toUpperCase())} placeholder="e.g. AA, WN, DL" maxLength={3} />
+        </FormField>
+      </div>
+      <div className="grid grid-cols-2 gap-4">
         <FormField label="Origin Airport">
           <input className={inputCls} value={form.origin_airport} onChange={(e) => set('origin_airport', e.target.value.toUpperCase())} placeholder="e.g. ORD, JFK, ATL" maxLength={3} />
+        </FormField>
+        <FormField label="Destination Airport">
+          <input className={inputCls} value={form.destination_airport || ''} onChange={(e) => set('destination_airport', e.target.value.toUpperCase())} placeholder="PHX" maxLength={3} />
         </FormField>
       </div>
       <FormField label="Flight #">
@@ -98,6 +126,20 @@ function ArrivalForm({ initial, onSave, onCancel, saving }) {
           <input type="time" className={inputCls} value={form.arrival_time} onChange={(e) => set('arrival_time', e.target.value)} />
         </FormField>
       </div>
+      {form.transport === 'flight' ? (
+        <div className="flex items-center gap-3">
+          <input
+            type="checkbox"
+            id="flight-watch"
+            checked={Boolean(form.flight_watch_enabled)}
+            onChange={(e) => set('flight_watch_enabled', e.target.checked)}
+            className="h-4 w-4 accent-[#58A6FF]"
+          />
+          <label htmlFor="flight-watch" className="text-[11px] font-semibold uppercase tracking-widest text-[#8B949E]">
+            Backend flight watch enabled
+          </label>
+        </div>
+      ) : null}
       <div className="flex items-center gap-3">
         <input
           type="checkbox"
@@ -136,24 +178,44 @@ function ArrivalForm({ initial, onSave, onCancel, saving }) {
 
 export default function ArrivalsPanel() {
   const { rows: arrivals, loading, insert, update, remove } = useSupabaseTable('arrivals', { orderBy: 'arrival_date', ascending: true })
+  const { rows: notifications, error: notificationsError } = useSupabaseTable('arrival_notifications', { orderBy: 'created_at', ascending: false })
   const [modal, setModal] = useState(null) // null | { mode: 'add' } | { mode: 'edit', row }
   const [saving, setSaving] = useState(false)
   const [deletingId, setDeletingId] = useState(null)
   const [checkingInId, setCheckingInId] = useState(null)
 
+  const recentNotifications = useMemo(
+    () => notifications.slice(0, 5),
+    [notifications],
+  )
+
   async function handleCheckIn(arrival) {
     if (arrival.status === 'Arrived') return
     setCheckingInId(arrival.id)
-    await update(arrival.id, { status: 'Arrived' })
+    await update(arrival.id, {
+      status: 'Arrived',
+      status_source: 'manual',
+    })
     setCheckingInId(null)
   }
 
   async function handleSave(form) {
     setSaving(true)
+    const payload = {
+      ...form,
+      airline_iata: form.airline_iata || null,
+      origin_airport: form.origin_airport || null,
+      destination_airport: form.destination_airport || null,
+      flight_number: form.flight_number || null,
+      status_source: form.status_source || 'manual',
+      aviationstack_status: form.aviationstack_status || null,
+      last_checked_at: form.last_checked_at || null,
+      actual_landed_at: form.actual_landed_at || null,
+    }
     if (modal?.mode === 'edit') {
-      await update(modal.row.id, form)
+      await update(modal.row.id, payload)
     } else {
-      await insert(form)
+      await insert(payload)
     }
     setSaving(false)
     setModal(null)
@@ -166,7 +228,9 @@ export default function ArrivalsPanel() {
   }
 
   const arrived = arrivals.filter((a) => a.status === 'Arrived').length
+  const landed = arrivals.filter((a) => a.status === 'Landed').length
   const needsPickup = arrivals.filter((a) => a.pickup_needed && a.status !== 'Arrived').length
+  const watchedFlights = arrivals.filter((a) => a.transport === 'flight' && a.flight_watch_enabled).length
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
@@ -186,6 +250,14 @@ export default function ArrivalsPanel() {
             <div className="text-[9px] uppercase tracking-widest text-[#8B949E]">Need Pickup</div>
           </div>
           <div className="text-center">
+            <div className="font-mono text-xl font-black text-[#A371F7]">{landed}</div>
+            <div className="text-[9px] uppercase tracking-widest text-[#8B949E]">Landed</div>
+          </div>
+          <div className="text-center">
+            <div className="font-mono text-xl font-black text-[#58A6FF]">{watchedFlights}</div>
+            <div className="text-[9px] uppercase tracking-widest text-[#8B949E]">Flight Watch</div>
+          </div>
+          <div className="text-center">
             <div className="font-mono text-xl font-black text-[#C9D1D9]">{arrivals.length}</div>
             <div className="text-[9px] uppercase tracking-widest text-[#8B949E]">Tracked</div>
           </div>
@@ -199,6 +271,30 @@ export default function ArrivalsPanel() {
           </button>
         </div>
       </div>
+
+      {!notificationsError && recentNotifications.length > 0 ? (
+        <div className="border-b border-[#30363D] bg-[#11161d] px-6 py-4">
+          <div className="mb-3 flex items-center gap-2 text-[9px] font-black uppercase tracking-[0.2em] text-[#58A6FF]">
+            <BellRing size={13} />
+            Flight Event Feed
+          </div>
+          <div className="grid gap-3 lg:grid-cols-2 xl:grid-cols-3">
+            {recentNotifications.map((notification) => (
+              <div key={notification.id} className="border border-[#30363D] bg-[#0d1117] px-4 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#F0F6FC]">
+                    {notification.title || notification.event_type || 'Flight update'}
+                  </div>
+                  <div className="text-[10px] text-[#8B949E]">{formatDateTime(notification.created_at)}</div>
+                </div>
+                <div className="mt-2 text-[11px] leading-relaxed text-[#C9D1D9]">
+                  {notification.message || 'Backend flight watcher generated an arrival update.'}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       {/* I'm Here Check-In */}
       {!loading && arrivals.length > 0 && (
@@ -249,7 +345,7 @@ export default function ArrivalsPanel() {
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-[#21262d]">
-                {['Name', 'Status', 'Transport', 'From', 'Arrives', 'Flight #', 'Pickup', 'Notes', ''].map((h) => (
+                {['Name', 'Status', 'Transport', 'From', 'Arrives', 'Flight', 'Watch', 'Backend', 'Pickup', 'Notes', ''].map((h) => (
                   <th key={h} className="px-4 py-2.5 text-left text-[9px] font-black uppercase tracking-[0.18em] text-[#8B949E]">
                     {h}
                   </th>
@@ -276,7 +372,29 @@ export default function ArrivalsPanel() {
                     {a.arrival_date ? `${a.arrival_date}` : '—'}
                     {a.arrival_time ? ` ${a.arrival_time}` : ''}
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-[#8B949E]">{a.flight_number || '—'}</td>
+                  <td className="px-4 py-3 font-mono text-xs text-[#8B949E]">
+                    {a.airline_iata || a.flight_number
+                      ? `${a.airline_iata || ''}${a.airline_iata && a.flight_number ? ' ' : ''}${a.flight_number || ''}`.trim()
+                      : '—'}
+                  </td>
+                  <td className="px-4 py-3">
+                    {a.flight_watch_enabled ? (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-[#58A6FF]">
+                        <Radar size={11} />
+                        On
+                      </span>
+                    ) : (
+                      <span className="text-[10px] text-[#4B5563]">Off</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-xs text-[#8B949E]">
+                    <div>{a.aviationstack_status || a.status_source || '—'}</div>
+                    {a.actual_landed_at ? (
+                      <div className="mt-1 font-mono text-[10px] text-[#A371F7]">
+                        {formatDateTime(a.actual_landed_at)}
+                      </div>
+                    ) : null}
+                  </td>
                   <td className="px-4 py-3">
                     {a.pickup_needed ? (
                       <span className="text-[10px] font-bold uppercase tracking-wider text-[#D29922]">Yes</span>
