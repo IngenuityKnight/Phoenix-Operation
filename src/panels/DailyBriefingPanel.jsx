@@ -181,7 +181,7 @@ export default function DailyBriefingPanel() {
       <HouseIntelBar items={houseInfo} />
       <div className="border-b border-[#30363D] px-6 py-5">
         <div className="text-[10px] font-black uppercase tracking-[0.22em] text-[#58A6FF]">
-          Daily Briefing
+          Today
         </div>
         <div className="mt-2 text-2xl font-black uppercase tracking-[0.08em] text-[#F0F6FC]">
           Bachelor Party Situation Report

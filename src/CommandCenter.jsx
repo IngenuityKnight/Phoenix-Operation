@@ -1,6 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useSupabaseTable } from './hooks/useSupabaseTable'
 
+const OPS_CATEGORY_CONFIG = {
+  INFO:      { color: '#58A6FF' },
+  ARRIVAL:   { color: '#3FB950' },
+  TRANSPORT: { color: '#D29922' },
+  FOOD:      { color: '#F78166' },
+  ALERT:     { color: '#F85149' },
+  HYPE:      { color: '#A371F7' },
+}
+
 // ─── UPDATE THIS TO THE ACTUAL WEDDING DATE ───────────────────────────────────
 const WEDDING_DATE = new Date('2026-08-08T16:00:00')
 // ─────────────────────────────────────────────────────────────────────────────
@@ -292,78 +301,52 @@ function MissionCenter({ itinerary, weather, now }) {
 
 // ─── STATS PANEL ─────────────────────────────────────────────────────────────
 
-function StatsPanel({ arrivals, itinerary, now }) {
-  const today = now.toLocaleDateString('en-CA')
-  const nowTime = `${pad(now.getHours())}:${pad(now.getMinutes())}`
-
-  const onSite     = arrivals.filter((a) => a.status === 'Arrived').length
-  const inTransit  = arrivals.filter((a) => ['En Route', 'Landed'].includes(a.status)).length
-  const tbd        = arrivals.filter((a) => a.status === 'TBD').length
-  const confirmed  = arrivals.filter((a) => a.status === 'Confirmed').length
-  const needsRide  = arrivals.filter((a) => a.pickup_needed && a.status !== 'Arrived')
-
-  // Countdown to next event today
-  const nextEvent = [...itinerary]
-    .filter((i) => i.day_date === today && i.start_time && i.start_time > nowTime)
-    .sort((a, b) => a.start_time.localeCompare(b.start_time))[0]
-
-  let countdownLabel = null
-  let countdownTime = null
-  if (nextEvent?.start_time) {
-    const [h, m] = nextEvent.start_time.split(':').map(Number)
-    const target = new Date(now)
-    target.setHours(h, m, 0, 0)
-    const diff = target - now
-    if (diff > 0) {
-      const hrs = Math.floor(diff / 3600000)
-      const mins = Math.floor((diff % 3600000) / 60000)
-      const secs = Math.floor((diff % 60000) / 1000)
-      countdownLabel = nextEvent.title
-      countdownTime = hrs > 0 ? `${hrs}h ${pad(mins)}m` : `${mins}m ${pad(secs)}s`
-    }
-  }
+function StatsPanel({ arrivals, now }) {
+  const onSite    = arrivals.filter((a) => a.status === 'Arrived').length
+  const inTransit = arrivals.filter((a) => ['En Route', 'Landed'].includes(a.status)).length
+  const tbd       = arrivals.filter((a) => a.status === 'TBD').length
+  const confirmed = arrivals.filter((a) => a.status === 'Confirmed').length
+  const needsRide = arrivals.filter((a) => a.pickup_needed && a.status !== 'Arrived')
 
   return (
-    <div className="flex h-full flex-col">
-      {/* Section header */}
-      <div className="shrink-0 border-b border-[#30363D] bg-[#0d1117] px-6 py-3">
-        <div className="text-[10px] font-black uppercase tracking-[0.35em] text-[#4B5563]">Live Stats</div>
-        <div className="text-2xl font-black uppercase tracking-[0.08em] text-[#F0F6FC]">Headcount</div>
+    <div className="flex flex-col shrink-0">
+      <div className="border-b border-[#30363D] bg-[#0d1117] px-5 py-2.5">
+        <div className="text-[10px] font-black uppercase tracking-[0.35em] text-[#4B5563]">Live Headcount</div>
       </div>
 
-      {/* Status 2×2 grid */}
-      <div className="shrink-0 grid grid-cols-2 gap-px bg-[#21262d]">
+      {/* Compact 2×2 */}
+      <div className="grid grid-cols-2 gap-px bg-[#21262d]">
         {[
           { label: 'On Site',    value: onSite,    color: '#3FB950' },
           { label: 'In Transit', value: inTransit, color: '#D29922' },
           { label: 'TBD',        value: tbd,        color: '#4B5563' },
           { label: 'Confirmed',  value: confirmed,  color: '#58A6FF' },
         ].map(({ label, value, color }) => (
-          <div key={label} className="flex flex-col items-center justify-center bg-[#0d1117] py-5">
-            <div className="font-mono text-5xl font-black" style={{ color }}>{value}</div>
-            <div className="mt-1 text-[9px] font-black uppercase tracking-widest text-[#4B5563]">{label}</div>
+          <div key={label} className="flex flex-col items-center justify-center bg-[#0d1117] py-3">
+            <div className="font-mono text-4xl font-black" style={{ color }}>{value}</div>
+            <div className="mt-0.5 text-[9px] font-black uppercase tracking-widest text-[#4B5563]">{label}</div>
           </div>
         ))}
       </div>
 
       {/* Ride needed */}
-      <div className="shrink-0 border-t border-[#30363D] bg-[#0d1117] px-6 py-2.5">
+      <div className="border-t border-[#30363D] bg-[#0d1117] px-5 py-2">
         <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#F85149]">
           Needs a Ride {needsRide.length > 0 ? `(${needsRide.length})` : ''}
         </div>
       </div>
-      <div className="shrink-0 border-b border-[#30363D] px-6 py-4 min-h-[80px]">
+      <div className="border-b border-[#30363D] px-5 py-3">
         {needsRide.length === 0 ? (
-          <div className="flex items-center gap-2">
-            <div className="h-2 w-2 rounded-full bg-[#3FB950]" />
-            <span className="text-base font-semibold text-[#3FB950]">All rides covered</span>
+          <div className="flex items-center gap-1.5">
+            <div className="h-1.5 w-1.5 rounded-full bg-[#3FB950]" />
+            <span className="text-sm font-semibold text-[#3FB950]">All covered</span>
           </div>
         ) : (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-1.5">
             {needsRide.map((a) => (
               <div key={a.id} className="flex items-center justify-between">
-                <div className="text-lg font-black text-[#F0F6FC]">{a.name}</div>
-                <div className="font-mono text-base font-semibold text-[#D29922]">
+                <div className="text-base font-black text-[#F0F6FC]">{a.name}</div>
+                <div className="font-mono text-sm font-semibold text-[#D29922]">
                   {a.arrival_time ? a.arrival_time.slice(0, 5) : 'TBD'}
                 </div>
               </div>
@@ -371,25 +354,127 @@ function StatsPanel({ arrivals, itinerary, now }) {
           </div>
         )}
       </div>
+    </div>
+  )
+}
 
-      {/* Countdown to next event */}
-      <div className="shrink-0 border-b border-[#30363D] bg-[#0d1117] px-6 py-2.5">
-        <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#4B5563]">Next Up Today</div>
+// ─── OPS FEED ────────────────────────────────────────────────────────────────
+
+function OpsFeed({ feed }) {
+  const now = new Date()
+  const active = [...feed]
+    .filter((e) => !e.expires_at || new Date(e.expires_at) > now)
+    .sort((a, b) => {
+      if (a.pinned && !b.pinned) return -1
+      if (!a.pinned && b.pinned) return 1
+      return new Date(b.created_at) - new Date(a.created_at)
+    })
+    .slice(0, 7) // show latest 7 on TV
+
+  function relTime(ts) {
+    const diff = Date.now() - new Date(ts)
+    const mins = Math.floor(diff / 60000)
+    if (mins < 1) return 'just now'
+    if (mins < 60) return `${mins}m ago`
+    return `${Math.floor(mins / 60)}h ago`
+  }
+
+  return (
+    <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="shrink-0 border-b border-[#30363D] bg-[#0d1117] px-5 py-2.5">
+        <div className="flex items-center gap-2">
+          <div
+            className="h-1.5 w-1.5 rounded-full bg-[#3FB950]"
+            style={{ animation: 'pulse-dot 2s ease-in-out infinite' }}
+          />
+          <div className="text-[10px] font-black uppercase tracking-[0.35em] text-[#4B5563]">Messages</div>
+        </div>
       </div>
-      <div className="flex-1 flex flex-col justify-center px-6 py-4">
-        {countdownLabel ? (
-          <>
-            <div className="text-sm font-semibold uppercase tracking-wider text-[#8B949E] truncate">
-              {countdownLabel}
-            </div>
-            <div className="mt-2 font-mono text-5xl font-black text-[#A371F7]">
-              {countdownTime}
-            </div>
-            <div className="mt-1 text-[10px] uppercase tracking-widest text-[#4B5563]">Away</div>
-          </>
+
+      <div className="flex-1 overflow-hidden">
+        {active.length === 0 ? (
+          <div className="flex h-full items-center justify-center">
+            <span className="text-xs uppercase tracking-widest text-[#21262d]">No messages</span>
+          </div>
         ) : (
-          <div className="text-sm text-[#4B5563]">No more events today</div>
+          <div className="flex flex-col divide-y divide-[#21262d]">
+            {active.map((entry) => {
+              const c = OPS_CATEGORY_CONFIG[entry.category] || OPS_CATEGORY_CONFIG.INFO
+              const isAlert = entry.category === 'ALERT'
+              return (
+                <div
+                  key={entry.id}
+                  className="px-5 py-3"
+                  style={isAlert ? {
+                    animation: 'alert-flash 1.5s ease-in-out infinite',
+                    borderLeft: `3px solid ${c.color}`,
+                    background: `${c.color}08`,
+                  } : {
+                    borderLeft: `3px solid ${c.color}40`,
+                  }}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      {entry.pinned && (
+                        <div className="mb-1 text-[9px] font-black uppercase tracking-widest text-[#D29922]">
+                          📌 Pinned
+                        </div>
+                      )}
+                      <div className="text-base font-bold leading-snug text-[#F0F6FC]">
+                        {entry.message}
+                      </div>
+                      <div className="mt-1 flex items-center gap-2">
+                        <span
+                          className="rounded px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider"
+                          style={{ color: c.color, background: `${c.color}20` }}
+                        >
+                          {entry.category}
+                        </span>
+                        <span className="font-mono text-[10px] text-[#4B5563]">
+                          {relTime(entry.created_at)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         )}
+      </div>
+    </div>
+  )
+}
+
+// ─── EMERGENCY OVERLAY ───────────────────────────────────────────────────────
+
+function EmergencyOverlay({ entry }) {
+  if (!entry) return null
+  return (
+    <div
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center px-16 text-center"
+      style={{ animation: 'emergency-bg 1.2s ease-in-out infinite, emergency-border 1.2s ease-in-out infinite' }}
+    >
+      {/* Top label */}
+      <div className="mb-8 flex items-center gap-4">
+        <div className="h-px w-24 bg-[#F85149]/60" />
+        <div className="text-[13px] font-black uppercase tracking-[0.6em] text-[#F85149]">
+          ⚠ Emergency Alert
+        </div>
+        <div className="h-px w-24 bg-[#F85149]/60" />
+      </div>
+
+      {/* Message */}
+      <div
+        className="max-w-5xl text-7xl font-black uppercase leading-tight text-white"
+        style={{ animation: 'emergency-text 1.2s ease-in-out infinite', letterSpacing: '0.04em' }}
+      >
+        {entry.message}
+      </div>
+
+      {/* Bottom label */}
+      <div className="mt-10 text-[11px] font-black uppercase tracking-[0.4em] text-[#F85149]/60">
+        Phoenix Operation · War Room
       </div>
     </div>
   )
@@ -397,15 +482,15 @@ function StatsPanel({ arrivals, itinerary, now }) {
 
 // ─── BOTTOM TICKER ───────────────────────────────────────────────────────────
 
-function BottomTicker() {
-  const text = TICKER_ITEMS.join('     ·     ')
+function BottomTicker({ items }) {
+  const text = (items && items.length > 0 ? items : TICKER_ITEMS).join('     ·     ')
   // Duplicate for seamless loop
   const full = `${text}     ·     ${text}`
   return (
     <div className="shrink-0 flex items-center border-t-2 border-[#58A6FF]/30 bg-[#080a0d]" style={{ height: '48px' }}>
       <div className="shrink-0 flex h-full items-center bg-[#58A6FF] px-5">
         <span className="text-[10px] font-black uppercase tracking-[0.35em] text-[#080a0d] whitespace-nowrap">
-          Ops Feed
+          Messages
         </span>
       </div>
       <div className="flex-1 overflow-hidden">
@@ -441,6 +526,8 @@ function LiveIndicator({ lastUpdated }) {
 export default function CommandCenter() {
   const { rows: arrivals,  refetch: refetchArrivals }  = useSupabaseTable('arrivals', { orderBy: 'arrival_time', ascending: true })
   const { rows: itinerary, refetch: refetchItinerary } = useSupabaseTable('itinerary_items', { orderBy: 'start_time' })
+  const { rows: opsFeed,   refetch: refetchOpsFeed }   = useSupabaseTable('ops_feed', { orderBy: 'created_at', ascending: false })
+  const { rows: houseInfo } = useSupabaseTable('house_info', { orderBy: 'key' })
 
   const [clock, setClock]             = useState(formatClock(new Date()))
   const [cdText, setCdText]           = useState(weddingCountdown())
@@ -470,6 +557,12 @@ export default function CommandCenter() {
     return () => clearInterval(t)
   }, [refetchArrivals, refetchItinerary])
 
+  // 15-second ops feed polling
+  useEffect(() => {
+    const t = setInterval(() => { refetchOpsFeed() }, 15000)
+    return () => clearInterval(t)
+  }, [refetchOpsFeed])
+
   // Weather — fetch on mount, refresh every 30 min
   useEffect(() => {
     function fetch30() {
@@ -496,8 +589,13 @@ export default function CommandCenter() {
     return () => clearInterval(t)
   }, [])
 
+  const emergencyAlert = opsFeed.find(
+    (e) => e.category === 'ALERT' && e.pinned && (!e.expires_at || new Date(e.expires_at) > new Date())
+  ) || null
+
   return (
     <div className="relative flex h-screen flex-col overflow-hidden bg-[#0a0c10] text-[#C9D1D9]">
+      <EmergencyOverlay entry={emergencyAlert} />
       <TopBar clock={clock} cdText={cdText} />
 
       <div className="flex min-h-0 flex-1">
@@ -511,13 +609,14 @@ export default function CommandCenter() {
           <MissionCenter itinerary={itinerary} weather={weather} now={now} />
         </div>
 
-        {/* Right 25% — Stats */}
-        <div className="w-[25%] overflow-hidden">
-          <StatsPanel arrivals={arrivals} itinerary={itinerary} now={now} />
+        {/* Right 25% — Stats + Ops Feed */}
+        <div className="flex w-[25%] flex-col overflow-hidden">
+          <StatsPanel arrivals={arrivals} now={now} />
+          <OpsFeed feed={opsFeed} />
         </div>
       </div>
 
-      <BottomTicker />
+      <BottomTicker items={houseInfo.find(r => r.key === 'Ticker Messages')?.value?.split('\n').filter(Boolean)} />
       <LiveIndicator lastUpdated={lastUpdated} />
     </div>
   )
