@@ -5,11 +5,11 @@ import { useSupabaseTable } from '../hooks/useSupabaseTable'
 const CATEGORIES = ['groceries', 'supplies', 'transport', 'activities', 'other']
 
 const CATEGORY_COLORS = {
-  groceries: 'text-[#3FB950] bg-[#3FB950]/10 border-[#3FB950]/30',
-  supplies: 'text-[#58A6FF] bg-[#58A6FF]/10 border-[#58A6FF]/30',
-  transport: 'text-[#D29922] bg-[#D29922]/10 border-[#D29922]/30',
-  activities: 'text-[#A371F7] bg-[#A371F7]/10 border-[#A371F7]/30',
-  other: 'text-[#8B949E] bg-[#8B949E]/10 border-[#8B949E]/30',
+  groceries: 'text-[#48B040] bg-[#48B040]/10 border-[#48B040]/30',
+  supplies: 'text-[#BA1323] bg-[#BA1323]/10 border-[#BA1323]/30',
+  transport: 'text-[#C4952A] bg-[#C4952A]/10 border-[#C4952A]/30',
+  activities: 'text-[#C4952A] bg-[#C4952A]/10 border-[#C4952A]/30',
+  other: 'text-[#9A8070] bg-[#9A8070]/10 border-[#9A8070]/30',
 }
 
 const HEADCOUNT = 14
@@ -23,13 +23,13 @@ const EMPTY_FORM = {
   done: false,
 }
 
-const inputCls = 'rounded border border-[#30363D] bg-[#0d1117] px-3 py-2 text-sm text-[#C9D1D9] placeholder-[#4B5563] focus:border-[#58A6FF] focus:outline-none'
-const selectCls = 'rounded border border-[#30363D] bg-[#0d1117] px-3 py-2 text-sm text-[#C9D1D9] focus:border-[#58A6FF] focus:outline-none'
+const inputCls = 'rounded border border-[#3C1810] bg-[#140a06] px-3 py-2 text-sm text-[#F2E4D0] placeholder-[#5C3820] focus:border-[#BA1323] focus:outline-none'
+const selectCls = 'rounded border border-[#3C1810] bg-[#140a06] px-3 py-2 text-sm text-[#F2E4D0] focus:border-[#BA1323] focus:outline-none'
 
 function FormField({ label, children }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-[10px] font-bold uppercase tracking-widest text-[#8B949E]">{label}</label>
+      <label className="text-[10px] font-bold uppercase tracking-widest text-[#9A8070]">{label}</label>
       {children}
     </div>
   )
@@ -38,10 +38,10 @@ function FormField({ label, children }) {
 function Modal({ title, onClose, children }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="mx-4 w-full max-w-lg rounded border border-[#30363D] bg-[#161b22] shadow-2xl">
-        <div className="flex items-center justify-between border-b border-[#30363D] px-5 py-4">
-          <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#58A6FF]">{title}</span>
-          <button type="button" onClick={onClose} className="text-[#8B949E] hover:text-[#C9D1D9]"><X size={16} /></button>
+      <div className="mx-4 w-full max-w-lg rounded border border-[#3C1810] bg-[#1C0C08] shadow-2xl">
+        <div className="flex items-center justify-between border-b border-[#3C1810] px-5 py-4">
+          <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#BA1323]">{title}</span>
+          <button type="button" onClick={onClose} className="text-[#9A8070] hover:text-[#F2E4D0]"><X size={16} /></button>
         </div>
         <div className="p-5">{children}</div>
       </div>
@@ -75,8 +75,8 @@ function ItemForm({ initial, onSave, onCancel, saving }) {
         <input className={inputCls} value={form.notes} onChange={(e) => set('notes', e.target.value)} placeholder="Details, links, quantities…" />
       </FormField>
       <div className="flex justify-end gap-3 pt-2">
-        <button type="button" onClick={onCancel} className="px-4 py-2 text-xs text-[#8B949E] hover:text-[#C9D1D9]">Cancel</button>
-        <button type="submit" disabled={saving} className="rounded bg-[#58A6FF] px-4 py-2 text-xs font-bold uppercase tracking-wider text-[#0d1117] hover:bg-[#79b8ff] disabled:opacity-50">
+        <button type="button" onClick={onCancel} className="px-4 py-2 text-xs text-[#9A8070] hover:text-[#F2E4D0]">Cancel</button>
+        <button type="submit" disabled={saving} className="rounded bg-[#BA1323] px-4 py-2 text-xs font-bold uppercase tracking-wider text-[#140a06] hover:bg-[#79b8ff] disabled:opacity-50">
           {saving ? 'Saving…' : 'Save'}
         </button>
       </div>
@@ -87,30 +87,30 @@ function ItemForm({ initial, onSave, onCancel, saving }) {
 function LogisticsItem({ item, onToggle, onEdit, onDelete }) {
   const colorCls = CATEGORY_COLORS[item.category] || CATEGORY_COLORS.other
   return (
-    <div className={`group flex items-center gap-3 rounded border p-3 transition-colors ${item.done ? 'border-[#21262d] bg-[#0d1117] opacity-50' : 'border-[#21262d] bg-[#0d1117] hover:border-[#30363D]'}`}>
-      <button type="button" onClick={onToggle} className="shrink-0 text-[#4B5563] hover:text-[#3FB950]">
-        {item.done ? <CheckSquare size={16} className="text-[#3FB950]" /> : <Square size={16} />}
+    <div className={`group flex items-center gap-3 rounded border p-3 transition-colors ${item.done ? 'border-[#281408] bg-[#140a06] opacity-50' : 'border-[#281408] bg-[#140a06] hover:border-[#3C1810]'}`}>
+      <button type="button" onClick={onToggle} className="shrink-0 text-[#5C3820] hover:text-[#48B040]">
+        {item.done ? <CheckSquare size={16} className="text-[#48B040]" /> : <Square size={16} />}
       </button>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
           <span className={`rounded border px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider ${colorCls}`}>
             {item.category}
           </span>
-          <span className={`text-sm font-semibold truncate ${item.done ? 'line-through text-[#4B5563]' : 'text-[#C9D1D9]'}`}>
+          <span className={`text-sm font-semibold truncate ${item.done ? 'line-through text-[#5C3820]' : 'text-[#F2E4D0]'}`}>
             {item.title}
           </span>
         </div>
         {(item.assignee || item.notes || item.cost > 0) && (
           <div className="mt-0.5 flex items-center gap-3 flex-wrap">
-            {item.assignee && <span className="text-[10px] text-[#8B949E]">{item.assignee}</span>}
-            {Number(item.cost) > 0 && <span className="font-mono text-[10px] text-[#D29922]">${Number(item.cost).toLocaleString()}</span>}
-            {item.notes && <span className="text-[10px] text-[#4B5563] italic truncate">{item.notes}</span>}
+            {item.assignee && <span className="text-[10px] text-[#9A8070]">{item.assignee}</span>}
+            {Number(item.cost) > 0 && <span className="font-mono text-[10px] text-[#C4952A]">${Number(item.cost).toLocaleString()}</span>}
+            {item.notes && <span className="text-[10px] text-[#5C3820] italic truncate">{item.notes}</span>}
           </div>
         )}
       </div>
       <div className="flex shrink-0 items-center gap-1.5 opacity-100 md:opacity-0 md:transition-opacity md:group-hover:opacity-100">
-        <button type="button" onClick={onEdit} className="text-[#4B5563] hover:text-[#58A6FF]"><Edit2 size={12} /></button>
-        <button type="button" onClick={onDelete} className="text-[#4B5563] hover:text-[#F85149]"><Trash2 size={12} /></button>
+        <button type="button" onClick={onEdit} className="text-[#5C3820] hover:text-[#BA1323]"><Edit2 size={12} /></button>
+        <button type="button" onClick={onDelete} className="text-[#5C3820] hover:text-[#E83025]"><Trash2 size={12} /></button>
       </div>
     </div>
   )
@@ -141,39 +141,39 @@ export default function LogisticsPanel() {
 
   return (
     <div className="flex flex-col md:min-h-0 md:flex-1 md:overflow-hidden">
-      <div className="border-b border-[#30363D] px-4 py-4 md:px-6">
+      <div className="border-b border-[#3C1810] px-4 py-4 md:px-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8B949E]">Logistics Checklist</div>
-            <div className="mt-0.5 text-lg font-bold text-[#C9D1D9]">May 28–31 · Scottsdale</div>
+            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#9A8070]">Logistics Checklist</div>
+            <div className="mt-0.5 text-lg font-bold text-[#F2E4D0]">May 28–31 · Scottsdale</div>
           </div>
           <button
             type="button"
             onClick={() => setModal({ mode: 'add' })}
-            className="flex items-center gap-2 rounded border border-[#30363D] bg-[#161b22] px-4 py-3 text-xs font-bold uppercase tracking-wider text-[#58A6FF] hover:border-[#58A6FF] hover:bg-[#1f2a34]"
+            className="flex items-center gap-2 rounded border border-[#3C1810] bg-[#1C0C08] px-4 py-3 text-xs font-bold uppercase tracking-wider text-[#BA1323] hover:border-[#BA1323] hover:bg-[#251508]"
           >
             <Plus size={14} /> Add Task
           </button>
         </div>
         <div className="mt-3 flex flex-wrap gap-6">
           <div className="text-center">
-            <div className="font-mono text-xl font-black text-[#3FB950]">{done}</div>
-            <div className="text-[9px] uppercase tracking-widest text-[#8B949E]">Done</div>
+            <div className="font-mono text-xl font-black text-[#48B040]">{done}</div>
+            <div className="text-[9px] uppercase tracking-widest text-[#9A8070]">Done</div>
           </div>
           <div className="text-center">
-            <div className="font-mono text-xl font-black text-[#C9D1D9]">{total - done}</div>
-            <div className="text-[9px] uppercase tracking-widest text-[#8B949E]">Remaining</div>
+            <div className="font-mono text-xl font-black text-[#F2E4D0]">{total - done}</div>
+            <div className="text-[9px] uppercase tracking-widest text-[#9A8070]">Remaining</div>
           </div>
           {totalCost > 0 && (
             <>
-              <div className="h-8 w-px self-center bg-[#21262d]" />
+              <div className="h-8 w-px self-center bg-[#281408]" />
               <div className="text-center">
-                <div className="font-mono text-xl font-black text-[#D29922]">${totalCost.toLocaleString()}</div>
-                <div className="text-[9px] uppercase tracking-widest text-[#8B949E]">Est. Total</div>
+                <div className="font-mono text-xl font-black text-[#C4952A]">${totalCost.toLocaleString()}</div>
+                <div className="text-[9px] uppercase tracking-widest text-[#9A8070]">Est. Total</div>
               </div>
               <div className="text-center">
-                <div className="font-mono text-xl font-black text-[#A371F7]">${Math.ceil(perPerson)}</div>
-                <div className="text-[9px] uppercase tracking-widest text-[#8B949E]">Per Person</div>
+                <div className="font-mono text-xl font-black text-[#C4952A]">${Math.ceil(perPerson)}</div>
+                <div className="text-[9px] uppercase tracking-widest text-[#9A8070]">Per Person</div>
               </div>
             </>
           )}
@@ -183,13 +183,13 @@ export default function LogisticsPanel() {
       <div className="p-4 md:flex-1 md:overflow-auto md:p-6">
         {loading ? (
           <div className="flex h-48 items-center justify-center">
-            <span className="text-[11px] uppercase tracking-widest text-[#8B949E]">Loading…</span>
+            <span className="text-[11px] uppercase tracking-widest text-[#9A8070]">Loading…</span>
           </div>
         ) : (
           <>
             {totalCost > 0 && (
-              <div className="mb-6 rounded border border-[#30363D] bg-[#11161d] p-4">
-                <div className="mb-3 text-[9px] font-black uppercase tracking-[0.18em] text-[#8B949E]">Cost Breakdown · ${Math.ceil(perPerson)}/person</div>
+              <div className="mb-6 rounded border border-[#3C1810] bg-[#180C07] p-4">
+                <div className="mb-3 text-[9px] font-black uppercase tracking-[0.18em] text-[#9A8070]">Cost Breakdown · ${Math.ceil(perPerson)}/person</div>
                 <div className="flex flex-wrap gap-4">
                   {CATEGORIES.map((cat) => {
                     const catCost = items.filter((i) => i.category === cat).reduce((sum, i) => sum + (Number(i.cost) || 0), 0)
@@ -197,7 +197,7 @@ export default function LogisticsPanel() {
                     return (
                       <div key={cat} className="text-center">
                         <div className={`font-mono text-base font-black ${CATEGORY_COLORS[cat].split(' ')[0]}`}>${catCost.toLocaleString()}</div>
-                        <div className="text-[9px] capitalize text-[#8B949E]">{cat}</div>
+                        <div className="text-[9px] capitalize text-[#9A8070]">{cat}</div>
                       </div>
                     )
                   })}
@@ -227,12 +227,12 @@ export default function LogisticsPanel() {
               )
             })}
             {items.length === 0 && (
-              <div className="col-span-full flex flex-col items-center gap-3 py-16 text-[#4B5563]">
+              <div className="col-span-full flex flex-col items-center gap-3 py-16 text-[#5C3820]">
                 <span className="text-[11px] uppercase tracking-widest">No tasks yet</span>
                 <button
                   type="button"
                   onClick={() => setModal({ mode: 'add' })}
-                  className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-[#58A6FF] hover:text-[#79b8ff]"
+                  className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-[#BA1323] hover:text-[#79b8ff]"
                 >
                   <Plus size={13} /> Add the first task
                 </button>

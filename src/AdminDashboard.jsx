@@ -12,19 +12,19 @@ const PASSWORD   = 'phxops2025'
 const STORAGE_KEY = 'phx_admin_authed'
 
 // ─── STYLE PRIMITIVES ─────────────────────────────────────────────────────────
-const inp = 'w-full rounded border border-[#30363D] bg-[#0d1117] px-3 py-2 text-sm text-[#C9D1D9] placeholder-[#4B5563] focus:border-[#58A6FF] focus:outline-none'
-const sel = 'w-full rounded border border-[#30363D] bg-[#0d1117] px-3 py-2 text-sm text-[#C9D1D9] focus:border-[#58A6FF] focus:outline-none'
-const btnPrimary = 'rounded bg-[#58A6FF] px-4 py-2 text-[11px] font-black uppercase tracking-wider text-[#0d1117] hover:bg-[#79b8ff] transition-colors disabled:opacity-40'
-const btnGhost   = 'rounded border border-[#30363D] px-4 py-2 text-[11px] font-black uppercase tracking-wider text-[#8B949E] hover:border-[#8B949E] hover:text-[#C9D1D9] transition-colors'
+const inp = 'w-full rounded border border-[#3C1810] bg-[#140a06] px-3 py-2 text-sm text-[#F2E4D0] placeholder-[#5C3820] focus:border-[#BA1323] focus:outline-none'
+const sel = 'w-full rounded border border-[#3C1810] bg-[#140a06] px-3 py-2 text-sm text-[#F2E4D0] focus:border-[#BA1323] focus:outline-none'
+const btnPrimary = 'rounded bg-[#BA1323] px-4 py-2 text-[11px] font-black uppercase tracking-wider text-[#140a06] hover:bg-[#79b8ff] transition-colors disabled:opacity-40'
+const btnGhost   = 'rounded border border-[#3C1810] px-4 py-2 text-[11px] font-black uppercase tracking-wider text-[#9A8070] hover:border-[#9A8070] hover:text-[#F2E4D0] transition-colors'
 
 // ─── SHARED COMPONENTS ────────────────────────────────────────────────────────
 function Modal({ title, onClose, children, wide = false }) {
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/70 px-4 pt-16 pb-12">
-      <div className={`w-full ${wide ? 'max-w-2xl' : 'max-w-lg'} rounded border border-[#30363D] bg-[#161b22] shadow-2xl`}>
-        <div className="flex items-center justify-between border-b border-[#30363D] px-5 py-4">
-          <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#58A6FF]">{title}</span>
-          <button type="button" onClick={onClose} className="text-[#8B949E] hover:text-[#C9D1D9]"><X size={16} /></button>
+      <div className={`w-full ${wide ? 'max-w-2xl' : 'max-w-lg'} rounded border border-[#3C1810] bg-[#1C0C08] shadow-2xl`}>
+        <div className="flex items-center justify-between border-b border-[#3C1810] px-5 py-4">
+          <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#BA1323]">{title}</span>
+          <button type="button" onClick={onClose} className="text-[#9A8070] hover:text-[#F2E4D0]"><X size={16} /></button>
         </div>
         <div className="p-5">{children}</div>
       </div>
@@ -35,7 +35,7 @@ function Modal({ title, onClose, children, wide = false }) {
 function FF({ label, children }) {
   return (
     <div className="flex flex-col gap-1">
-      <label className="text-[10px] font-bold uppercase tracking-widest text-[#8B949E]">{label}</label>
+      <label className="text-[10px] font-bold uppercase tracking-widest text-[#9A8070]">{label}</label>
       {children}
     </div>
   )
@@ -45,8 +45,8 @@ function SectionHeader({ title, sub, action }) {
   return (
     <div className="mb-6 flex items-start justify-between">
       <div>
-        <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#58A6FF]">{sub}</div>
-        <div className="text-2xl font-black uppercase tracking-[0.06em] text-[#F0F6FC]">{title}</div>
+        <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#BA1323]">{sub}</div>
+        <div className="text-2xl font-black uppercase tracking-[0.06em] text-[#FAF0E8]">{title}</div>
       </div>
       {action}
     </div>
@@ -89,26 +89,26 @@ function TripSettings() {
       <SectionHeader title="Trip Settings" sub="Phoenix Operation" />
 
       {/* House info */}
-      <div className="mb-6 rounded border border-[#30363D] bg-[#161b22]">
-        <div className="border-b border-[#30363D] px-5 py-3">
-          <div className="text-[10px] font-black uppercase tracking-[0.25em] text-[#4B5563]">House Intel</div>
+      <div className="mb-6 rounded border border-[#3C1810] bg-[#1C0C08]">
+        <div className="border-b border-[#3C1810] px-5 py-3">
+          <div className="text-[10px] font-black uppercase tracking-[0.25em] text-[#5C3820]">House Intel</div>
         </div>
-        <div className="divide-y divide-[#21262d]">
+        <div className="divide-y divide-[#281408]">
           {houseRows.length === 0 && (
-            <div className="px-5 py-4 text-sm text-[#4B5563]">Seed the house_info table to manage fields here.</div>
+            <div className="px-5 py-4 text-sm text-[#5C3820]">Seed the house_info table to manage fields here.</div>
           )}
           {houseRows.map(row => {
             const isEditing = draft[row.id] !== undefined
             return (
               <div key={row.id} className="flex items-center gap-4 px-5 py-3">
-                <div className="w-44 shrink-0 text-[11px] font-black uppercase tracking-wider text-[#8B949E]">{row.key}</div>
+                <div className="w-44 shrink-0 text-[11px] font-black uppercase tracking-wider text-[#9A8070]">{row.key}</div>
                 <div className="flex-1">
                   {isEditing
                     ? <input className={inp} autoFocus value={draft[row.id]}
                         onChange={e => setDraft(p => ({ ...p, [row.id]: e.target.value }))}
                         onKeyDown={e => { if (e.key === 'Enter') saveField(row); if (e.key === 'Escape') setDraft(p => { const n = {...p}; delete n[row.id]; return n }) }}
                       />
-                    : <span className="font-mono text-sm text-[#C9D1D9]">{row.value || '—'}</span>}
+                    : <span className="font-mono text-sm text-[#F2E4D0]">{row.value || '—'}</span>}
                 </div>
                 <div className="flex shrink-0 gap-2">
                   {isEditing ? (
@@ -117,7 +117,7 @@ function TripSettings() {
                       <button onClick={() => setDraft(p => { const n = {...p}; delete n[row.id]; return n })} className={btnGhost}>Cancel</button>
                     </>
                   ) : (
-                    <button onClick={() => setDraft(p => ({ ...p, [row.id]: row.value || '' }))} className="p-1.5 text-[#4B5563] hover:text-[#58A6FF]"><Edit2 size={13} /></button>
+                    <button onClick={() => setDraft(p => ({ ...p, [row.id]: row.value || '' }))} className="p-1.5 text-[#5C3820] hover:text-[#BA1323]"><Edit2 size={13} /></button>
                   )}
                 </div>
               </div>
@@ -127,11 +127,11 @@ function TripSettings() {
       </div>
 
       {/* Ticker messages */}
-      <div className="rounded border border-[#30363D] bg-[#161b22]">
-        <div className="flex items-center justify-between border-b border-[#30363D] px-5 py-3">
+      <div className="rounded border border-[#3C1810] bg-[#1C0C08]">
+        <div className="flex items-center justify-between border-b border-[#3C1810] px-5 py-3">
           <div>
-            <div className="text-[10px] font-black uppercase tracking-[0.25em] text-[#4B5563]">War Room Ticker</div>
-            <div className="text-xs text-[#8B949E] mt-0.5">One message per line — scrolls on the /command TV display</div>
+            <div className="text-[10px] font-black uppercase tracking-[0.25em] text-[#5C3820]">War Room Ticker</div>
+            <div className="text-xs text-[#9A8070] mt-0.5">One message per line — scrolls on the /command TV display</div>
           </div>
           {tickerDraft === null && (
             <button onClick={() => setTickerDraft(tickerRow?.value || '')} className={btnGhost}><Edit2 size={13} className="inline mr-1" />Edit</button>
@@ -151,9 +151,9 @@ function TripSettings() {
           ) : (
             <div className="flex flex-col gap-1">
               {(tickerRow?.value || '').split('\n').filter(Boolean).map((line, i) => (
-                <div key={i} className="font-mono text-xs text-[#8B949E]">· {line}</div>
+                <div key={i} className="font-mono text-xs text-[#9A8070]">· {line}</div>
               ))}
-              {!tickerRow?.value && <div className="text-sm text-[#4B5563]">No ticker messages set.</div>}
+              {!tickerRow?.value && <div className="text-sm text-[#5C3820]">No ticker messages set.</div>}
             </div>
           )}
         </div>
@@ -165,7 +165,7 @@ function TripSettings() {
 // ─── ROSTER ──────────────────────────────────────────────────────────────────
 const TRANSPORT_OPTS = ['flight', 'drive', 'rideshare', 'TBD']
 const ARRIVAL_STATUS_OPTS = ['TBD', 'Confirmed', 'En Route', 'Landed', 'Arrived']
-const STATUS_COLORS = { Arrived: '#3FB950', Landed: '#3FB950', 'En Route': '#D29922', Confirmed: '#58A6FF', TBD: '#4B5563' }
+const STATUS_COLORS = { Arrived: '#48B040', Landed: '#48B040', 'En Route': '#C4952A', Confirmed: '#BA1323', TBD: '#5C3820' }
 const ROSTER_EMPTY = { name: '', transport: 'flight', arrival_date: '', arrival_time: '', flight_number: '', pickup_needed: false, pickup_notes: '', status: 'TBD', notes: '' }
 
 function AdminRoster() {
@@ -188,26 +188,26 @@ function AdminRoster() {
       <SectionHeader title="Roster" sub="Arrivals Tracking"
         action={<button onClick={() => { setForm(ROSTER_EMPTY); setModal('add') }} className={btnPrimary}><Plus size={13} className="inline mr-1" />Add Person</button>} />
 
-      <div className="rounded border border-[#30363D] bg-[#161b22]">
-        <div className="grid grid-cols-[1fr_80px_80px_90px_80px_64px] gap-3 border-b border-[#30363D] bg-[#0d1117] px-5 py-2">
+      <div className="rounded border border-[#3C1810] bg-[#1C0C08]">
+        <div className="grid grid-cols-[1fr_80px_80px_90px_80px_64px] gap-3 border-b border-[#3C1810] bg-[#140a06] px-5 py-2">
           {['Name', 'Flight', 'ETA', 'Status', 'Transport', ''].map(h => (
-            <div key={h} className="text-[9px] font-black uppercase tracking-[0.3em] text-[#4B5563]">{h}</div>
+            <div key={h} className="text-[9px] font-black uppercase tracking-[0.3em] text-[#5C3820]">{h}</div>
           ))}
         </div>
-        {rows.length === 0 && <div className="px-5 py-10 text-center text-sm text-[#4B5563]">No arrivals logged</div>}
+        {rows.length === 0 && <div className="px-5 py-10 text-center text-sm text-[#5C3820]">No arrivals logged</div>}
         {rows.map(row => (
-          <div key={row.id} className="grid grid-cols-[1fr_80px_80px_90px_80px_64px] items-center gap-3 border-b border-[#21262d] px-5 py-3">
+          <div key={row.id} className="grid grid-cols-[1fr_80px_80px_90px_80px_64px] items-center gap-3 border-b border-[#281408] px-5 py-3">
             <div>
-              <div className="text-sm font-semibold text-[#C9D1D9]">{row.name}</div>
-              {row.pickup_needed && <div className="text-[10px] font-bold text-[#F85149]">Needs ride</div>}
+              <div className="text-sm font-semibold text-[#F2E4D0]">{row.name}</div>
+              {row.pickup_needed && <div className="text-[10px] font-bold text-[#E83025]">Needs ride</div>}
             </div>
-            <div className="font-mono text-sm text-[#8B949E]">{row.flight_number || '—'}</div>
-            <div className="font-mono text-sm text-[#C9D1D9]">{row.arrival_time ? row.arrival_time.slice(0, 5) : '—'}</div>
-            <div className="text-[10px] font-black uppercase" style={{ color: STATUS_COLORS[row.status] || '#4B5563' }}>{row.status}</div>
-            <div className="text-[11px] capitalize text-[#8B949E]">{row.transport || '—'}</div>
+            <div className="font-mono text-sm text-[#9A8070]">{row.flight_number || '—'}</div>
+            <div className="font-mono text-sm text-[#F2E4D0]">{row.arrival_time ? row.arrival_time.slice(0, 5) : '—'}</div>
+            <div className="text-[10px] font-black uppercase" style={{ color: STATUS_COLORS[row.status] || '#5C3820' }}>{row.status}</div>
+            <div className="text-[11px] capitalize text-[#9A8070]">{row.transport || '—'}</div>
             <div className="flex gap-1.5">
-              <button onClick={() => { setForm({ ...ROSTER_EMPTY, ...row }); setModal(row) }} className="p-1 text-[#4B5563] hover:text-[#58A6FF]"><Edit2 size={13} /></button>
-              <button onClick={() => { if (window.confirm('Delete?')) remove(row.id) }} className="p-1 text-[#4B5563] hover:text-[#F85149]"><Trash2 size={13} /></button>
+              <button onClick={() => { setForm({ ...ROSTER_EMPTY, ...row }); setModal(row) }} className="p-1 text-[#5C3820] hover:text-[#BA1323]"><Edit2 size={13} /></button>
+              <button onClick={() => { if (window.confirm('Delete?')) remove(row.id) }} className="p-1 text-[#5C3820] hover:text-[#E83025]"><Trash2 size={13} /></button>
             </div>
           </div>
         ))}
@@ -235,8 +235,8 @@ function AdminRoster() {
             </div>
             <FF label="Arrival Date"><input type="date" className={inp} value={form.arrival_date} onChange={e => set('arrival_date', e.target.value)} /></FF>
             <label className="flex cursor-pointer items-center gap-2">
-              <input type="checkbox" className="accent-[#F85149]" checked={!!form.pickup_needed} onChange={e => set('pickup_needed', e.target.checked)} />
-              <span className="text-sm text-[#C9D1D9]">Needs a ride from airport</span>
+              <input type="checkbox" className="accent-[#E83025]" checked={!!form.pickup_needed} onChange={e => set('pickup_needed', e.target.checked)} />
+              <span className="text-sm text-[#F2E4D0]">Needs a ride from airport</span>
             </label>
             {form.pickup_needed && <FF label="Pickup Notes"><input className={inp} value={form.pickup_notes} onChange={e => set('pickup_notes', e.target.value)} /></FF>}
             <FF label="Notes"><input className={inp} value={form.notes} onChange={e => set('notes', e.target.value)} /></FF>
@@ -253,7 +253,7 @@ function AdminRoster() {
 
 // ─── BUDGET ──────────────────────────────────────────────────────────────────
 const EXPENSE_CATS = ['house', 'golf', 'food', 'drinks', 'transport', 'activities', 'other']
-const CAT_HEX = { house: '#58A6FF', golf: '#3FB950', food: '#D29922', drinks: '#A371F7', transport: '#F78166', activities: '#39D353', other: '#8B949E' }
+const CAT_HEX = { house: '#BA1323', golf: '#48B040', food: '#C4952A', drinks: '#C4952A', transport: '#D4601A', activities: '#48B040', other: '#9A8070' }
 const BUDGET_EMPTY = { description: '', amount: '', paid_by: '', category: 'other', split_count: '14', notes: '' }
 
 function AdminBudget() {
@@ -280,36 +280,36 @@ function AdminBudget() {
 
       <div className="mb-4 grid grid-cols-3 gap-3">
         {[
-          { label: 'Total Spent', value: `$${total.toFixed(2)}`, color: '#F0F6FC' },
-          { label: 'Per Person', value: `$${(total / 14).toFixed(2)}`, color: '#58A6FF' },
-          { label: 'Line Items', value: expenses.length, color: '#8B949E' },
+          { label: 'Total Spent', value: `$${total.toFixed(2)}`, color: '#FAF0E8' },
+          { label: 'Per Person', value: `$${(total / 14).toFixed(2)}`, color: '#BA1323' },
+          { label: 'Line Items', value: expenses.length, color: '#9A8070' },
         ].map(s => (
-          <div key={s.label} className="rounded border border-[#30363D] bg-[#161b22] px-4 py-3 text-center">
+          <div key={s.label} className="rounded border border-[#3C1810] bg-[#1C0C08] px-4 py-3 text-center">
             <div className="font-mono text-2xl font-black" style={{ color: s.color }}>{s.value}</div>
-            <div className="mt-0.5 text-[9px] font-black uppercase tracking-widest text-[#4B5563]">{s.label}</div>
+            <div className="mt-0.5 text-[9px] font-black uppercase tracking-widest text-[#5C3820]">{s.label}</div>
           </div>
         ))}
       </div>
 
-      <div className="rounded border border-[#30363D] bg-[#161b22]">
-        <div className="grid grid-cols-[1fr_80px_100px_80px_52px_56px] gap-3 border-b border-[#30363D] bg-[#0d1117] px-5 py-2">
+      <div className="rounded border border-[#3C1810] bg-[#1C0C08]">
+        <div className="grid grid-cols-[1fr_80px_100px_80px_52px_56px] gap-3 border-b border-[#3C1810] bg-[#140a06] px-5 py-2">
           {['Description', 'Amount', 'Paid By', 'Category', 'Split', ''].map(h => (
-            <div key={h} className="text-[9px] font-black uppercase tracking-[0.3em] text-[#4B5563]">{h}</div>
+            <div key={h} className="text-[9px] font-black uppercase tracking-[0.3em] text-[#5C3820]">{h}</div>
           ))}
         </div>
-        {expenses.length === 0 && <div className="px-5 py-10 text-center text-sm text-[#4B5563]">No expenses logged</div>}
+        {expenses.length === 0 && <div className="px-5 py-10 text-center text-sm text-[#5C3820]">No expenses logged</div>}
         {expenses.map(row => {
-          const color = CAT_HEX[row.category] || '#8B949E'
+          const color = CAT_HEX[row.category] || '#9A8070'
           return (
-            <div key={row.id} className="grid grid-cols-[1fr_80px_100px_80px_52px_56px] items-center gap-3 border-b border-[#21262d] px-5 py-3">
-              <div className="text-sm font-semibold text-[#C9D1D9] truncate">{row.description}</div>
-              <div className="font-mono text-sm font-bold text-[#3FB950]">${parseFloat(row.amount).toFixed(2)}</div>
-              <div className="text-sm text-[#8B949E] truncate">{row.paid_by}</div>
+            <div key={row.id} className="grid grid-cols-[1fr_80px_100px_80px_52px_56px] items-center gap-3 border-b border-[#281408] px-5 py-3">
+              <div className="text-sm font-semibold text-[#F2E4D0] truncate">{row.description}</div>
+              <div className="font-mono text-sm font-bold text-[#48B040]">${parseFloat(row.amount).toFixed(2)}</div>
+              <div className="text-sm text-[#9A8070] truncate">{row.paid_by}</div>
               <div className="text-[10px] font-bold capitalize" style={{ color }}>{row.category}</div>
-              <div className="text-center text-sm text-[#4B5563]">{row.split_count}</div>
+              <div className="text-center text-sm text-[#5C3820]">{row.split_count}</div>
               <div className="flex gap-1.5">
-                <button onClick={() => { setForm({ ...BUDGET_EMPTY, ...row, amount: String(row.amount), split_count: String(row.split_count) }); setModal(row) }} className="p-1 text-[#4B5563] hover:text-[#58A6FF]"><Edit2 size={13} /></button>
-                <button onClick={() => { if (window.confirm('Delete?')) remove(row.id) }} className="p-1 text-[#4B5563] hover:text-[#F85149]"><Trash2 size={13} /></button>
+                <button onClick={() => { setForm({ ...BUDGET_EMPTY, ...row, amount: String(row.amount), split_count: String(row.split_count) }); setModal(row) }} className="p-1 text-[#5C3820] hover:text-[#BA1323]"><Edit2 size={13} /></button>
+                <button onClick={() => { if (window.confirm('Delete?')) remove(row.id) }} className="p-1 text-[#5C3820] hover:text-[#E83025]"><Trash2 size={13} /></button>
               </div>
             </div>
           )
@@ -352,7 +352,7 @@ const DAYS = [
   { date: '2026-05-31', label: 'Sat 5/31' },
 ]
 const ITIN_CATS = ['pool', 'nightlife', 'golf', 'food', 'transport', 'activity', 'other']
-const ITIN_CAT_HEX = { pool: '#58A6FF', nightlife: '#A371F7', golf: '#3FB950', food: '#D29922', transport: '#8B949E', activity: '#F85149', other: '#4B5563' }
+const ITIN_CAT_HEX = { pool: '#BA1323', nightlife: '#C4952A', golf: '#48B040', food: '#C4952A', transport: '#9A8070', activity: '#E83025', other: '#5C3820' }
 const ITIN_EMPTY = { day_date: DAYS[0].date, start_time: '', end_time: '', title: '', category: 'other', location_name: '', address: '', notes: '' }
 
 function AdminItinerary() {
@@ -379,34 +379,34 @@ function AdminItinerary() {
       <div className="mb-4 flex gap-2 flex-wrap">
         {DAYS.map(d => (
           <button key={d.date} onClick={() => setActiveDay(d.date)}
-            className={`rounded px-4 py-2 text-[11px] font-black uppercase tracking-wider transition-colors ${activeDay === d.date ? 'bg-[#58A6FF] text-[#0d1117]' : 'border border-[#30363D] text-[#8B949E] hover:text-[#C9D1D9]'}`}>
+            className={`rounded px-4 py-2 text-[11px] font-black uppercase tracking-wider transition-colors ${activeDay === d.date ? 'bg-[#BA1323] text-[#140a06]' : 'border border-[#3C1810] text-[#9A8070] hover:text-[#F2E4D0]'}`}>
             {d.label}
           </button>
         ))}
       </div>
 
-      <div className="rounded border border-[#30363D] bg-[#161b22]">
-        <div className="flex items-center justify-between border-b border-[#30363D] px-5 py-3">
-          <div className="text-[10px] font-black uppercase tracking-[0.25em] text-[#4B5563]">{dayRows.length} events</div>
+      <div className="rounded border border-[#3C1810] bg-[#1C0C08]">
+        <div className="flex items-center justify-between border-b border-[#3C1810] px-5 py-3">
+          <div className="text-[10px] font-black uppercase tracking-[0.25em] text-[#5C3820]">{dayRows.length} events</div>
           <button onClick={() => { setForm({ ...ITIN_EMPTY, day_date: activeDay }); setModal('add') }} className={btnPrimary}><Plus size={13} className="inline mr-1" />Add Event</button>
         </div>
-        {dayRows.length === 0 && <div className="px-5 py-10 text-center text-sm text-[#4B5563]">No events for this day</div>}
+        {dayRows.length === 0 && <div className="px-5 py-10 text-center text-sm text-[#5C3820]">No events for this day</div>}
         {dayRows.map(row => {
-          const color = ITIN_CAT_HEX[row.category] || '#4B5563'
+          const color = ITIN_CAT_HEX[row.category] || '#5C3820'
           return (
-            <div key={row.id} className="flex items-start gap-4 border-b border-[#21262d] px-5 py-4">
-              <div className="w-12 shrink-0 font-mono text-sm font-bold text-[#8B949E]">{row.start_time ? row.start_time.slice(0, 5) : '—'}</div>
+            <div key={row.id} className="flex items-start gap-4 border-b border-[#281408] px-5 py-4">
+              <div className="w-12 shrink-0 font-mono text-sm font-bold text-[#9A8070]">{row.start_time ? row.start_time.slice(0, 5) : '—'}</div>
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-semibold text-[#C9D1D9]">{row.title}</span>
+                  <span className="font-semibold text-[#F2E4D0]">{row.title}</span>
                   <span className="rounded px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider" style={{ color, background: `${color}20` }}>{row.category}</span>
                 </div>
-                {row.location_name && <div className="text-xs text-[#8B949E] mt-0.5">{row.location_name}</div>}
-                {row.notes && <div className="text-xs italic text-[#4B5563] mt-0.5">{row.notes}</div>}
+                {row.location_name && <div className="text-xs text-[#9A8070] mt-0.5">{row.location_name}</div>}
+                {row.notes && <div className="text-xs italic text-[#5C3820] mt-0.5">{row.notes}</div>}
               </div>
               <div className="flex shrink-0 gap-1.5">
-                <button onClick={() => { setForm({ ...ITIN_EMPTY, ...row }); setModal(row) }} className="p-1 text-[#4B5563] hover:text-[#58A6FF]"><Edit2 size={13} /></button>
-                <button onClick={() => { if (window.confirm('Delete?')) remove(row.id) }} className="p-1 text-[#4B5563] hover:text-[#F85149]"><Trash2 size={13} /></button>
+                <button onClick={() => { setForm({ ...ITIN_EMPTY, ...row }); setModal(row) }} className="p-1 text-[#5C3820] hover:text-[#BA1323]"><Edit2 size={13} /></button>
+                <button onClick={() => { if (window.confirm('Delete?')) remove(row.id) }} className="p-1 text-[#5C3820] hover:text-[#E83025]"><Trash2 size={13} /></button>
               </div>
             </div>
           )
@@ -449,7 +449,7 @@ function AdminItinerary() {
 // ─── MEALS ────────────────────────────────────────────────────────────────────
 const MEAL_TYPES  = ['breakfast', 'lunch', 'dinner', 'snacks']
 const PLAN_TYPES  = ['TBD', 'cook', 'restaurant', 'delivery', 'catered']
-const PLAN_HEX    = { TBD: '#8B949E', cook: '#3FB950', restaurant: '#58A6FF', delivery: '#D29922', catered: '#A371F7' }
+const PLAN_HEX    = { TBD: '#9A8070', cook: '#48B040', restaurant: '#BA1323', delivery: '#C4952A', catered: '#C4952A' }
 const MEALS_EMPTY = { day_date: DAYS[0].date, meal_type: 'dinner', name: '', organizer: '', plan_type: 'TBD', headcount: 14, dietary_notes: '', location_name: '', cost_estimate: '', notes: '' }
 
 function AdminMeals() {
@@ -478,30 +478,30 @@ function AdminMeals() {
       <div className="mb-4 flex gap-2 flex-wrap">
         {DAYS.map(d => (
           <button key={d.date} onClick={() => setActiveDay(d.date)}
-            className={`rounded px-4 py-2 text-[11px] font-black uppercase tracking-wider transition-colors ${activeDay === d.date ? 'bg-[#58A6FF] text-[#0d1117]' : 'border border-[#30363D] text-[#8B949E] hover:text-[#C9D1D9]'}`}>
+            className={`rounded px-4 py-2 text-[11px] font-black uppercase tracking-wider transition-colors ${activeDay === d.date ? 'bg-[#BA1323] text-[#140a06]' : 'border border-[#3C1810] text-[#9A8070] hover:text-[#F2E4D0]'}`}>
             {d.label}
           </button>
         ))}
       </div>
 
-      <div className="rounded border border-[#30363D] bg-[#161b22]">
-        {dayRows.length === 0 && <div className="px-5 py-10 text-center text-sm text-[#4B5563]">No meals for this day</div>}
+      <div className="rounded border border-[#3C1810] bg-[#1C0C08]">
+        {dayRows.length === 0 && <div className="px-5 py-10 text-center text-sm text-[#5C3820]">No meals for this day</div>}
         {dayRows.map(row => {
-          const pcolor = PLAN_HEX[row.plan_type] || '#8B949E'
+          const pcolor = PLAN_HEX[row.plan_type] || '#9A8070'
           return (
-            <div key={row.id} className="flex items-start gap-4 border-b border-[#21262d] px-5 py-4">
-              <div className="w-20 shrink-0 text-[10px] font-black uppercase tracking-wider text-[#8B949E]">{row.meal_type}</div>
+            <div key={row.id} className="flex items-start gap-4 border-b border-[#281408] px-5 py-4">
+              <div className="w-20 shrink-0 text-[10px] font-black uppercase tracking-wider text-[#9A8070]">{row.meal_type}</div>
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-semibold text-[#C9D1D9]">{row.name || 'TBD'}</span>
+                  <span className="font-semibold text-[#F2E4D0]">{row.name || 'TBD'}</span>
                   <span className="rounded px-1.5 py-0.5 text-[9px] font-black capitalize" style={{ color: pcolor, background: `${pcolor}20` }}>{row.plan_type}</span>
                 </div>
-                {row.location_name && <div className="text-xs text-[#8B949E]">{row.location_name}</div>}
-                {row.notes && <div className="text-xs italic text-[#4B5563]">{row.notes}</div>}
+                {row.location_name && <div className="text-xs text-[#9A8070]">{row.location_name}</div>}
+                {row.notes && <div className="text-xs italic text-[#5C3820]">{row.notes}</div>}
               </div>
               <div className="flex shrink-0 gap-1.5">
-                <button onClick={() => { setForm({ ...MEALS_EMPTY, ...row, cost_estimate: row.cost_estimate != null ? String(row.cost_estimate) : '' }); setModal(row) }} className="p-1 text-[#4B5563] hover:text-[#58A6FF]"><Edit2 size={13} /></button>
-                <button onClick={() => { if (window.confirm('Delete?')) remove(row.id) }} className="p-1 text-[#4B5563] hover:text-[#F85149]"><Trash2 size={13} /></button>
+                <button onClick={() => { setForm({ ...MEALS_EMPTY, ...row, cost_estimate: row.cost_estimate != null ? String(row.cost_estimate) : '' }); setModal(row) }} className="p-1 text-[#5C3820] hover:text-[#BA1323]"><Edit2 size={13} /></button>
+                <button onClick={() => { if (window.confirm('Delete?')) remove(row.id) }} className="p-1 text-[#5C3820] hover:text-[#E83025]"><Trash2 size={13} /></button>
               </div>
             </div>
           )
@@ -550,7 +550,7 @@ function AdminMeals() {
 
 // ─── LOGISTICS ────────────────────────────────────────────────────────────────
 const LOG_CATS   = ['groceries', 'supplies', 'transport', 'activities', 'other']
-const LOG_CAT_HEX = { groceries: '#3FB950', supplies: '#58A6FF', transport: '#D29922', activities: '#A371F7', other: '#8B949E' }
+const LOG_CAT_HEX = { groceries: '#48B040', supplies: '#BA1323', transport: '#C4952A', activities: '#C4952A', other: '#9A8070' }
 const LOG_EMPTY  = { category: 'other', title: '', assignee: '', notes: '', cost: '', done: false }
 
 function AdminLogistics() {
@@ -575,37 +575,37 @@ function AdminLogistics() {
       <SectionHeader title="Logistics" sub="Task Checklist"
         action={<button onClick={() => { setForm(LOG_EMPTY); setModal('add') }} className={btnPrimary}><Plus size={13} className="inline mr-1" />Add Task</button>} />
 
-      <div className="mb-4 flex items-center gap-2 font-mono text-sm text-[#8B949E]">
-        <span className="font-bold text-[#3FB950]">{done}</span> done ·
-        <span className="font-bold text-[#C9D1D9]">{rows.length - done}</span> remaining
+      <div className="mb-4 flex items-center gap-2 font-mono text-sm text-[#9A8070]">
+        <span className="font-bold text-[#48B040]">{done}</span> done ·
+        <span className="font-bold text-[#F2E4D0]">{rows.length - done}</span> remaining
       </div>
 
-      <div className="rounded border border-[#30363D] bg-[#161b22]">
-        {rows.length === 0 && <div className="px-5 py-10 text-center text-sm text-[#4B5563]">No tasks</div>}
+      <div className="rounded border border-[#3C1810] bg-[#1C0C08]">
+        {rows.length === 0 && <div className="px-5 py-10 text-center text-sm text-[#5C3820]">No tasks</div>}
         {rows.map(row => {
-          const color = LOG_CAT_HEX[row.category] || '#8B949E'
+          const color = LOG_CAT_HEX[row.category] || '#9A8070'
           return (
-            <div key={row.id} className={`flex items-center gap-4 border-b border-[#21262d] px-5 py-3 ${row.done ? 'opacity-50' : ''}`}>
+            <div key={row.id} className={`flex items-center gap-4 border-b border-[#281408] px-5 py-3 ${row.done ? 'opacity-50' : ''}`}>
               <button onClick={() => update(row.id, { done: !row.done })} className="shrink-0">
                 {row.done
-                  ? <div className="h-4 w-4 rounded-full border-2 border-[#3FB950] bg-[#3FB950]/20 flex items-center justify-center"><Check size={9} className="text-[#3FB950]" /></div>
-                  : <div className="h-4 w-4 rounded-full border-2 border-[#30363D] hover:border-[#8B949E]" />}
+                  ? <div className="h-4 w-4 rounded-full border-2 border-[#48B040] bg-[#48B040]/20 flex items-center justify-center"><Check size={9} className="text-[#48B040]" /></div>
+                  : <div className="h-4 w-4 rounded-full border-2 border-[#3C1810] hover:border-[#9A8070]" />}
               </button>
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className={`text-sm font-semibold ${row.done ? 'line-through text-[#4B5563]' : 'text-[#C9D1D9]'}`}>{row.title}</span>
+                  <span className={`text-sm font-semibold ${row.done ? 'line-through text-[#5C3820]' : 'text-[#F2E4D0]'}`}>{row.title}</span>
                   <span className="rounded px-1.5 py-0.5 text-[9px] font-black capitalize" style={{ color, background: `${color}20` }}>{row.category}</span>
                 </div>
                 {(row.assignee || row.cost) && (
-                  <div className="mt-0.5 flex gap-3 text-xs text-[#8B949E]">
+                  <div className="mt-0.5 flex gap-3 text-xs text-[#9A8070]">
                     {row.assignee && <span>→ {row.assignee}</span>}
                     {row.cost && <span className="font-mono">${parseFloat(row.cost).toFixed(2)}</span>}
                   </div>
                 )}
               </div>
               <div className="flex shrink-0 gap-1.5">
-                <button onClick={() => { setForm({ ...LOG_EMPTY, ...row, cost: row.cost != null ? String(row.cost) : '' }); setModal(row) }} className="p-1 text-[#4B5563] hover:text-[#58A6FF]"><Edit2 size={13} /></button>
-                <button onClick={() => { if (window.confirm('Delete?')) remove(row.id) }} className="p-1 text-[#4B5563] hover:text-[#F85149]"><Trash2 size={13} /></button>
+                <button onClick={() => { setForm({ ...LOG_EMPTY, ...row, cost: row.cost != null ? String(row.cost) : '' }); setModal(row) }} className="p-1 text-[#5C3820] hover:text-[#BA1323]"><Edit2 size={13} /></button>
+                <button onClick={() => { if (window.confirm('Delete?')) remove(row.id) }} className="p-1 text-[#5C3820] hover:text-[#E83025]"><Trash2 size={13} /></button>
               </div>
             </div>
           )
@@ -627,8 +627,8 @@ function AdminLogistics() {
             <div className="grid grid-cols-2 gap-4">
               <FF label="Cost Estimate ($)"><input type="number" step="0.01" className={inp} value={form.cost} onChange={e => set('cost', e.target.value)} /></FF>
               <label className="flex items-end gap-2 cursor-pointer pb-2">
-                <input type="checkbox" className="accent-[#3FB950]" checked={!!form.done} onChange={e => set('done', e.target.checked)} />
-                <span className="text-sm text-[#C9D1D9]">Mark done</span>
+                <input type="checkbox" className="accent-[#48B040]" checked={!!form.done} onChange={e => set('done', e.target.checked)} />
+                <span className="text-sm text-[#F2E4D0]">Mark done</span>
               </label>
             </div>
             <FF label="Notes"><input className={inp} value={form.notes} onChange={e => set('notes', e.target.value)} /></FF>
@@ -679,36 +679,36 @@ function WarRoomControls() {
         {/* Controls column */}
         <div className="flex flex-col gap-4">
           {/* Emergency broadcast */}
-          <div className="rounded border border-[#F85149]/30 bg-[#161b22]">
-            <div className="border-b border-[#F85149]/20 bg-[#F85149]/5 px-5 py-3">
-              <div className="text-[10px] font-black uppercase tracking-[0.25em] text-[#F85149]">Emergency Broadcast</div>
-              <div className="mt-0.5 text-xs text-[#8B949E]">Flashing ALERT on TV — auto-expires in 5 minutes</div>
+          <div className="rounded border border-[#E83025]/30 bg-[#1C0C08]">
+            <div className="border-b border-[#E83025]/20 bg-[#E83025]/5 px-5 py-3">
+              <div className="text-[10px] font-black uppercase tracking-[0.25em] text-[#E83025]">Emergency Broadcast</div>
+              <div className="mt-0.5 text-xs text-[#9A8070]">Flashing ALERT on TV — auto-expires in 5 minutes</div>
             </div>
             <form onSubmit={handleBroadcast} className="flex flex-col gap-3 p-4">
               <textarea className={`${inp} resize-none`} rows={3} value={broadcast}
                 onChange={e => setBroadcast(e.target.value)}
                 placeholder="e.g. Pool closed — everyone to the rooftop bar NOW" />
               <button type="submit" disabled={sending || !broadcast.trim()}
-                className="rounded bg-[#F85149] py-2.5 text-[11px] font-black uppercase tracking-wider text-white hover:bg-[#ff6b63] disabled:opacity-40 transition-colors">
+                className="rounded bg-[#E83025] py-2.5 text-[11px] font-black uppercase tracking-wider text-white hover:bg-[#ff6b63] disabled:opacity-40 transition-colors">
                 {sending ? 'Broadcasting…' : sent ? '✓ Alert Sent!' : 'Broadcast Alert'}
               </button>
             </form>
           </div>
 
           {/* Quick links */}
-          <div className="rounded border border-[#30363D] bg-[#161b22] p-4">
-            <div className="mb-3 text-[10px] font-black uppercase tracking-[0.25em] text-[#4B5563]">Quick Actions</div>
+          <div className="rounded border border-[#3C1810] bg-[#1C0C08] p-4">
+            <div className="mb-3 text-[10px] font-black uppercase tracking-[0.25em] text-[#5C3820]">Quick Actions</div>
             <div className="flex flex-col gap-2">
               <button onClick={reloadTV}
-                className="flex items-center justify-center gap-2 rounded border border-[#30363D] py-2.5 text-[11px] font-black uppercase tracking-wider text-[#8B949E] hover:border-[#8B949E] hover:text-[#C9D1D9] transition-colors">
+                className="flex items-center justify-center gap-2 rounded border border-[#3C1810] py-2.5 text-[11px] font-black uppercase tracking-wider text-[#9A8070] hover:border-[#9A8070] hover:text-[#F2E4D0] transition-colors">
                 <RefreshCw size={13} />Force Reload TV
               </button>
               <a href="/command" target="_blank" rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 rounded border border-[#30363D] py-2.5 text-[11px] font-black uppercase tracking-wider text-[#8B949E] hover:border-[#58A6FF] hover:text-[#58A6FF] transition-colors">
+                className="flex items-center justify-center gap-2 rounded border border-[#3C1810] py-2.5 text-[11px] font-black uppercase tracking-wider text-[#9A8070] hover:border-[#BA1323] hover:text-[#BA1323] transition-colors">
                 Open /command ↗
               </a>
               <a href="/post" target="_blank" rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 rounded border border-[#30363D] py-2.5 text-[11px] font-black uppercase tracking-wider text-[#8B949E] hover:border-[#8B949E] hover:text-[#C9D1D9] transition-colors">
+                className="flex items-center justify-center gap-2 rounded border border-[#3C1810] py-2.5 text-[11px] font-black uppercase tracking-wider text-[#9A8070] hover:border-[#9A8070] hover:text-[#F2E4D0] transition-colors">
                 <Zap size={13} />Quick Post ↗
               </a>
             </div>
@@ -716,11 +716,11 @@ function WarRoomControls() {
         </div>
 
         {/* Iframe preview */}
-        <div className="rounded border border-[#30363D] overflow-hidden flex flex-col">
-          <div className="flex items-center justify-between border-b border-[#30363D] bg-[#0d1117] px-4 py-2">
-            <div className="text-[10px] font-black uppercase tracking-[0.25em] text-[#4B5563]">Live Preview</div>
+        <div className="rounded border border-[#3C1810] overflow-hidden flex flex-col">
+          <div className="flex items-center justify-between border-b border-[#3C1810] bg-[#140a06] px-4 py-2">
+            <div className="text-[10px] font-black uppercase tracking-[0.25em] text-[#5C3820]">Live Preview</div>
             <div
-              className="h-1.5 w-1.5 rounded-full bg-[#3FB950]"
+              className="h-1.5 w-1.5 rounded-full bg-[#48B040]"
               style={{ animation: 'pulse-dot 2s ease-in-out infinite' }}
             />
           </div>
@@ -748,12 +748,12 @@ function WarRoomControls() {
 // ─── OPS FEED ────────────────────────────────────────────────────────────────
 const OPS_CATS = ['INFO', 'ARRIVAL', 'TRANSPORT', 'FOOD', 'ALERT', 'HYPE']
 const OPS_CAT_CFG = {
-  INFO:      { color: '#58A6FF' },
-  ARRIVAL:   { color: '#3FB950' },
-  TRANSPORT: { color: '#D29922' },
-  FOOD:      { color: '#F78166' },
-  ALERT:     { color: '#F85149' },
-  HYPE:      { color: '#A371F7' },
+  INFO:      { color: '#BA1323' },
+  ARRIVAL:   { color: '#48B040' },
+  TRANSPORT: { color: '#C4952A' },
+  FOOD:      { color: '#D4601A' },
+  ALERT:     { color: '#E83025' },
+  HYPE:      { color: '#C4952A' },
 }
 const EXPIRE_OPTS = [
   { label: 'Never', value: null },
@@ -814,9 +814,9 @@ function AdminOpsFeed() {
       <SectionHeader title="Ops Feed" sub="War Room Posts" />
 
       {/* Post form */}
-      <div className="mb-6 rounded border border-[#30363D] bg-[#161b22]">
-        <div className="border-b border-[#30363D] px-5 py-3">
-          <div className="text-[10px] font-black uppercase tracking-[0.25em] text-[#58A6FF]">New Post</div>
+      <div className="mb-6 rounded border border-[#3C1810] bg-[#1C0C08]">
+        <div className="border-b border-[#3C1810] px-5 py-3">
+          <div className="text-[10px] font-black uppercase tracking-[0.25em] text-[#BA1323]">New Post</div>
         </div>
         <form onSubmit={handlePost} className="p-5 space-y-4">
           <textarea
@@ -830,7 +830,7 @@ function AdminOpsFeed() {
 
           {/* Category pills */}
           <div>
-            <div className="mb-2 text-[9px] font-black uppercase tracking-widest text-[#8B949E]">Category</div>
+            <div className="mb-2 text-[9px] font-black uppercase tracking-widest text-[#9A8070]">Category</div>
             <div className="flex flex-wrap gap-2">
               {OPS_CATS.map(cat => {
                 const c = OPS_CAT_CFG[cat]
@@ -838,7 +838,7 @@ function AdminOpsFeed() {
                 return (
                   <button key={cat} type="button" onClick={() => setCategory(cat)}
                     className="rounded px-3 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all"
-                    style={{ color: active ? '#0d1117' : c.color, background: active ? c.color : `${c.color}18`, border: `1px solid ${active ? c.color : `${c.color}40`}` }}>
+                    style={{ color: active ? '#140a06' : c.color, background: active ? c.color : `${c.color}18`, border: `1px solid ${active ? c.color : `${c.color}40`}` }}>
                     {cat}
                   </button>
                 )
@@ -850,20 +850,20 @@ function AdminOpsFeed() {
           <div className="flex flex-wrap items-center gap-4">
             <button type="button" onClick={() => setPinned(p => !p)}
               className={`flex items-center gap-2 rounded border px-3 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${
-                pinned ? 'border-[#D29922] bg-[#D29922]/15 text-[#D29922]' : 'border-[#30363D] bg-[#0d1117] text-[#4B5563] hover:text-[#8B949E]'
+                pinned ? 'border-[#C4952A] bg-[#C4952A]/15 text-[#C4952A]' : 'border-[#3C1810] bg-[#140a06] text-[#5C3820] hover:text-[#9A8070]'
               }`}>
               <Pin size={12} />
               {pinned ? 'Pinned to top' : 'Pin to top'}
             </button>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-black uppercase tracking-widest text-[#8B949E]">Expires:</span>
+              <span className="text-[10px] font-black uppercase tracking-widest text-[#9A8070]">Expires:</span>
               <div className="flex gap-1">
                 {EXPIRE_OPTS.map(opt => (
                   <button key={opt.label} type="button" onClick={() => setExpire(opt.value)}
                     className={`rounded px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-colors ${
                       expireMinutes === opt.value
-                        ? 'border border-[#58A6FF]/40 bg-[#58A6FF]/20 text-[#58A6FF]'
-                        : 'border border-[#30363D] text-[#4B5563] hover:text-[#8B949E]'
+                        ? 'border border-[#BA1323]/40 bg-[#BA1323]/20 text-[#BA1323]'
+                        : 'border border-[#3C1810] text-[#5C3820] hover:text-[#9A8070]'
                     }`}>
                     {opt.label}
                   </button>
@@ -873,46 +873,46 @@ function AdminOpsFeed() {
           </div>
 
           <button type="submit" disabled={posting || !message.trim()}
-            className="w-full rounded bg-[#58A6FF] py-3 text-sm font-black uppercase tracking-wider text-[#0d1117] hover:bg-[#79b8ff] disabled:opacity-40 transition-colors">
+            className="w-full rounded bg-[#BA1323] py-3 text-sm font-black uppercase tracking-wider text-[#140a06] hover:bg-[#79b8ff] disabled:opacity-40 transition-colors">
             {posting ? 'Posting…' : 'Post to War Room'}
           </button>
         </form>
       </div>
 
       {/* Active feed */}
-      <div className="rounded border border-[#30363D] bg-[#161b22]">
-        <div className="flex items-center justify-between border-b border-[#30363D] px-5 py-3">
-          <div className="text-[10px] font-black uppercase tracking-[0.25em] text-[#58A6FF]">Live Feed</div>
-          <div className="font-mono text-[10px] text-[#4B5563]">{activeFeed.length} active</div>
+      <div className="rounded border border-[#3C1810] bg-[#1C0C08]">
+        <div className="flex items-center justify-between border-b border-[#3C1810] px-5 py-3">
+          <div className="text-[10px] font-black uppercase tracking-[0.25em] text-[#BA1323]">Live Feed</div>
+          <div className="font-mono text-[10px] text-[#5C3820]">{activeFeed.length} active</div>
         </div>
         {activeFeed.length === 0
-          ? <div className="py-10 text-center text-[11px] uppercase tracking-widest text-[#4B5563]">No active messages</div>
+          ? <div className="py-10 text-center text-[11px] uppercase tracking-widest text-[#5C3820]">No active messages</div>
           : (
-            <div className="divide-y divide-[#21262d]">
+            <div className="divide-y divide-[#281408]">
               {activeFeed.map(entry => {
                 const c = OPS_CAT_CFG[entry.category] || OPS_CAT_CFG.INFO
                 const exp = expiresIn(entry.expires_at)
                 return (
-                  <div key={entry.id} className={`flex items-start gap-3 px-5 py-4 ${entry.pinned ? 'bg-[#D29922]/5' : ''}`}>
+                  <div key={entry.id} className={`flex items-start gap-3 px-5 py-4 ${entry.pinned ? 'bg-[#C4952A]/5' : ''}`}>
                     <div className="mt-0.5 shrink-0 rounded px-2 py-0.5 text-[9px] font-black uppercase tracking-wider"
                       style={{ color: c.color, background: `${c.color}20` }}>
                       {entry.category}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-semibold leading-snug text-[#C9D1D9]">{entry.message}</div>
+                      <div className="text-sm font-semibold leading-snug text-[#F2E4D0]">{entry.message}</div>
                       <div className="mt-1 flex flex-wrap items-center gap-3">
-                        <span className="font-mono text-[10px] text-[#4B5563]">{relativeTime(entry.created_at)}</span>
-                        {entry.pinned && <span className="text-[10px] font-bold text-[#D29922]">📌 Pinned</span>}
-                        {exp && <span className={`text-[10px] ${exp === 'expired' ? 'text-[#F85149]' : 'text-[#4B5563]'}`}>{exp}</span>}
+                        <span className="font-mono text-[10px] text-[#5C3820]">{relativeTime(entry.created_at)}</span>
+                        {entry.pinned && <span className="text-[10px] font-bold text-[#C4952A]">📌 Pinned</span>}
+                        {exp && <span className={`text-[10px] ${exp === 'expired' ? 'text-[#E83025]' : 'text-[#5C3820]'}`}>{exp}</span>}
                       </div>
                     </div>
                     <div className="flex shrink-0 items-center gap-1.5">
                       <button type="button" onClick={() => handlePin(entry)}
-                        className={`p-1.5 transition-colors ${entry.pinned ? 'text-[#D29922]' : 'text-[#4B5563] hover:text-[#D29922]'}`}>
+                        className={`p-1.5 transition-colors ${entry.pinned ? 'text-[#C4952A]' : 'text-[#5C3820] hover:text-[#C4952A]'}`}>
                         {entry.pinned ? <Pin size={14} /> : <PinOff size={14} />}
                       </button>
                       <button type="button" onClick={() => { if (window.confirm('Delete?')) remove(entry.id) }}
-                        className="p-1.5 text-[#4B5563] hover:text-[#F85149] transition-colors">
+                        className="p-1.5 text-[#5C3820] hover:text-[#E83025] transition-colors">
                         <Trash2 size={14} />
                       </button>
                     </div>
@@ -926,14 +926,14 @@ function AdminOpsFeed() {
 
       {/* Expired */}
       {expiredFeed.length > 0 && (
-        <div className="mt-4 rounded border border-[#21262d] bg-[#0d1117] px-5 py-3">
+        <div className="mt-4 rounded border border-[#281408] bg-[#140a06] px-5 py-3">
           <div className="flex items-center justify-between">
-            <div className="text-[10px] uppercase tracking-widest text-[#4B5563]">
+            <div className="text-[10px] uppercase tracking-widest text-[#5C3820]">
               {expiredFeed.length} expired {expiredFeed.length === 1 ? 'entry' : 'entries'}
             </div>
             <button type="button"
               onClick={async () => { if (window.confirm('Delete all expired?')) for (const e of expiredFeed) await remove(e.id) }}
-              className="text-[10px] font-bold uppercase tracking-wider text-[#4B5563] hover:text-[#F85149]">
+              className="text-[10px] font-bold uppercase tracking-wider text-[#5C3820] hover:text-[#E83025]">
               Clear all
             </button>
           </div>
@@ -970,12 +970,12 @@ function Dashboard({ onLogout }) {
   const [active, setActive] = useState('settings')
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#0b0f14] text-[#C9D1D9]">
+    <div className="flex h-screen overflow-hidden bg-[#100805] text-[#F2E4D0]">
       {/* Sidebar */}
-      <div className="flex w-56 shrink-0 flex-col border-r border-[#30363D] bg-[#0d1117]">
-        <div className="border-b border-[#30363D] px-5 py-4">
-          <div className="text-[9px] font-black uppercase tracking-[0.35em] text-[#58A6FF]">Phoenix Operation</div>
-          <div className="text-sm font-black uppercase tracking-[0.06em] text-[#F0F6FC]">Admin Dashboard</div>
+      <div className="flex w-56 shrink-0 flex-col border-r border-[#3C1810] bg-[#140a06]">
+        <div className="border-b border-[#3C1810] px-5 py-4">
+          <div className="text-[9px] font-black uppercase tracking-[0.35em] text-[#BA1323]">Phoenix Operation</div>
+          <div className="text-sm font-black uppercase tracking-[0.06em] text-[#FAF0E8]">Admin Dashboard</div>
         </div>
 
         <nav className="flex-1 overflow-y-auto py-2">
@@ -983,8 +983,8 @@ function Dashboard({ onLogout }) {
             <button key={id} onClick={() => setActive(id)}
               className={`flex w-full items-center gap-3 px-5 py-2.5 text-left text-[11px] font-black uppercase tracking-wider transition-colors ${
                 active === id
-                  ? 'border-l-2 border-[#58A6FF] bg-[#58A6FF]/10 text-[#58A6FF]'
-                  : 'text-[#4B5563] hover:bg-[#21262d] hover:text-[#8B949E]'
+                  ? 'border-l-2 border-[#BA1323] bg-[#BA1323]/10 text-[#BA1323]'
+                  : 'text-[#5C3820] hover:bg-[#281408] hover:text-[#9A8070]'
               }`}>
               <Icon size={14} />
               {label}
@@ -992,13 +992,13 @@ function Dashboard({ onLogout }) {
           ))}
         </nav>
 
-        <div className="border-t border-[#30363D] p-4 flex flex-col gap-2">
+        <div className="border-t border-[#3C1810] p-4 flex flex-col gap-2">
           <a href="/command" target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-[#4B5563] hover:text-[#8B949E] transition-colors">
+            className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-[#5C3820] hover:text-[#9A8070] transition-colors">
             <Monitor size={12} />Open War Room ↗
           </a>
           <button onClick={onLogout}
-            className="flex w-full items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-[#4B5563] hover:text-[#F85149] transition-colors">
+            className="flex w-full items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-[#5C3820] hover:text-[#E83025] transition-colors">
             <LogOut size={12} />Logout
           </button>
         </div>
@@ -1029,14 +1029,14 @@ function PasswordGate({ onAuth }) {
   }
 
   return (
-    <div className="flex h-screen items-center justify-center bg-[#0b0f14]">
-      <div className="w-full max-w-sm rounded border border-[#30363D] bg-[#161b22] p-8">
-        <div className="mb-1 text-[10px] font-black uppercase tracking-[0.3em] text-[#58A6FF]">Phoenix Operation</div>
-        <div className="mb-6 text-2xl font-black uppercase tracking-[0.08em] text-[#F0F6FC]">Admin Access</div>
+    <div className="flex h-screen items-center justify-center bg-[#100805]">
+      <div className="w-full max-w-sm rounded border border-[#3C1810] bg-[#1C0C08] p-8">
+        <div className="mb-1 text-[10px] font-black uppercase tracking-[0.3em] text-[#BA1323]">Phoenix Operation</div>
+        <div className="mb-6 text-2xl font-black uppercase tracking-[0.08em] text-[#FAF0E8]">Admin Access</div>
         <form onSubmit={submit} className="flex flex-col gap-4">
           <input type="password" className={inp} placeholder="Password" value={val} autoFocus
             onChange={e => { setVal(e.target.value); setErr(false) }} />
-          {err && <div className="text-[11px] font-bold text-[#F85149]">Incorrect password</div>}
+          {err && <div className="text-[11px] font-bold text-[#E83025]">Incorrect password</div>}
           <button type="submit" className={btnPrimary}>Enter</button>
         </form>
       </div>

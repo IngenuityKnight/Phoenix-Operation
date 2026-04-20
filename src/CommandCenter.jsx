@@ -2,12 +2,12 @@ import { useEffect, useState } from 'react'
 import { useSupabaseTable } from './hooks/useSupabaseTable'
 
 const OPS_CATEGORY_CONFIG = {
-  INFO:      { color: '#58A6FF' },
-  ARRIVAL:   { color: '#3FB950' },
-  TRANSPORT: { color: '#D29922' },
-  FOOD:      { color: '#F78166' },
-  ALERT:     { color: '#F85149' },
-  HYPE:      { color: '#A371F7' },
+  INFO:      { color: '#BA1323' },
+  ARRIVAL:   { color: '#48B040' },
+  TRANSPORT: { color: '#C4952A' },
+  FOOD:      { color: '#D4601A' },
+  ALERT:     { color: '#E83025' },
+  HYPE:      { color: '#C4952A' },
 }
 
 // ─── UPDATE THIS TO THE ACTUAL WEDDING DATE ───────────────────────────────────
@@ -18,35 +18,35 @@ const LAT = 33.4942
 const LON = -111.9261
 
 const TICKER_ITEMS = [
-  'No pork in the house',
-  'Pool opens 8am',
-  'Golf tee time 7am Friday — do not sleep in',
-  'Venmo @NoahKing for the house split',
-  'Steakhouse Night Friday — reservation for 14 confirmed',
-  'Sunscreen is not optional in Scottsdale',
-  'Quiet hours 11pm weekends per Scottsdale ordinance',
-  'Checkout Saturday 11am — pack before you party Saturday night',
-  'Hydrate. Scottsdale in May will humble you.',
-  'Last one in the pool buys the next round',
+  'Bertha makes the drinks — do not argue with Bertha',
+  'Sunscreen is mandatory — Scottsdale will cook you',
+  'Golf tee time Friday morning — DO NOT sleep in',
+  'Cien Agave dinner Friday night — do not hit on the waitress',
+  'Talking Stick Casino Friday night — Scotty runs the blackjack table',
+  'Gold Water Brewing → Craft 64 → One Handsome Bastard Saturday',
+  'Colonary Dropout → The Bar Saturday night',
+  'Freakman gets bacon, eggs, and freak juice every morning',
+  'What happens in Scottsdale stays in Scottsdale (mostly)',
+  'No supplements in the bathroom after 10pm, Shaun',
 ]
 
 const STATUS_CONFIG = {
-  Arrived:    { label: 'ON SITE',     color: '#3FB950', dim: false },
-  Landed:     { label: 'LANDED',      color: '#3FB950', dim: false },
-  'En Route': { label: 'IN TRANSIT',  color: '#D29922', dim: false },
-  Confirmed:  { label: 'CONFIRMED',   color: '#58A6FF', dim: false },
-  TBD:        { label: 'TBD',         color: '#4B5563', dim: true  },
+  Arrived:    { label: 'ON SITE',     color: '#48B040', dim: false },
+  Landed:     { label: 'LANDED',      color: '#48B040', dim: false },
+  'En Route': { label: 'IN TRANSIT',  color: '#C4952A', dim: false },
+  Confirmed:  { label: 'CONFIRMED',   color: '#BA1323', dim: false },
+  TBD:        { label: 'TBD',         color: '#5C3820', dim: true  },
 }
 
 const CATEGORY_COLOR = {
-  nightlife:  '#A371F7',
-  food:       '#D29922',
-  golf:       '#3FB950',
-  pool:       '#58A6FF',
-  transport:  '#F78166',
-  activity:   '#39D353',
-  activities: '#39D353',
-  other:      '#8B949E',
+  nightlife:  '#BA1323',
+  food:       '#C4952A',
+  golf:       '#48B040',
+  pool:       '#D4601A',
+  transport:  '#9A8070',
+  activity:   '#C4952A',
+  activities: '#C4952A',
+  other:      '#9A8070',
 }
 
 // ─── HELPERS ─────────────────────────────────────────────────────────────────
@@ -85,28 +85,28 @@ function nowTimeStr()  { const n = new Date(); return `${pad(n.getHours())}:${pa
 
 function TopBar({ clock, cdText }) {
   return (
-    <div className="shrink-0 border-b-2 border-[#58A6FF]/40 bg-[#080a0d] px-8 py-3">
+    <div className="shrink-0 border-b-2 border-[#BA1323]/40 bg-[#0A0604] px-8 py-3">
       <div className="flex items-center justify-between">
-        <div className="text-4xl font-black uppercase tracking-[0.18em] text-[#58A6FF]">
-          Phoenix Operation
+        <div className="text-4xl font-black uppercase tracking-[0.18em] text-[#BA1323]">
+          Freakman Operation
         </div>
         <div className="text-center">
-          <div className="text-2xl font-black uppercase tracking-[0.25em] text-[#F0F6FC]">
-            Scottsdale · May 28–31
+          <div className="text-2xl font-black uppercase tracking-[0.25em] text-[#FAF0E8]">
+            Scottsdale · May 29–31
           </div>
         </div>
         <div className="text-right">
-          <div className="font-mono text-3xl font-black tabular-nums text-[#F0F6FC]">{clock}</div>
+          <div className="font-mono text-3xl font-black tabular-nums text-[#FAF0E8]">{clock}</div>
         </div>
       </div>
       {/* Wedding countdown bar */}
-      <div className="mt-2 flex items-center justify-center gap-3 border-t border-[#21262d] pt-2">
-        <span className="text-lg font-black uppercase tracking-[0.18em] text-[#C9D1D9]">
-          Noah King — Bachelor
+      <div className="mt-2 flex items-center justify-center gap-3 border-t border-[#281408] pt-2">
+        <span className="text-lg font-black uppercase tracking-[0.18em] text-[#F2E4D0]">
+          Freakman — Bachelor
         </span>
-        <span className="text-[#30363D]">·</span>
-        <span className="font-mono text-2xl font-black text-[#F85149]">{cdText}</span>
-        <span className="text-lg font-black uppercase tracking-[0.12em] text-[#4B5563]">
+        <span className="text-[#3C1810]">·</span>
+        <span className="font-mono text-2xl font-black text-[#E83025]">{cdText}</span>
+        <span className="text-lg font-black uppercase tracking-[0.12em] text-[#5C3820]">
           until he belongs to someone else
         </span>
       </div>
@@ -125,23 +125,23 @@ function ArrivalsBoard({ arrivals }) {
   })
 
   return (
-    <div className="flex h-full flex-col border-r border-[#30363D]">
+    <div className="flex h-full flex-col border-r border-[#3C1810]">
       {/* Section header */}
-      <div className="shrink-0 border-b border-[#30363D] bg-[#0d1117] px-6 py-3">
-        <div className="text-[10px] font-black uppercase tracking-[0.35em] text-[#4B5563]">Live Arrivals</div>
-        <div className="text-2xl font-black uppercase tracking-[0.08em] text-[#F0F6FC]">PHX Inbound</div>
+      <div className="shrink-0 border-b border-[#3C1810] bg-[#140A06] px-6 py-3">
+        <div className="text-[10px] font-black uppercase tracking-[0.35em] text-[#5C3820]">Live Arrivals</div>
+        <div className="text-2xl font-black uppercase tracking-[0.08em] text-[#FAF0E8]">PHX Inbound</div>
       </div>
       {/* Column headers */}
-      <div className="shrink-0 grid grid-cols-[1fr_80px_72px_100px] gap-3 border-b border-[#21262d] bg-[#080a0d] px-6 py-2">
+      <div className="shrink-0 grid grid-cols-[1fr_80px_72px_100px] gap-3 border-b border-[#281408] bg-[#0A0604] px-6 py-2">
         {['Passenger', 'Flight', 'ETA', 'Status'].map((h) => (
-          <div key={h} className="text-[9px] font-black uppercase tracking-[0.3em] text-[#4B5563]">{h}</div>
+          <div key={h} className="text-[9px] font-black uppercase tracking-[0.3em] text-[#5C3820]">{h}</div>
         ))}
       </div>
       {/* Rows */}
       <div className="flex-1 overflow-hidden">
         {sorted.length === 0 ? (
           <div className="flex h-full items-center justify-center">
-            <span className="text-sm uppercase tracking-widest text-[#4B5563]">No arrivals logged</span>
+            <span className="text-sm uppercase tracking-widest text-[#5C3820]">No arrivals logged</span>
           </div>
         ) : (
           sorted.map((a) => {
@@ -150,20 +150,20 @@ function ArrivalsBoard({ arrivals }) {
             return (
               <div
                 key={a.id}
-                className={`grid grid-cols-[1fr_80px_72px_100px] items-center gap-3 border-b border-[#21262d] px-6 py-3 transition-opacity ${arrived ? 'opacity-40' : ''}`}
+                className={`grid grid-cols-[1fr_80px_72px_100px] items-center gap-3 border-b border-[#281408] px-6 py-3 transition-opacity ${arrived ? 'opacity-40' : ''}`}
               >
                 <div>
-                  <div className="text-xl font-black leading-tight text-[#F0F6FC]">{a.name}</div>
+                  <div className="text-xl font-black leading-tight text-[#FAF0E8]">{a.name}</div>
                   {a.pickup_needed && !arrived && (
-                    <div className="mt-0.5 inline-block rounded bg-[#F85149]/20 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-[#F85149]">
+                    <div className="mt-0.5 inline-block rounded bg-[#E83025]/20 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-[#E83025]">
                       Needs Ride
                     </div>
                   )}
                 </div>
-                <div className="font-mono text-base font-semibold text-[#8B949E]">
+                <div className="font-mono text-base font-semibold text-[#9A8070]">
                   {a.flight_number || '—'}
                 </div>
-                <div className="font-mono text-lg font-black text-[#C9D1D9]">
+                <div className="font-mono text-lg font-black text-[#F2E4D0]">
                   {a.arrival_time ? a.arrival_time.slice(0, 5) : '—'}
                 </div>
                 <div
@@ -192,7 +192,6 @@ function MissionCenter({ itinerary, weather, now }) {
     .filter((i) => i.day_date === today)
     .sort((a, b) => (a.start_time || '').localeCompare(b.start_time || ''))
 
-  // Tonight: next upcoming event today (prefer nightlife/food/activity)
   const upcoming = todayItems.filter((i) => (i.start_time || '23:59') >= nowTime)
   const tonightEvent =
     upcoming.find((i) => ['nightlife', 'food', 'activity', 'activities'].includes(i.category)) ||
@@ -204,95 +203,95 @@ function MissionCenter({ itinerary, weather, now }) {
     .sort((a, b) => (a.start_time || '').localeCompare(b.start_time || ''))[0]
 
   return (
-    <div className="flex h-full flex-col border-r border-[#30363D]">
+    <div className="flex h-full flex-col border-r border-[#3C1810]">
       {/* Tonight header */}
-      <div className="shrink-0 border-b border-[#30363D] bg-[#0d1117] px-6 py-3">
-        <div className="text-[10px] font-black uppercase tracking-[0.35em] text-[#4B5563]">Tonight's Mission</div>
-        <div className="text-2xl font-black uppercase tracking-[0.08em] text-[#F0F6FC]">Primary Objective</div>
+      <div className="shrink-0 border-b border-[#3C1810] bg-[#140A06] px-6 py-3">
+        <div className="text-[10px] font-black uppercase tracking-[0.35em] text-[#5C3820]">Tonight's Plan</div>
+        <div className="text-2xl font-black uppercase tracking-[0.08em] text-[#FAF0E8]">Primary Objective</div>
       </div>
 
       {/* Tonight's event — big card */}
-      <div className="shrink-0 border-b border-[#30363D] p-6">
+      <div className="shrink-0 border-b border-[#3C1810] p-6">
         {tonightEvent ? (
           <>
             <div
               className="text-[10px] font-black uppercase tracking-[0.3em]"
-              style={{ color: CATEGORY_COLOR[tonightEvent.category] || '#8B949E' }}
+              style={{ color: CATEGORY_COLOR[tonightEvent.category] || '#9A8070' }}
             >
               {tonightEvent.category}
             </div>
-            <div className="mt-2 text-3xl font-black leading-tight text-[#F0F6FC]">
+            <div className="mt-2 text-3xl font-black leading-tight text-[#FAF0E8]">
               {tonightEvent.title}
             </div>
             {tonightEvent.location_name && (
-              <div className="mt-1.5 text-base text-[#8B949E]">{tonightEvent.location_name}</div>
+              <div className="mt-1.5 text-base text-[#9A8070]">{tonightEvent.location_name}</div>
             )}
             {tonightEvent.start_time && (
-              <div className="mt-3 font-mono text-6xl font-black leading-none" style={{ color: CATEGORY_COLOR[tonightEvent.category] || '#58A6FF' }}>
+              <div className="mt-3 font-mono text-6xl font-black leading-none" style={{ color: CATEGORY_COLOR[tonightEvent.category] || '#BA1323' }}>
                 {tonightEvent.start_time.slice(0, 5)}
               </div>
             )}
             {tonightEvent.notes && (
-              <div className="mt-2 text-sm italic text-[#4B5563]">{tonightEvent.notes}</div>
+              <div className="mt-2 text-sm italic text-[#5C3820]">{tonightEvent.notes}</div>
             )}
           </>
         ) : (
-          <div className="text-lg text-[#4B5563]">No events scheduled for today</div>
+          <div className="text-lg text-[#5C3820]">No events scheduled for today</div>
         )}
       </div>
 
       {/* Tomorrow header */}
-      <div className="shrink-0 border-b border-[#30363D] bg-[#0d1117] px-6 py-2.5">
-        <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#4B5563]">Tomorrow — First Move</div>
+      <div className="shrink-0 border-b border-[#3C1810] bg-[#140A06] px-6 py-2.5">
+        <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#5C3820]">Tomorrow — First Move</div>
       </div>
 
       {/* Tomorrow's first event */}
-      <div className="shrink-0 border-b border-[#30363D] px-6 py-4">
+      <div className="shrink-0 border-b border-[#3C1810] px-6 py-4">
         {tomorrowFirst ? (
           <div className="flex items-center justify-between gap-4">
             <div>
-              <div className="text-xl font-black text-[#C9D1D9]">{tomorrowFirst.title}</div>
+              <div className="text-xl font-black text-[#F2E4D0]">{tomorrowFirst.title}</div>
               {tomorrowFirst.location_name && (
-                <div className="text-sm text-[#8B949E]">{tomorrowFirst.location_name}</div>
+                <div className="text-sm text-[#9A8070]">{tomorrowFirst.location_name}</div>
               )}
             </div>
             {tomorrowFirst.start_time && (
-              <div className="shrink-0 font-mono text-2xl font-black text-[#8B949E]">
+              <div className="shrink-0 font-mono text-2xl font-black text-[#9A8070]">
                 {tomorrowFirst.start_time.slice(0, 5)}
               </div>
             )}
           </div>
         ) : (
-          <div className="text-sm text-[#4B5563]">Nothing logged yet</div>
+          <div className="text-sm text-[#5C3820]">Nothing logged yet</div>
         )}
       </div>
 
       {/* Weather */}
-      <div className="shrink-0 border-b border-[#30363D] bg-[#0d1117] px-6 py-2.5">
-        <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#4B5563]">Scottsdale Conditions</div>
+      <div className="shrink-0 border-b border-[#3C1810] bg-[#140A06] px-6 py-2.5">
+        <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#5C3820]">Scottsdale Conditions</div>
       </div>
       <div className="flex-1 p-6">
         {weather ? (
           <>
             <div className="flex items-end gap-5">
-              <div className="font-mono text-8xl font-black leading-none text-[#F0F6FC]">
+              <div className="font-mono text-8xl font-black leading-none text-[#FAF0E8]">
                 {Math.round(weather.temp)}°
               </div>
               <div className="mb-2">
-                <div className="text-xl font-bold text-[#C9D1D9]">{weather.desc}</div>
-                <div className="text-sm text-[#8B949E]">{Math.round(weather.wind)} mph wind</div>
+                <div className="text-xl font-bold text-[#F2E4D0]">{weather.desc}</div>
+                <div className="text-sm text-[#9A8070]">{Math.round(weather.wind)} mph wind</div>
               </div>
             </div>
             {weather.temp >= 95 && (
-              <div className="mt-4 rounded border border-[#F85149]/50 bg-[#F85149]/10 px-4 py-2.5">
-                <div className="text-sm font-black uppercase tracking-wider text-[#F85149]">
+              <div className="mt-4 rounded border border-[#E83025]/50 bg-[#E83025]/10 px-4 py-2.5">
+                <div className="text-sm font-black uppercase tracking-wider text-[#E83025]">
                   ⚠ Extreme Heat Alert — Hydrate. Limit midday exposure.
                 </div>
               </div>
             )}
           </>
         ) : (
-          <div className="text-sm text-[#4B5563]">Fetching conditions…</div>
+          <div className="text-sm text-[#5C3820]">Fetching conditions…</div>
         )}
       </div>
     </div>
@@ -310,43 +309,43 @@ function StatsPanel({ arrivals, now }) {
 
   return (
     <div className="flex flex-col shrink-0">
-      <div className="border-b border-[#30363D] bg-[#0d1117] px-5 py-2.5">
-        <div className="text-[10px] font-black uppercase tracking-[0.35em] text-[#4B5563]">Live Headcount</div>
+      <div className="border-b border-[#3C1810] bg-[#140A06] px-5 py-2.5">
+        <div className="text-[10px] font-black uppercase tracking-[0.35em] text-[#5C3820]">Live Headcount</div>
       </div>
 
       {/* Compact 2×2 */}
-      <div className="grid grid-cols-2 gap-px bg-[#21262d]">
+      <div className="grid grid-cols-2 gap-px bg-[#281408]">
         {[
-          { label: 'On Site',    value: onSite,    color: '#3FB950' },
-          { label: 'In Transit', value: inTransit, color: '#D29922' },
-          { label: 'TBD',        value: tbd,        color: '#4B5563' },
-          { label: 'Confirmed',  value: confirmed,  color: '#58A6FF' },
+          { label: 'On Site',    value: onSite,    color: '#48B040' },
+          { label: 'In Transit', value: inTransit, color: '#C4952A' },
+          { label: 'TBD',        value: tbd,        color: '#5C3820' },
+          { label: 'Confirmed',  value: confirmed,  color: '#BA1323' },
         ].map(({ label, value, color }) => (
-          <div key={label} className="flex flex-col items-center justify-center bg-[#0d1117] py-3">
+          <div key={label} className="flex flex-col items-center justify-center bg-[#140A06] py-3">
             <div className="font-mono text-4xl font-black" style={{ color }}>{value}</div>
-            <div className="mt-0.5 text-[9px] font-black uppercase tracking-widest text-[#4B5563]">{label}</div>
+            <div className="mt-0.5 text-[9px] font-black uppercase tracking-widest text-[#5C3820]">{label}</div>
           </div>
         ))}
       </div>
 
       {/* Ride needed */}
-      <div className="border-t border-[#30363D] bg-[#0d1117] px-5 py-2">
-        <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#F85149]">
+      <div className="border-t border-[#3C1810] bg-[#140A06] px-5 py-2">
+        <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#E83025]">
           Needs a Ride {needsRide.length > 0 ? `(${needsRide.length})` : ''}
         </div>
       </div>
-      <div className="border-b border-[#30363D] px-5 py-3">
+      <div className="border-b border-[#3C1810] px-5 py-3">
         {needsRide.length === 0 ? (
           <div className="flex items-center gap-1.5">
-            <div className="h-1.5 w-1.5 rounded-full bg-[#3FB950]" />
-            <span className="text-sm font-semibold text-[#3FB950]">All covered</span>
+            <div className="h-1.5 w-1.5 rounded-full bg-[#48B040]" />
+            <span className="text-sm font-semibold text-[#48B040]">All covered</span>
           </div>
         ) : (
           <div className="flex flex-col gap-1.5">
             {needsRide.map((a) => (
               <div key={a.id} className="flex items-center justify-between">
-                <div className="text-base font-black text-[#F0F6FC]">{a.name}</div>
-                <div className="font-mono text-sm font-semibold text-[#D29922]">
+                <div className="text-base font-black text-[#FAF0E8]">{a.name}</div>
+                <div className="font-mono text-sm font-semibold text-[#C4952A]">
                   {a.arrival_time ? a.arrival_time.slice(0, 5) : 'TBD'}
                 </div>
               </div>
@@ -369,7 +368,7 @@ function OpsFeed({ feed }) {
       if (!a.pinned && b.pinned) return 1
       return new Date(b.created_at) - new Date(a.created_at)
     })
-    .slice(0, 7) // show latest 7 on TV
+    .slice(0, 7)
 
   function relTime(ts) {
     const diff = Date.now() - new Date(ts)
@@ -381,23 +380,23 @@ function OpsFeed({ feed }) {
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
-      <div className="shrink-0 border-b border-[#30363D] bg-[#0d1117] px-5 py-2.5">
+      <div className="shrink-0 border-b border-[#3C1810] bg-[#140A06] px-5 py-2.5">
         <div className="flex items-center gap-2">
           <div
-            className="h-1.5 w-1.5 rounded-full bg-[#3FB950]"
+            className="h-1.5 w-1.5 rounded-full bg-[#48B040]"
             style={{ animation: 'pulse-dot 2s ease-in-out infinite' }}
           />
-          <div className="text-[10px] font-black uppercase tracking-[0.35em] text-[#4B5563]">Messages</div>
+          <div className="text-[10px] font-black uppercase tracking-[0.35em] text-[#5C3820]">Messages</div>
         </div>
       </div>
 
       <div className="flex-1 overflow-hidden">
         {active.length === 0 ? (
           <div className="flex h-full items-center justify-center">
-            <span className="text-xs uppercase tracking-widest text-[#21262d]">No messages</span>
+            <span className="text-xs uppercase tracking-widest text-[#281408]">No messages</span>
           </div>
         ) : (
-          <div className="flex flex-col divide-y divide-[#21262d]">
+          <div className="flex flex-col divide-y divide-[#281408]">
             {active.map((entry) => {
               const c = OPS_CATEGORY_CONFIG[entry.category] || OPS_CATEGORY_CONFIG.INFO
               const isAlert = entry.category === 'ALERT'
@@ -416,11 +415,11 @@ function OpsFeed({ feed }) {
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
                       {entry.pinned && (
-                        <div className="mb-1 text-[9px] font-black uppercase tracking-widest text-[#D29922]">
+                        <div className="mb-1 text-[9px] font-black uppercase tracking-widest text-[#C4952A]">
                           📌 Pinned
                         </div>
                       )}
-                      <div className="text-base font-bold leading-snug text-[#F0F6FC]">
+                      <div className="text-base font-bold leading-snug text-[#FAF0E8]">
                         {entry.message}
                       </div>
                       <div className="mt-1 flex items-center gap-2">
@@ -430,7 +429,7 @@ function OpsFeed({ feed }) {
                         >
                           {entry.category}
                         </span>
-                        <span className="font-mono text-[10px] text-[#4B5563]">
+                        <span className="font-mono text-[10px] text-[#5C3820]">
                           {relTime(entry.created_at)}
                         </span>
                       </div>
@@ -457,11 +456,11 @@ function EmergencyOverlay({ entry }) {
     >
       {/* Top label */}
       <div className="mb-8 flex items-center gap-4">
-        <div className="h-px w-24 bg-[#F85149]/60" />
-        <div className="text-[13px] font-black uppercase tracking-[0.6em] text-[#F85149]">
+        <div className="h-px w-24 bg-[#E83025]/60" />
+        <div className="text-[13px] font-black uppercase tracking-[0.6em] text-[#E83025]">
           ⚠ Emergency Alert
         </div>
-        <div className="h-px w-24 bg-[#F85149]/60" />
+        <div className="h-px w-24 bg-[#E83025]/60" />
       </div>
 
       {/* Message */}
@@ -473,8 +472,8 @@ function EmergencyOverlay({ entry }) {
       </div>
 
       {/* Bottom label */}
-      <div className="mt-10 text-[11px] font-black uppercase tracking-[0.4em] text-[#F85149]/60">
-        Phoenix Operation · War Room
+      <div className="mt-10 text-[11px] font-black uppercase tracking-[0.4em] text-[#E83025]/60">
+        Freakman Operation · War Room
       </div>
     </div>
   )
@@ -484,18 +483,17 @@ function EmergencyOverlay({ entry }) {
 
 function BottomTicker({ items }) {
   const text = (items && items.length > 0 ? items : TICKER_ITEMS).join('     ·     ')
-  // Duplicate for seamless loop
   const full = `${text}     ·     ${text}`
   return (
-    <div className="shrink-0 flex items-center border-t-2 border-[#58A6FF]/30 bg-[#080a0d]" style={{ height: '48px' }}>
-      <div className="shrink-0 flex h-full items-center bg-[#58A6FF] px-5">
-        <span className="text-[10px] font-black uppercase tracking-[0.35em] text-[#080a0d] whitespace-nowrap">
+    <div className="shrink-0 flex items-center border-t-2 border-[#BA1323]/30 bg-[#0A0604]" style={{ height: '48px' }}>
+      <div className="shrink-0 flex h-full items-center bg-[#BA1323] px-5">
+        <span className="text-[10px] font-black uppercase tracking-[0.35em] text-[#FAF0E8] whitespace-nowrap">
           Messages
         </span>
       </div>
       <div className="flex-1 overflow-hidden">
         <div
-          className="whitespace-nowrap font-mono text-sm font-semibold uppercase tracking-widest text-[#8B949E]"
+          className="whitespace-nowrap font-mono text-sm font-semibold uppercase tracking-widest text-[#9A8070]"
           style={{ animation: 'ticker 80s linear infinite', display: 'inline-block', paddingLeft: '3rem' }}
         >
           {full}
@@ -511,10 +509,10 @@ function LiveIndicator({ lastUpdated }) {
   return (
     <div className="absolute bottom-14 right-3 flex items-center gap-1.5">
       <div
-        className="h-1.5 w-1.5 rounded-full bg-[#3FB950]"
+        className="h-1.5 w-1.5 rounded-full bg-[#48B040]"
         style={{ animation: 'pulse-dot 2s ease-in-out infinite' }}
       />
-      <span className="font-mono text-[9px] text-[#21262d]">
+      <span className="font-mono text-[9px] text-[#281408]">
         {lastUpdated < 60 ? `${lastUpdated}s ago` : `${Math.floor(lastUpdated / 60)}m ago`}
       </span>
     </div>
@@ -594,7 +592,7 @@ export default function CommandCenter() {
   ) || null
 
   return (
-    <div className="relative flex h-screen flex-col overflow-hidden bg-[#0a0c10] text-[#C9D1D9]">
+    <div className="relative flex h-screen flex-col overflow-hidden bg-[#0C0605] text-[#F2E4D0]">
       <EmergencyOverlay entry={emergencyAlert} />
       <TopBar clock={clock} cdText={cdText} />
 

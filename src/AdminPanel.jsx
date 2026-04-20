@@ -6,12 +6,12 @@ import { useSupabaseTable } from './hooks/useSupabaseTable'
 const CATEGORIES = ['INFO', 'ARRIVAL', 'TRANSPORT', 'FOOD', 'ALERT', 'HYPE']
 
 const CATEGORY_CONFIG = {
-  INFO:      { color: '#58A6FF', label: 'INFO' },
-  ARRIVAL:   { color: '#3FB950', label: 'ARRIVAL' },
-  TRANSPORT: { color: '#D29922', label: 'TRANSPORT' },
-  FOOD:      { color: '#F78166', label: 'FOOD' },
-  ALERT:     { color: '#F85149', label: 'ALERT' },
-  HYPE:      { color: '#A371F7', label: 'HYPE' },
+  INFO:      { color: '#BA1323', label: 'INFO' },
+  ARRIVAL:   { color: '#48B040', label: 'ARRIVAL' },
+  TRANSPORT: { color: '#C4952A', label: 'TRANSPORT' },
+  FOOD:      { color: '#D4601A', label: 'FOOD' },
+  ALERT:     { color: '#E83025', label: 'ALERT' },
+  HYPE:      { color: '#C4952A', label: 'HYPE' },
 }
 
 const EXPIRE_OPTIONS = [
@@ -88,28 +88,28 @@ export default function AdminPanel() {
   const cfg = (cat) => CATEGORY_CONFIG[cat] || CATEGORY_CONFIG.INFO
 
   return (
-    <div className="min-h-screen bg-[#0b0f14] text-[#C9D1D9]">
+    <div className="min-h-screen bg-[#100805] text-[#F2E4D0]">
 
       {/* ── Header ── */}
-      <div className="border-b border-[#30363D] bg-[#0d1117] px-5 py-4">
-        <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#58A6FF]">Phoenix Operation</div>
-        <div className="text-xl font-black uppercase tracking-[0.08em] text-[#F0F6FC]">Ops Feed Control</div>
-        <div className="mt-1 text-[11px] text-[#4B5563]">
-          Posts appear instantly on the war room at <span className="text-[#58A6FF]">/command</span> · Post from <span className="text-[#58A6FF]">/post</span>
+      <div className="border-b border-[#3C1810] bg-[#140a06] px-5 py-4">
+        <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#BA1323]">Phoenix Operation</div>
+        <div className="text-xl font-black uppercase tracking-[0.08em] text-[#FAF0E8]">Ops Feed Control</div>
+        <div className="mt-1 text-[11px] text-[#5C3820]">
+          Posts appear instantly on the war room at <span className="text-[#BA1323]">/command</span> · Post from <span className="text-[#BA1323]">/post</span>
         </div>
       </div>
 
       <div className="mx-auto max-w-2xl px-4 py-6 space-y-6">
 
         {/* ── Quick Post Form ── */}
-        <div className="rounded border border-[#30363D] bg-[#161b22]">
-          <div className="border-b border-[#30363D] px-5 py-3">
-            <div className="text-[10px] font-black uppercase tracking-[0.25em] text-[#58A6FF]">Quick Post</div>
+        <div className="rounded border border-[#3C1810] bg-[#1C0C08]">
+          <div className="border-b border-[#3C1810] px-5 py-3">
+            <div className="text-[10px] font-black uppercase tracking-[0.25em] text-[#BA1323]">Quick Post</div>
           </div>
           <form onSubmit={handlePost} className="p-5 space-y-4">
             {/* Message */}
             <textarea
-              className="w-full rounded border border-[#30363D] bg-[#0d1117] px-4 py-3 text-sm text-[#C9D1D9] placeholder-[#4B5563] focus:border-[#58A6FF] focus:outline-none resize-none"
+              className="w-full rounded border border-[#3C1810] bg-[#140a06] px-4 py-3 text-sm text-[#F2E4D0] placeholder-[#5C3820] focus:border-[#BA1323] focus:outline-none resize-none"
               rows={3}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
@@ -119,7 +119,7 @@ export default function AdminPanel() {
 
             {/* Category pills */}
             <div>
-              <div className="mb-2 text-[9px] font-black uppercase tracking-widest text-[#8B949E]">Category</div>
+              <div className="mb-2 text-[9px] font-black uppercase tracking-widest text-[#9A8070]">Category</div>
               <div className="flex flex-wrap gap-2">
                 {CATEGORIES.map((cat) => {
                   const c = cfg(cat)
@@ -131,7 +131,7 @@ export default function AdminPanel() {
                       onClick={() => setCategory(cat)}
                       className="rounded px-3 py-1.5 text-[10px] font-black uppercase tracking-wider transition-all"
                       style={{
-                        color: active ? '#0d1117' : c.color,
+                        color: active ? '#140a06' : c.color,
                         background: active ? c.color : `${c.color}18`,
                         border: `1px solid ${active ? c.color : `${c.color}40`}`,
                       }}
@@ -151,8 +151,8 @@ export default function AdminPanel() {
                 onClick={() => setPinned((p) => !p)}
                 className={`flex items-center gap-2 rounded border px-3 py-2 text-[10px] font-bold uppercase tracking-wider transition-colors ${
                   pinned
-                    ? 'border-[#D29922] bg-[#D29922]/15 text-[#D29922]'
-                    : 'border-[#30363D] bg-[#0d1117] text-[#4B5563] hover:text-[#8B949E]'
+                    ? 'border-[#C4952A] bg-[#C4952A]/15 text-[#C4952A]'
+                    : 'border-[#3C1810] bg-[#140a06] text-[#5C3820] hover:text-[#9A8070]'
                 }`}
               >
                 <Pin size={12} />
@@ -161,7 +161,7 @@ export default function AdminPanel() {
 
               {/* Auto-expire */}
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-black uppercase tracking-widest text-[#8B949E]">Expires:</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-[#9A8070]">Expires:</span>
                 <div className="flex gap-1">
                   {EXPIRE_OPTIONS.map((opt) => (
                     <button
@@ -170,8 +170,8 @@ export default function AdminPanel() {
                       onClick={() => setExpireMinutes(opt.value)}
                       className={`rounded px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wider transition-colors ${
                         expireMinutes === opt.value
-                          ? 'bg-[#58A6FF]/20 text-[#58A6FF] border border-[#58A6FF]/40'
-                          : 'border border-[#30363D] text-[#4B5563] hover:text-[#8B949E]'
+                          ? 'bg-[#BA1323]/20 text-[#BA1323] border border-[#BA1323]/40'
+                          : 'border border-[#3C1810] text-[#5C3820] hover:text-[#9A8070]'
                       }`}
                     >
                       {opt.label}
@@ -184,7 +184,7 @@ export default function AdminPanel() {
             <button
               type="submit"
               disabled={posting || !message.trim()}
-              className="w-full rounded bg-[#58A6FF] py-3 text-sm font-black uppercase tracking-wider text-[#0d1117] hover:bg-[#79b8ff] disabled:opacity-40 transition-colors"
+              className="w-full rounded bg-[#BA1323] py-3 text-sm font-black uppercase tracking-wider text-[#140a06] hover:bg-[#79b8ff] disabled:opacity-40 transition-colors"
             >
               {posting ? 'Posting…' : 'Post to War Room'}
             </button>
@@ -192,25 +192,25 @@ export default function AdminPanel() {
         </div>
 
         {/* ── Active Feed ── */}
-        <div className="rounded border border-[#30363D] bg-[#161b22]">
-          <div className="flex items-center justify-between border-b border-[#30363D] px-5 py-3">
-            <div className="text-[10px] font-black uppercase tracking-[0.25em] text-[#58A6FF]">
+        <div className="rounded border border-[#3C1810] bg-[#1C0C08]">
+          <div className="flex items-center justify-between border-b border-[#3C1810] px-5 py-3">
+            <div className="text-[10px] font-black uppercase tracking-[0.25em] text-[#BA1323]">
               Live Feed
             </div>
-            <div className="font-mono text-[10px] text-[#4B5563]">{activeFeed.length} active</div>
+            <div className="font-mono text-[10px] text-[#5C3820]">{activeFeed.length} active</div>
           </div>
 
           {activeFeed.length === 0 ? (
-            <div className="py-10 text-center text-[11px] uppercase tracking-widest text-[#4B5563]">
+            <div className="py-10 text-center text-[11px] uppercase tracking-widest text-[#5C3820]">
               No active messages
             </div>
           ) : (
-            <div className="divide-y divide-[#21262d]">
+            <div className="divide-y divide-[#281408]">
               {activeFeed.map((entry) => {
                 const c = cfg(entry.category)
                 const exp = expiresIn(entry.expires_at)
                 return (
-                  <div key={entry.id} className={`flex items-start gap-3 px-5 py-4 ${entry.pinned ? 'bg-[#D29922]/5' : ''}`}>
+                  <div key={entry.id} className={`flex items-start gap-3 px-5 py-4 ${entry.pinned ? 'bg-[#C4952A]/5' : ''}`}>
                     {/* Category badge */}
                     <div
                       className="mt-0.5 shrink-0 rounded px-2 py-0.5 text-[9px] font-black uppercase tracking-wider"
@@ -221,14 +221,14 @@ export default function AdminPanel() {
 
                     {/* Message + meta */}
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-semibold leading-snug text-[#C9D1D9]">{entry.message}</div>
+                      <div className="text-sm font-semibold leading-snug text-[#F2E4D0]">{entry.message}</div>
                       <div className="mt-1 flex flex-wrap items-center gap-3">
-                        <span className="font-mono text-[10px] text-[#4B5563]">{relativeTime(entry.created_at)}</span>
+                        <span className="font-mono text-[10px] text-[#5C3820]">{relativeTime(entry.created_at)}</span>
                         {entry.pinned && (
-                          <span className="text-[10px] font-bold text-[#D29922]">📌 Pinned</span>
+                          <span className="text-[10px] font-bold text-[#C4952A]">📌 Pinned</span>
                         )}
                         {exp && (
-                          <span className={`text-[10px] ${exp === 'expired' ? 'text-[#F85149]' : 'text-[#4B5563]'}`}>
+                          <span className={`text-[10px] ${exp === 'expired' ? 'text-[#E83025]' : 'text-[#5C3820]'}`}>
                             {exp}
                           </span>
                         )}
@@ -240,7 +240,7 @@ export default function AdminPanel() {
                       <button
                         type="button"
                         onClick={() => handlePin(entry)}
-                        className={`p-1.5 transition-colors ${entry.pinned ? 'text-[#D29922]' : 'text-[#4B5563] hover:text-[#D29922]'}`}
+                        className={`p-1.5 transition-colors ${entry.pinned ? 'text-[#C4952A]' : 'text-[#5C3820] hover:text-[#C4952A]'}`}
                         title={entry.pinned ? 'Unpin' : 'Pin to top'}
                       >
                         {entry.pinned ? <Pin size={14} /> : <PinOff size={14} />}
@@ -248,7 +248,7 @@ export default function AdminPanel() {
                       <button
                         type="button"
                         onClick={() => { if (window.confirm('Delete this entry?')) remove(entry.id) }}
-                        className="p-1.5 text-[#4B5563] hover:text-[#F85149] transition-colors"
+                        className="p-1.5 text-[#5C3820] hover:text-[#E83025] transition-colors"
                       >
                         <Trash2 size={14} />
                       </button>
@@ -262,9 +262,9 @@ export default function AdminPanel() {
 
         {/* ── Expired entries (collapsed) ── */}
         {expiredFeed.length > 0 && (
-          <div className="rounded border border-[#21262d] bg-[#0d1117] px-5 py-3">
+          <div className="rounded border border-[#281408] bg-[#140a06] px-5 py-3">
             <div className="flex items-center justify-between">
-              <div className="text-[10px] uppercase tracking-widest text-[#4B5563]">
+              <div className="text-[10px] uppercase tracking-widest text-[#5C3820]">
                 {expiredFeed.length} expired {expiredFeed.length === 1 ? 'entry' : 'entries'}
               </div>
               <button
@@ -274,7 +274,7 @@ export default function AdminPanel() {
                     for (const e of expiredFeed) await remove(e.id)
                   }
                 }}
-                className="text-[10px] font-bold uppercase tracking-wider text-[#4B5563] hover:text-[#F85149]"
+                className="text-[10px] font-bold uppercase tracking-wider text-[#5C3820] hover:text-[#E83025]"
               >
                 Clear all
               </button>

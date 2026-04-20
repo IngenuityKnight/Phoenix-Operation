@@ -27,11 +27,11 @@ import RosterPanel from './panels/RosterPanel'
 
 const MSG_CATS = ['INFO', 'ARRIVAL', 'HYPE', 'FOOD', 'TRANSPORT']
 const MSG_CAT_CFG = {
-  INFO:      { color: '#58A6FF', emoji: '💬' },
-  ARRIVAL:   { color: '#3FB950', emoji: '✈️' },
-  HYPE:      { color: '#A371F7', emoji: '🔥' },
-  FOOD:      { color: '#F78166', emoji: '🍔' },
-  TRANSPORT: { color: '#D29922', emoji: '🚗' },
+  INFO:      { color: '#BA1323', emoji: '💬' },
+  ARRIVAL:   { color: '#48B040', emoji: '✈️' },
+  HYPE:      { color: '#C4952A', emoji: '🔥' },
+  FOOD:      { color: '#D4601A', emoji: '🍔' },
+  TRANSPORT: { color: '#9A8070', emoji: '🚗' },
 }
 
 function relTime(ts) {
@@ -67,21 +67,21 @@ function MessagesDrawer({ onClose }) {
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
       {/* Drawer */}
-      <div className="relative flex w-full flex-col bg-[#0d1117] md:w-96 md:border-l md:border-[#30363D]" style={{ maxHeight: '85vh' }}>
+      <div className="relative flex w-full flex-col bg-[#140a06] md:w-96 md:border-l md:border-[#3C1810]" style={{ maxHeight: '85vh' }}>
         {/* Header */}
-        <div className="flex shrink-0 items-center justify-between border-b border-[#30363D] px-5 py-4">
+        <div className="flex shrink-0 items-center justify-between border-b border-[#3C1810] px-5 py-4">
           <div>
-            <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#58A6FF]">Phoenix Operation</div>
-            <div className="text-base font-black uppercase tracking-[0.06em] text-[#F0F6FC]">Messages</div>
+            <div className="text-[10px] font-black uppercase tracking-[0.3em] text-[#BA1323]">Freakman Operation</div>
+            <div className="text-base font-black uppercase tracking-[0.06em] text-[#FAF0E8]">Messages</div>
           </div>
-          <button onClick={onClose} className="p-1.5 text-[#8B949E] hover:text-[#C9D1D9]"><X size={18} /></button>
+          <button onClick={onClose} className="p-1.5 text-[#9A8070] hover:text-[#F2E4D0]"><X size={18} /></button>
         </div>
 
         {/* Compose */}
-        <div className="shrink-0 border-b border-[#30363D] bg-[#161b22] p-4">
+        <div className="shrink-0 border-b border-[#3C1810] bg-[#1C0C08] p-4">
           <form onSubmit={handlePost} className="flex flex-col gap-3">
             <input
-              className="w-full rounded border border-[#30363D] bg-[#0d1117] px-3 py-2 text-sm text-[#C9D1D9] placeholder-[#4B5563] focus:border-[#58A6FF] focus:outline-none"
+              className="w-full rounded border border-[#3C1810] bg-[#140a06] px-3 py-2 text-sm text-[#F2E4D0] placeholder-[#5C3820] focus:border-[#BA1323] focus:outline-none"
               placeholder="Your name"
               value={name}
               onChange={e => setName(e.target.value)}
@@ -89,7 +89,7 @@ function MessagesDrawer({ onClose }) {
             />
             <div className="flex gap-2">
               <input
-                className="flex-1 rounded border border-[#30363D] bg-[#0d1117] px-3 py-2 text-sm text-[#C9D1D9] placeholder-[#4B5563] focus:border-[#58A6FF] focus:outline-none"
+                className="flex-1 rounded border border-[#3C1810] bg-[#140a06] px-3 py-2 text-sm text-[#F2E4D0] placeholder-[#5C3820] focus:border-[#BA1323] focus:outline-none"
                 placeholder="Send a message to the group…"
                 value={text}
                 onChange={e => setText(e.target.value)}
@@ -98,7 +98,7 @@ function MessagesDrawer({ onClose }) {
               <button
                 type="submit"
                 disabled={posting || !text.trim() || !name.trim()}
-                className="flex shrink-0 items-center gap-1.5 rounded bg-[#58A6FF] px-4 py-2 text-[11px] font-black uppercase tracking-wider text-[#0d1117] hover:bg-[#79b8ff] disabled:opacity-40 transition-colors"
+                className="flex shrink-0 items-center gap-1.5 rounded bg-[#BA1323] px-4 py-2 text-[11px] font-black uppercase tracking-wider text-[#FAF0E8] hover:bg-[#D4152A] disabled:opacity-40 transition-colors"
               >
                 <Send size={13} />
               </button>
@@ -111,7 +111,7 @@ function MessagesDrawer({ onClose }) {
                 return (
                   <button key={c} type="button" onClick={() => setCat(c)}
                     className="rounded px-2.5 py-1 text-[10px] font-black uppercase tracking-wider transition-all"
-                    style={{ color: active ? '#0d1117' : cfg.color, background: active ? cfg.color : `${cfg.color}18`, border: `1px solid ${active ? cfg.color : `${cfg.color}40`}` }}>
+                    style={{ color: active ? '#FAF0E8' : cfg.color, background: active ? cfg.color : `${cfg.color}18`, border: `1px solid ${active ? cfg.color : `${cfg.color}40`}` }}>
                     {cfg.emoji} {c}
                   </button>
                 )
@@ -123,21 +123,21 @@ function MessagesDrawer({ onClose }) {
         {/* Feed */}
         <div className="flex-1 overflow-y-auto">
           {active.length === 0 && (
-            <div className="flex h-full items-center justify-center py-12 text-sm text-[#4B5563]">No messages yet</div>
+            <div className="flex h-full items-center justify-center py-12 text-sm text-[#5C3820]">No messages yet</div>
           )}
           {active.map(entry => {
             const cfg = MSG_CAT_CFG[entry.category] || MSG_CAT_CFG.INFO
             return (
-              <div key={entry.id} className="flex gap-3 border-b border-[#21262d] px-5 py-3"
+              <div key={entry.id} className="flex gap-3 border-b border-[#281408] px-5 py-3"
                 style={{ borderLeft: `3px solid ${cfg.color}30` }}>
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm leading-snug text-[#C9D1D9]">{entry.message}</div>
+                  <div className="text-sm leading-snug text-[#F2E4D0]">{entry.message}</div>
                   <div className="mt-1 flex items-center gap-2">
                     <span className="rounded px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider"
                       style={{ color: cfg.color, background: `${cfg.color}20` }}>
                       {entry.category}
                     </span>
-                    <span className="font-mono text-[10px] text-[#4B5563]">{relTime(entry.created_at)}</span>
+                    <span className="font-mono text-[10px] text-[#5C3820]">{relTime(entry.created_at)}</span>
                   </div>
                 </div>
               </div>
@@ -162,16 +162,16 @@ const NAV_ITEMS = [
 
 function ShellNav({ selectedPage, onSelectPage }) {
   return (
-    <aside className="flex w-full shrink-0 flex-col border-b border-[#30363D] bg-[#0d1117] md:w-72 md:border-b-0 md:border-r">
-      <div className="border-b border-[#30363D] px-4 py-4 md:px-5 md:py-5">
-        <div className="text-[10px] font-black uppercase tracking-[0.24em] text-[#58A6FF]">
-          Phoenix Bachelor Command
+    <aside className="flex w-full shrink-0 flex-col border-b border-[#3C1810] bg-[#140a06] md:w-72 md:border-b-0 md:border-r">
+      <div className="border-b border-[#3C1810] px-4 py-4 md:px-5 md:py-5">
+        <div className="text-[10px] font-black uppercase tracking-[0.24em] text-[#BA1323]">
+          Freakman Bachelor Command
         </div>
-        <div className="mt-1 text-lg font-black uppercase tracking-[0.08em] text-[#F0F6FC] md:mt-2 md:text-xl">
+        <div className="mt-1 text-lg font-black uppercase tracking-[0.08em] text-[#FAF0E8] md:mt-2 md:text-xl">
           Scottsdale Ops
         </div>
-        <div className="mt-1 hidden text-[11px] leading-relaxed text-[#8B949E] md:mt-2 md:block">
-          May 28 to May 31. One house, one roster, one clean command surface.
+        <div className="mt-1 hidden text-[11px] leading-relaxed text-[#9A8070] md:mt-2 md:block">
+          May 29 to May 31. One house, one roster, one Freakman weekend.
         </div>
       </div>
 
@@ -187,8 +187,8 @@ function ShellNav({ selectedPage, onSelectPage }) {
               onClick={() => onSelectPage(item.id)}
               className={`flex items-center justify-center gap-2 border px-2 py-3 text-center text-[10px] font-black uppercase tracking-[0.12em] transition-colors md:justify-start md:px-3 md:py-3 md:text-[11px] md:tracking-[0.16em] ${item.desktopOnly ? 'hidden md:flex' : ''} ${
                 active
-                  ? 'border-[#58A6FF] bg-[#58A6FF]/10 text-[#58A6FF]'
-                  : 'border-[#30363D] bg-[#161b22] text-[#8B949E] hover:border-[#58A6FF]/40 hover:text-[#C9D1D9]'
+                  ? 'border-[#BA1323] bg-[#BA1323]/10 text-[#BA1323]'
+                  : 'border-[#3C1810] bg-[#1C0C08] text-[#9A8070] hover:border-[#BA1323]/40 hover:text-[#F2E4D0]'
               }`}
             >
               <Icon size={16} />
@@ -208,20 +208,20 @@ function AppHeader({ selectedPage }) {
   )
 
   return (
-    <header className="hidden items-center justify-between border-b border-[#30363D] bg-[#11161d] px-6 py-4 md:flex">
+    <header className="hidden items-center justify-between border-b border-[#3C1810] bg-[#180C07] px-6 py-4 md:flex">
       <div>
-        <div className="text-[10px] font-black uppercase tracking-[0.22em] text-[#8B949E]">
-          Phoenix Command Center
+        <div className="text-[10px] font-black uppercase tracking-[0.22em] text-[#9A8070]">
+          Freakman Command Center
         </div>
-        <div className="mt-1 text-lg font-black uppercase tracking-[0.08em] text-[#F0F6FC]">
+        <div className="mt-1 text-lg font-black uppercase tracking-[0.08em] text-[#FAF0E8]">
           {current.label}
         </div>
       </div>
       <div className="text-right">
-        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#58A6FF]">
+        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#BA1323]">
           Theater
         </div>
-        <div className="mt-1 text-sm font-semibold text-[#C9D1D9]">
+        <div className="mt-1 text-sm font-semibold text-[#F2E4D0]">
           Scottsdale / Phoenix Metro
         </div>
       </div>
@@ -243,7 +243,7 @@ export default function App() {
   if (selectedPage === 'roster')    content = <RosterPanel />
 
   return (
-    <div className="flex flex-col bg-[#0b0f14] text-[#C9D1D9] md:h-screen md:flex-row">
+    <div className="flex flex-col bg-[#100805] text-[#F2E4D0] md:h-screen md:flex-row">
       <ShellNav selectedPage={selectedPage} onSelectPage={setSelectedPage} />
       <main className="flex flex-1 flex-col md:min-h-0 md:overflow-hidden">
         <AppHeader selectedPage={selectedPage} />
@@ -253,7 +253,7 @@ export default function App() {
       {/* Floating messages button */}
       <button
         onClick={() => setMsgOpen(true)}
-        className="fixed bottom-6 right-5 z-30 flex items-center gap-2 rounded-full border border-[#58A6FF]/40 bg-[#161b22] px-4 py-3 text-[11px] font-black uppercase tracking-wider text-[#58A6FF] shadow-lg shadow-black/40 hover:bg-[#58A6FF]/10 transition-colors"
+        className="fixed bottom-6 right-5 z-30 flex items-center gap-2 rounded-full border border-[#BA1323]/40 bg-[#1C0C08] px-4 py-3 text-[11px] font-black uppercase tracking-wider text-[#BA1323] shadow-lg shadow-black/40 hover:bg-[#BA1323]/10 transition-colors"
         style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
       >
         <MessageSquarePlus size={16} />

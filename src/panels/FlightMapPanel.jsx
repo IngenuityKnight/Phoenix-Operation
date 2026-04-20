@@ -16,11 +16,11 @@ const PHX  = { longitude: -112.0078, latitude: 33.4373 }
 const HOUSE = { longitude: -111.9141, latitude: 33.4955 }
 
 const STATUS_COLORS = {
-  TBD:        '#8B949E',
-  Confirmed:  '#58A6FF',
-  'En Route': '#D29922',
-  Landed:     '#A371F7',
-  Arrived:    '#3FB950',
+  TBD:        '#9A8070',
+  Confirmed:  '#BA1323',
+  'En Route': '#C4952A',
+  Landed:     '#C4952A',
+  Arrived:    '#48B040',
 }
 
 const AIRPORT_DB = {
@@ -134,7 +134,7 @@ export default function FlightMapPanel() {
 
   if (!MAPBOX_TOKEN) {
     return (
-      <div className="flex flex-1 items-center justify-center text-[#4B5563]">
+      <div className="flex flex-1 items-center justify-center text-[#5C3820]">
         <span className="text-[11px] uppercase tracking-widest">Mapbox token not configured</span>
       </div>
     )
@@ -144,24 +144,24 @@ export default function FlightMapPanel() {
     <div className="flex flex-col md:min-h-0 md:flex-1 md:overflow-hidden">
 
       {/* Header */}
-      <div className="border-b border-[#30363D] px-4 py-4 md:px-6">
+      <div className="border-b border-[#3C1810] px-4 py-4 md:px-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#8B949E]">Ops Map</div>
-            <div className="mt-0.5 text-lg font-bold text-[#C9D1D9]">Inbound Flights · PHX</div>
+            <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#9A8070]">Ops Map</div>
+            <div className="mt-0.5 text-lg font-bold text-[#F2E4D0]">Inbound Flights · PHX</div>
           </div>
           <div className="flex flex-wrap items-center gap-4">
             {/* Stats */}
             {[
-              { count: stats.arrived,   color: '#3FB950', label: 'Arrived' },
-              { count: stats.landed,    color: '#A371F7', label: 'Landed' },
-              { count: stats.enRoute,   color: '#D29922', label: 'En Route' },
-              { count: stats.confirmed, color: '#58A6FF', label: 'Confirmed' },
+              { count: stats.arrived,   color: '#48B040', label: 'Arrived' },
+              { count: stats.landed,    color: '#C4952A', label: 'Landed' },
+              { count: stats.enRoute,   color: '#C4952A', label: 'En Route' },
+              { count: stats.confirmed, color: '#BA1323', label: 'Confirmed' },
             ].map(({ count, color, label }) => (
               <div key={label} className="flex items-center gap-1.5">
                 <span className="h-2 w-2 rounded-full" style={{ background: color }} />
                 <span className="font-mono text-sm font-black" style={{ color }}>{count}</span>
-                <span className="text-[9px] uppercase tracking-widest text-[#8B949E]">{label}</span>
+                <span className="text-[9px] uppercase tracking-widest text-[#9A8070]">{label}</span>
               </div>
             ))}
             {/* Style switcher */}
@@ -173,8 +173,8 @@ export default function FlightMapPanel() {
                   onClick={() => setStyleKey(key)}
                   className={`border px-3 py-1.5 text-[10px] font-black uppercase tracking-wider transition-colors ${
                     styleKey === key
-                      ? 'border-[#58A6FF] bg-[#58A6FF]/10 text-[#58A6FF]'
-                      : 'border-[#30363D] bg-[#161b22] text-[#8B949E] hover:border-[#58A6FF]/40 hover:text-[#C9D1D9]'
+                      ? 'border-[#BA1323] bg-[#BA1323]/10 text-[#BA1323]'
+                      : 'border-[#3C1810] bg-[#1C0C08] text-[#9A8070] hover:border-[#BA1323]/40 hover:text-[#F2E4D0]'
                   }`}
                 >
                   {label}
@@ -214,7 +214,7 @@ export default function FlightMapPanel() {
             {/* PHX airport */}
             <Marker longitude={PHX.longitude} latitude={PHX.latitude} anchor="center">
               <div
-                className="h-4 w-4 rounded-full border-2 border-[#ff7b72] bg-[#F85149] shadow-lg"
+                className="h-4 w-4 rounded-full border-2 border-[#ff7b72] bg-[#E83025] shadow-lg"
                 title="PHX — Phoenix Sky Harbor"
               />
             </Marker>
@@ -222,7 +222,7 @@ export default function FlightMapPanel() {
             {/* Command house */}
             <Marker longitude={HOUSE.longitude} latitude={HOUSE.latitude} anchor="center">
               <div
-                className="h-3.5 w-3.5 rounded-full border-2 border-[#56d364] bg-[#3FB950] shadow-lg"
+                className="h-3.5 w-3.5 rounded-full border-2 border-[#56d364] bg-[#48B040] shadow-lg"
                 title="Command House — Scottsdale"
               />
             </Marker>
@@ -231,7 +231,7 @@ export default function FlightMapPanel() {
             {originMarkers.map((ap) => (
               <Marker key={ap.code} longitude={ap.lng} latitude={ap.lat} anchor="center">
                 <div
-                  className="h-2.5 w-2.5 rounded-full border border-[#0b0f14]"
+                  className="h-2.5 w-2.5 rounded-full border border-[#100805]"
                   style={{ background: ap.color }}
                   title={`${ap.code} — ${ap.city}`}
                 />
@@ -240,17 +240,17 @@ export default function FlightMapPanel() {
           </Map>
 
           {/* Legend */}
-          <div className="absolute bottom-4 left-4 rounded border border-[#30363D] bg-[#0d1117]/90 p-3 backdrop-blur-sm">
-            <div className="mb-2 text-[8px] font-black uppercase tracking-[0.2em] text-[#4B5563]">Legend</div>
+          <div className="absolute bottom-4 left-4 rounded border border-[#3C1810] bg-[#140a06]/90 p-3 backdrop-blur-sm">
+            <div className="mb-2 text-[8px] font-black uppercase tracking-[0.2em] text-[#5C3820]">Legend</div>
             <div className="space-y-1.5">
               {[
-                { color: '#F85149', label: 'PHX Airport', dot: true },
-                { color: '#3FB950', label: 'Command House', dot: true },
-                { color: '#3FB950', label: 'Arrived' },
-                { color: '#A371F7', label: 'Landed' },
-                { color: '#D29922', label: 'En Route' },
-                { color: '#58A6FF', label: 'Confirmed' },
-                { color: '#8B949E', label: 'TBD' },
+                { color: '#E83025', label: 'PHX Airport', dot: true },
+                { color: '#48B040', label: 'Command House', dot: true },
+                { color: '#48B040', label: 'Arrived' },
+                { color: '#C4952A', label: 'Landed' },
+                { color: '#C4952A', label: 'En Route' },
+                { color: '#BA1323', label: 'Confirmed' },
+                { color: '#9A8070', label: 'TBD' },
               ].map((item) => (
                 <div key={item.label} className="flex items-center gap-2">
                   {item.dot ? (
@@ -260,7 +260,7 @@ export default function FlightMapPanel() {
                       <line x1="0" y1="2" x2="16" y2="2" stroke={item.color} strokeWidth="2" strokeDasharray="4 2" />
                     </svg>
                   )}
-                  <span className="text-[9px] text-[#8B949E]">{item.label}</span>
+                  <span className="text-[9px] text-[#9A8070]">{item.label}</span>
                 </div>
               ))}
             </div>
@@ -268,28 +268,28 @@ export default function FlightMapPanel() {
         </div>
 
         {/* Sidebar — desktop only */}
-        <div className="hidden w-56 flex-col overflow-auto border-l border-[#30363D] md:flex">
-          <div className="border-b border-[#30363D] px-4 py-3">
-            <div className="text-[9px] font-black uppercase tracking-[0.2em] text-[#4B5563]">Flight Origins</div>
+        <div className="hidden w-56 flex-col overflow-auto border-l border-[#3C1810] md:flex">
+          <div className="border-b border-[#3C1810] px-4 py-3">
+            <div className="text-[9px] font-black uppercase tracking-[0.2em] text-[#5C3820]">Flight Origins</div>
           </div>
           {arrivals.length === 0 ? (
-            <div className="flex flex-1 items-center justify-center text-[10px] uppercase tracking-widest text-[#4B5563]">
+            <div className="flex flex-1 items-center justify-center text-[10px] uppercase tracking-widest text-[#5C3820]">
               No arrivals tracked
             </div>
           ) : (
-            <div className="flex flex-col divide-y divide-[#21262d]">
+            <div className="flex flex-col divide-y divide-[#281408]">
               {Object.entries(byOrigin).map(([code, people]) => {
                 const airport = AIRPORT_DB[code]
                 return (
                   <div key={code} className="px-4 py-3">
                     <div className="mb-1.5 flex items-center gap-2">
-                      <Plane size={10} className="shrink-0 text-[#58A6FF]" />
-                      <span className="font-mono text-[11px] font-black text-[#58A6FF]">{code}</span>
-                      {airport && <span className="truncate text-[9px] text-[#4B5563]">{airport.city}</span>}
+                      <Plane size={10} className="shrink-0 text-[#BA1323]" />
+                      <span className="font-mono text-[11px] font-black text-[#BA1323]">{code}</span>
+                      {airport && <span className="truncate text-[9px] text-[#5C3820]">{airport.city}</span>}
                     </div>
                     {people.map((person) => (
                       <div key={person.id} className="flex items-center justify-between py-0.5">
-                        <span className="text-[11px] text-[#C9D1D9]">{person.name}</span>
+                        <span className="text-[11px] text-[#F2E4D0]">{person.name}</span>
                         <span
                           className="rounded px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider"
                           style={{
