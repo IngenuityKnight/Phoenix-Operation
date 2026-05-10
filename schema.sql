@@ -30,6 +30,7 @@ create table if not exists logistics (
 create table if not exists arrivals (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz default now(),
+  roster_id uuid references roster(id) on delete set null,
   name text not null,
   transport text not null default 'flight' check (transport in ('flight','drive','rideshare','TBD')),
   arrival_date date,

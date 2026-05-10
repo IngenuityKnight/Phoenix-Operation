@@ -1,6 +1,14 @@
 import { useState } from 'react'
-import { Edit2, Plus, Trash2, Users, X } from 'lucide-react'
+import { Car, Edit2, Plane, Plus, Trash2, Users, X } from 'lucide-react'
 import { useSupabaseTable } from '../hooks/useSupabaseTable'
+
+const ARRIVAL_STATUS_COLORS = {
+  TBD:      'text-[#9A8070]',
+  Confirmed: 'text-[#BA1323]',
+  'En Route': 'text-[#C4952A]',
+  Landed:   'text-[#C4952A]',
+  Arrived:  'text-[#48B040]',
+}
 
 const STATUS_OPTIONS = ['Confirmed', 'Maybe', 'Ghosting']
 const STATUS_COLORS = {
@@ -107,7 +115,7 @@ function RosterForm({ initial, onSave, onCancel, saving }) {
   )
 }
 
-function RosterCard({ person, onEdit, onDelete }) {
+function RosterCard({ person, arrival, onEdit, onDelete }) {
   const colorCls = STATUS_COLORS[person.status] || STATUS_COLORS.Maybe
   const dotCls = STATUS_DOT[person.status] || 'bg-[#9A8070]'
   return (
@@ -125,6 +133,29 @@ function RosterCard({ person, onEdit, onDelete }) {
             {person.arrival_window && person.arrival_window !== 'TBD' && (
               <div className="mt-0.5 text-[10px] text-[#9A8070]">{person.arrival_window}</div>
             )}
+
+            {/* Linked arrival details */}
+            {arrival && (
+              <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1">
+                <span className="text-[#5C3820]">
+                  {arrival.transport === 'flight' ? <Plane size={10} /> : <Car size={10} />}
+                </span>
+                <span className="text-[10px] capitalize text-[#9A8070]">{arrival.transport}</span>
+                {arrival.flight_number && (
+                  <span className="font-mono text-[10px] text-[#BA1323]">{arrival.flight_number}</span>
+                )}
+                {arrival.arrival_time && (
+                  <span className="font-mono text-[10px] text-[#9A8070]">{arrival.arrival_time.slice(0, 5)}</span>
+                )}
+                <span className={`text-[9px] font-bold uppercase tracking-wider ${ARRIVAL_STATUS_COLORS[arrival.status] || 'text-[#9A8070]'}`}>
+                  {arrival.status}
+                </span>
+                {arrival.pickup_needed && arrival.status !== 'Arrived' && (
+                  <span className="text-[9px] font-bold uppercase tracking-wider text-[#C4952A]">· Pickup</span>
+                )}
+              </div>
+            )}
+
             <div className="mt-1 flex flex-wrap gap-3">
               {person.phone && (
                 <a href={`tel:${person.phone}`} className="text-[10px] text-[#BA1323] hover:underline">{person.phone}</a>
@@ -152,8 +183,13 @@ function RosterCard({ person, onEdit, onDelete }) {
 
 export default function RosterPanel() {
   const { rows: roster, loading, insert, update, remove } = useSupabaseTable('roster', { orderBy: 'name' })
+  const { rows: arrivals } = useSupabaseTable('arrivals', { orderBy: 'arrival_time' })
   const [modal, setModal] = useState(null)
   const [saving, setSaving] = useState(false)
+
+  function getArrival(person) {
+    return arrivals.find((a) => a.roster_id === person.id) ?? null
+  }
 
   async function handleSave(form) {
     setSaving(true)
@@ -242,7 +278,7 @@ export default function RosterPanel() {
               <div key={window} className="flex flex-col gap-2">
                 <div className="text-[9px] font-black uppercase tracking-[0.18em] text-[#5C3820]">{window}</div>
                 {people.map((p) => (
-                  <RosterCard key={p.id} person={p} onEdit={() => setModal({ mode: 'edit', row: p })} onDelete={() => { if (window.confirm?.('Remove this person?')) remove(p.id) }} />
+                  <RosterCard key={p.id} person={p} arrival={getArrival(p)} onEdit={() => setModal({ mode: 'edit', row: p })} onDelete={() => { if (window.confirm?.('Remove this person?')) remove(p.id) }} />
                 ))}
               </div>
             ))}
@@ -255,7 +291,7 @@ export default function RosterPanel() {
                 <div className="flex flex-col gap-2">
                   <div className="text-[9px] font-black uppercase tracking-[0.18em] text-[#5C3820]">Arrival TBD</div>
                   {noWindow.map((p) => (
-                    <RosterCard key={p.id} person={p} onEdit={() => setModal({ mode: 'edit', row: p })} onDelete={() => { if (window.confirm?.('Remove this person?')) remove(p.id) }} />
+                    <RosterCard key={p.id} person={p} arrival={getArrival(p)} onEdit={() => setModal({ mode: 'edit', row: p })} onDelete={() => { if (window.confirm?.('Remove this person?')) remove(p.id) }} />
                   ))}
                 </div>
               )
@@ -266,7 +302,7 @@ export default function RosterPanel() {
               <div className="flex flex-col gap-2">
                 <div className="text-[9px] font-black uppercase tracking-[0.18em] text-[#E83025]/50">Ghosting</div>
                 {roster.filter((p) => p.status === 'Ghosting').map((p) => (
-                  <RosterCard key={p.id} person={p} onEdit={() => setModal({ mode: 'edit', row: p })} onDelete={() => { if (window.confirm?.('Remove this person?')) remove(p.id) }} />
+                  <RosterCard key={p.id} person={p} arrival={getArrival(p)} onEdit={() => setModal({ mode: 'edit', row: p })} onDelete={() => { if (window.confirm?.('Remove this person?')) remove(p.id) }} />
                 ))}
               </div>
             )}

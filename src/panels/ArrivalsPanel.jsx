@@ -14,6 +14,7 @@ const STATUS_COLORS = {
 }
 
 const EMPTY_FORM = {
+  roster_id: null,
   name: '',
   transport: 'flight',
   arrival_date: '',
@@ -55,9 +56,25 @@ const inputCls =
 const selectCls =
   'rounded border border-[#3C1810] bg-[#140a06] px-3 py-2 text-sm text-[#F2E4D0] focus:border-[#BA1323] focus:outline-none'
 
-function ArrivalForm({ initial, onSave, onCancel, saving }) {
+function ArrivalForm({ initial, roster, onSave, onCancel, saving }) {
   const [form, setForm] = useState(initial || EMPTY_FORM)
+  const [nameMode, setNameMode] = useState(initial?.roster_id ? 'roster' : initial?.name ? 'manual' : 'roster')
   const set = (key, val) => setForm((prev) => ({ ...prev, [key]: val }))
+
+  function handleRosterSelect(e) {
+    const val = e.target.value
+    if (val === '__manual__') {
+      setNameMode('manual')
+      set('roster_id', null)
+      set('name', '')
+    } else {
+      const person = roster.find((r) => r.id === val)
+      if (person) {
+        set('roster_id', person.id)
+        set('name', person.name)
+      }
+    }
+  }
 
   return (
     <form
@@ -68,8 +85,38 @@ function ArrivalForm({ initial, onSave, onCancel, saving }) {
       className="flex flex-col gap-4"
     >
       <div className="grid grid-cols-2 gap-4">
-        <FormField label="Name">
-          <input className={inputCls} value={form.name} onChange={(e) => set('name', e.target.value)} placeholder="Full name" required />
+        <FormField label="Person">
+          {nameMode === 'roster' ? (
+            <select
+              className={selectCls}
+              value={form.roster_id || ''}
+              onChange={handleRosterSelect}
+              required={nameMode === 'roster'}
+            >
+              <option value="">— Select from roster —</option>
+              {roster.map((r) => (
+                <option key={r.id} value={r.id}>{r.name}</option>
+              ))}
+              <option value="__manual__">Other (not on roster)…</option>
+            </select>
+          ) : (
+            <div className="flex gap-2">
+              <input
+                className={`${inputCls} flex-1`}
+                value={form.name}
+                onChange={(e) => set('name', e.target.value)}
+                placeholder="Full name"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => { setNameMode('roster'); set('roster_id', null); set('name', '') }}
+                className="shrink-0 text-[10px] text-[#9A8070] hover:text-[#BA1323]"
+              >
+                ← Roster
+              </button>
+            </div>
+          )}
         </FormField>
         <FormField label="Status">
           <select className={selectCls} value={form.status} onChange={(e) => set('status', e.target.value)}>
@@ -133,6 +180,7 @@ function ArrivalForm({ initial, onSave, onCancel, saving }) {
 
 export default function ArrivalsPanel() {
   const { rows: arrivals, loading, insert, update, remove } = useSupabaseTable('arrivals', { orderBy: 'arrival_date', ascending: true })
+  const { rows: roster } = useSupabaseTable('roster', { orderBy: 'name' })
   const [modal, setModal] = useState(null) // null | { mode: 'add' } | { mode: 'edit', row }
   const [saving, setSaving] = useState(false)
   const [deletingId, setDeletingId] = useState(null)
@@ -355,6 +403,7 @@ export default function ArrivalsPanel() {
         >
           <ArrivalForm
             initial={modal.mode === 'edit' ? modal.row : undefined}
+            roster={roster}
             onSave={handleSave}
             onCancel={() => setModal(null)}
             saving={saving}
