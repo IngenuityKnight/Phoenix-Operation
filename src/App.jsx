@@ -253,7 +253,7 @@ export default function App() {
       {/* Floating messages button */}
       <button
         onClick={() => setMsgOpen(true)}
-        className="fixed bottom-6 right-5 z-30 flex items-center gap-2 rounded-full border border-[#BA1323]/40 bg-[#1C0C08] px-4 py-3 text-[11px] font-black uppercase tracking-wider text-[#BA1323] shadow-lg shadow-black/40 hover:bg-[#BA1323]/10 transition-colors"
+        className="fixed bottom-6 left-5 z-30 flex items-center gap-2 rounded-full border border-[#BA1323]/40 bg-[#1C0C08] px-4 py-3 text-[11px] font-black uppercase tracking-wider text-[#BA1323] shadow-lg shadow-black/40 hover:bg-[#BA1323]/10 transition-colors"
         style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
       >
         <MessageSquarePlus size={16} />
