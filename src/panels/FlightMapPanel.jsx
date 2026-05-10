@@ -3,6 +3,7 @@ import Map, { Layer, Marker, NavigationControl, Source } from 'react-map-gl/mapb
 import 'mapbox-gl/dist/mapbox-gl.css'
 import { Plane } from 'lucide-react'
 import { useSupabaseTable } from '../hooks/useSupabaseTable'
+import { AIRPORT_DB } from '../airportDB'
 
 const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN
 
@@ -23,46 +24,6 @@ const STATUS_COLORS = {
   Arrived:    '#48B040',
 }
 
-const AIRPORT_DB = {
-  PHX: { lat: 33.4373, lng: -112.0078, city: 'Phoenix, AZ' },
-  SDL: { lat: 33.6229, lng: -111.9109, city: 'Scottsdale, AZ' },
-  ORD: { lat: 41.9742, lng: -87.9073,  city: 'Chicago O\'Hare, IL' },
-  MDW: { lat: 41.7868, lng: -87.7522,  city: 'Chicago Midway, IL' },
-  ATL: { lat: 33.6367, lng: -84.4281,  city: 'Atlanta, GA' },
-  DFW: { lat: 32.8998, lng: -97.0403,  city: 'Dallas/Fort Worth, TX' },
-  DAL: { lat: 32.8474, lng: -96.8517,  city: 'Dallas Love Field, TX' },
-  LAX: { lat: 33.9425, lng: -118.4081, city: 'Los Angeles, CA' },
-  SFO: { lat: 37.6213, lng: -122.379,  city: 'San Francisco, CA' },
-  JFK: { lat: 40.6413, lng: -73.7781,  city: 'New York JFK, NY' },
-  LGA: { lat: 40.7769, lng: -73.874,   city: 'New York LaGuardia, NY' },
-  EWR: { lat: 40.6895, lng: -74.1745,  city: 'Newark, NJ' },
-  BOS: { lat: 42.3656, lng: -71.0096,  city: 'Boston, MA' },
-  MIA: { lat: 25.7959, lng: -80.287,   city: 'Miami, FL' },
-  DEN: { lat: 39.8561, lng: -104.6737, city: 'Denver, CO' },
-  SEA: { lat: 47.4502, lng: -122.3088, city: 'Seattle, WA' },
-  MSP: { lat: 44.8848, lng: -93.2223,  city: 'Minneapolis, MN' },
-  DTW: { lat: 42.2162, lng: -83.3554,  city: 'Detroit, MI' },
-  BWI: { lat: 39.1754, lng: -76.6684,  city: 'Baltimore, MD' },
-  IAD: { lat: 38.9531, lng: -77.4565,  city: 'Washington Dulles, DC' },
-  DCA: { lat: 38.8521, lng: -77.0377,  city: 'Washington Reagan, DC' },
-  STL: { lat: 38.7487, lng: -90.37,    city: 'St. Louis, MO' },
-  LAS: { lat: 36.084,  lng: -115.1537, city: 'Las Vegas, NV' },
-  SAN: { lat: 32.7338, lng: -117.1933, city: 'San Diego, CA' },
-  HOU: { lat: 29.6454, lng: -95.2789,  city: 'Houston Hobby, TX' },
-  IAH: { lat: 29.9902, lng: -95.3368,  city: 'Houston, TX' },
-  MSY: { lat: 29.9934, lng: -90.258,   city: 'New Orleans, LA' },
-  CLT: { lat: 35.214,  lng: -80.9431,  city: 'Charlotte, NC' },
-  PHL: { lat: 39.8721, lng: -75.2411,  city: 'Philadelphia, PA' },
-  PIT: { lat: 40.4919, lng: -80.2329,  city: 'Pittsburgh, PA' },
-  IND: { lat: 39.7173, lng: -86.2944,  city: 'Indianapolis, IN' },
-  MCI: { lat: 39.2976, lng: -94.7139,  city: 'Kansas City, MO' },
-  MKE: { lat: 42.9472, lng: -87.8966,  city: 'Milwaukee, WI' },
-  OAK: { lat: 37.7213, lng: -122.2208, city: 'Oakland, CA' },
-  SJC: { lat: 37.3626, lng: -121.9291, city: 'San Jose, CA' },
-  PDX: { lat: 45.5898, lng: -122.5951, city: 'Portland, OR' },
-  CLE: { lat: 41.4117, lng: -81.8498,  city: 'Cleveland, OH' },
-  CMH: { lat: 39.9998, lng: -82.8919,  city: 'Columbus, OH' },
-}
 
 function greatCirclePoints(from, to, steps = 80) {
   const toRad = (d) => (d * Math.PI) / 180

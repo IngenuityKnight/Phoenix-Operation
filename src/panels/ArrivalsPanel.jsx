@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Car, Edit2, Plane, Plus, Trash2, X } from 'lucide-react'
 import { useSupabaseTable } from '../hooks/useSupabaseTable'
+import { AIRPORT_DB } from '../airportDB'
 
 const TRANSPORT_OPTIONS = ['flight', 'drive', 'rideshare', 'TBD']
 const STATUS_OPTIONS = ['TBD', 'Confirmed', 'En Route', 'Landed', 'Arrived']
@@ -13,10 +14,15 @@ const STATUS_COLORS = {
   Arrived: 'text-[#48B040] bg-[#48B040]/10',
 }
 
+const AIRPORT_OPTIONS = Object.entries(AIRPORT_DB)
+  .filter(([code]) => code !== 'PHX' && code !== 'SDL')
+  .sort(([a], [b]) => a.localeCompare(b))
+
 const EMPTY_FORM = {
   roster_id: null,
   name: '',
   transport: 'flight',
+  origin_airport: '',
   arrival_date: '',
   arrival_time: '',
   flight_number: '',
@@ -134,6 +140,16 @@ function ArrivalForm({ initial, roster, onSave, onCancel, saving }) {
           <input className={inputCls} value={form.flight_number} onChange={(e) => set('flight_number', e.target.value)} placeholder="e.g. WN 1565" />
         </FormField>
       </div>
+      {form.transport === 'flight' && (
+        <FormField label="Origin Airport">
+          <select className={selectCls} value={form.origin_airport} onChange={(e) => set('origin_airport', e.target.value)}>
+            <option value="">— Select departure airport —</option>
+            {AIRPORT_OPTIONS.map(([code, { city }]) => (
+              <option key={code} value={code}>{code} — {city}</option>
+            ))}
+          </select>
+        </FormField>
+      )}
       <div className="grid grid-cols-2 gap-4">
         <FormField label="Arrival Date">
           <input type="date" className={inputCls} value={form.arrival_date} onChange={(e) => set('arrival_date', e.target.value)} />

@@ -33,6 +33,7 @@ create table if not exists arrivals (
   roster_id uuid references roster(id) on delete set null,
   name text not null,
   transport text not null default 'flight' check (transport in ('flight','drive','rideshare','TBD')),
+  origin_airport text,
   arrival_date date,
   arrival_time time,
   flight_number text,
