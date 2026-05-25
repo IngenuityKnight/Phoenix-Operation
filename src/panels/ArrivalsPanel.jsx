@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Car, Edit2, Plane, Plus, Trash2, X } from 'lucide-react'
+import { Fragment, useEffect, useState } from 'react'
+import { Car, Edit2, ExternalLink, Plane, Plus, Trash2, X } from 'lucide-react'
 import { useSupabaseTable } from '../hooks/useSupabaseTable'
 import { AIRPORT_DB } from '../airportDB'
 
@@ -32,6 +32,110 @@ const EMPTY_FORM = {
   notes: '',
 }
 
+// ── Time utilities ─────────────────────────────────────────────────────────────
+
+function parseArrivalDT(date, time) {
+  if (!date || !time) return null
+  const d = new Date(`${date}T${time}`)
+  return isNaN(d.getTime()) ? null : d
+}
+
+function relativeTime(dt, now) {
+  if (!dt) return null
+  const diffMs = dt - now
+  const diffMin = Math.round(diffMs / 60000)
+  const abs = Math.abs(diffMin)
+  if (abs < 1) return 'now'
+  const h = Math.floor(abs / 60)
+  const m = abs % 60
+  const label = h > 0 ? (m > 0 ? `${h}h ${m}m` : `${h}h`) : `${m}m`
+  return diffMin > 0 ? `in ${label}` : `${label} ago`
+}
+
+function fmt12(time) {
+  if (!time) return null
+  const [h, m] = time.split(':').map(Number)
+  return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${h >= 12 ? 'PM' : 'AM'}`
+}
+
+function localDateStr(offset = 0) {
+  const d = new Date()
+  d.setDate(d.getDate() + offset)
+  return [
+    d.getFullYear(),
+    String(d.getMonth() + 1).padStart(2, '0'),
+    String(d.getDate()).padStart(2, '0'),
+  ].join('-')
+}
+
+function dayLabel(dateStr) {
+  if (!dateStr || dateStr === 'unknown') return 'Date TBD'
+  if (dateStr === localDateStr(0)) return 'Today'
+  if (dateStr === localDateStr(1)) return 'Tomorrow'
+  const d = new Date(dateStr + 'T12:00')
+  return d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
+}
+
+function flightAwareUrl(flightNumber) {
+  if (!flightNumber) return null
+  return `https://www.flightaware.com/live/flight/${flightNumber.replace(/\s+/g, '').toUpperCase()}`
+}
+
+// ── Grouping ───────────────────────────────────────────────────────────────────
+
+function groupByDay(arrivals) {
+  const map = {}
+  for (const a of arrivals) {
+    const key = a.arrival_date || 'unknown'
+    ;(map[key] ||= []).push(a)
+  }
+  return Object.keys(map)
+    .sort((a, b) => {
+      if (a === 'unknown') return 1
+      if (b === 'unknown') return -1
+      return a.localeCompare(b)
+    })
+    .map(k => ({ date: k, arrivals: map[k] }))
+}
+
+function groupIntoWaves(dayArrivals) {
+  const sorted = [...dayArrivals].sort((a, b) => {
+    if (!a.arrival_time) return 1
+    if (!b.arrival_time) return -1
+    return a.arrival_time.localeCompare(b.arrival_time)
+  })
+  const waves = []
+  let wave = []
+  let waveStartMin = null
+  for (const a of sorted) {
+    if (!a.arrival_time) { waves.push([a]); continue }
+    const [h, m] = a.arrival_time.split(':').map(Number)
+    const min = h * 60 + m
+    if (waveStartMin === null || min - waveStartMin > 120) {
+      if (wave.length) waves.push(wave)
+      wave = [a]
+      waveStartMin = min
+    } else {
+      wave.push(a)
+    }
+  }
+  if (wave.length) waves.push(wave)
+  return waves
+}
+
+// ── Hooks ──────────────────────────────────────────────────────────────────────
+
+function useNow() {
+  const [now, setNow] = useState(() => new Date())
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60_000)
+    return () => clearInterval(id)
+  }, [])
+  return now
+}
+
+// ── Sub-components ─────────────────────────────────────────────────────────────
+
 function Modal({ title, onClose, children }) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -61,6 +165,98 @@ const inputCls =
   'rounded border border-[#3C1810] bg-[#140a06] px-3 py-2 text-sm text-[#F2E4D0] placeholder-[#5C3820] focus:border-[#BA1323] focus:outline-none'
 const selectCls =
   'rounded border border-[#3C1810] bg-[#140a06] px-3 py-2 text-sm text-[#F2E4D0] focus:border-[#BA1323] focus:outline-none'
+
+function FlightLink({ flightNumber }) {
+  if (!flightNumber) return <span className="text-[#5C3820]">—</span>
+  const url = flightAwareUrl(flightNumber)
+  return url ? (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center gap-1 font-mono text-[#BA1323] transition-colors hover:text-[#79b8ff]"
+    >
+      {flightNumber} <ExternalLink size={9} />
+    </a>
+  ) : (
+    <span className="font-mono text-[#BA1323]">{flightNumber}</span>
+  )
+}
+
+function ArrivalTime({ arrival, now }) {
+  const dt = parseArrivalDT(arrival.arrival_date, arrival.arrival_time)
+  const time12 = fmt12(arrival.arrival_time)
+  const rel = dt ? relativeTime(dt, now) : null
+  const isPast = dt && dt < now
+
+  if (!time12 && !arrival.arrival_date) return <span className="text-[#5C3820]">—</span>
+
+  return (
+    <div>
+      {time12 && <div className="font-mono text-xs text-[#F2E4D0]">{time12}</div>}
+      {rel && (
+        <div className={`font-mono text-[10px] tabular-nums ${isPast ? 'text-[#48B040]' : 'text-[#C4952A]'}`}>
+          {rel}
+        </div>
+      )}
+      {!time12 && arrival.arrival_date && (
+        <div className="font-mono text-xs text-[#9A8070]">{arrival.arrival_date}</div>
+      )}
+    </div>
+  )
+}
+
+function NextArrivalHero({ arrivals, now }) {
+  const upcoming = arrivals
+    .filter(a => a.status !== 'Arrived' && a.arrival_date && a.arrival_time)
+    .map(a => ({ ...a, dt: parseArrivalDT(a.arrival_date, a.arrival_time) }))
+    .filter(a => a.dt)
+    .sort((a, b) => a.dt - b.dt)
+
+  if (!upcoming.length) return null
+
+  const next = upcoming[0]
+  const rel = relativeTime(next.dt, now)
+  const isPast = next.dt < now
+
+  return (
+    <div className="border-b border-[#3C1810] bg-[#0f0805] px-4 py-4 md:px-6">
+      <div className="mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-[#BA1323]">Next Arrival</div>
+      <div className="flex items-center justify-between gap-4">
+        <div className="min-w-0">
+          <div className="truncate text-xl font-bold text-[#F2E4D0]">{next.name}</div>
+          <div className="mt-1 flex flex-wrap items-center gap-3 text-xs">
+            {next.flight_number && <FlightLink flightNumber={next.flight_number} />}
+            {next.arrival_time && (
+              <span className="font-mono text-[#9A8070]">{fmt12(next.arrival_time)}</span>
+            )}
+            {next.pickup_needed && (
+              <span className="font-bold uppercase tracking-wider text-[#C4952A]">Needs Pickup</span>
+            )}
+          </div>
+        </div>
+        {rel && (
+          <div className={`shrink-0 font-mono text-2xl font-black tabular-nums ${isPast ? 'text-[#48B040]' : 'text-[#C4952A]'}`}>
+            {rel}
+          </div>
+        )}
+      </div>
+      {upcoming.length > 1 && (
+        <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-[#281408] pt-3">
+          <span className="text-[9px] font-black uppercase tracking-widest text-[#5C3820]">Also coming:</span>
+          {upcoming.slice(1, 4).map(a => (
+            <span key={a.id} className="text-[10px] text-[#5C3820]">
+              {a.name}{a.arrival_time ? ` · ${fmt12(a.arrival_time)}` : ''}
+            </span>
+          ))}
+          {upcoming.length > 4 && (
+            <span className="text-[10px] text-[#5C3820]">+{upcoming.length - 4} more</span>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
 
 function ArrivalForm({ initial, roster, onSave, onCancel, saving }) {
   const [form, setForm] = useState(initial || EMPTY_FORM)
@@ -197,10 +393,11 @@ function ArrivalForm({ initial, roster, onSave, onCancel, saving }) {
 export default function ArrivalsPanel() {
   const { rows: arrivals, loading, insert, update, remove } = useSupabaseTable('arrivals', { orderBy: 'arrival_date', ascending: true })
   const { rows: roster } = useSupabaseTable('roster', { orderBy: 'name' })
-  const [modal, setModal] = useState(null) // null | { mode: 'add' } | { mode: 'edit', row }
+  const [modal, setModal] = useState(null)
   const [saving, setSaving] = useState(false)
   const [deletingId, setDeletingId] = useState(null)
   const [checkingInId, setCheckingInId] = useState(null)
+  const now = useNow()
 
   async function handleCheckIn(arrival) {
     if (arrival.status === 'Arrived') return
@@ -230,6 +427,7 @@ export default function ArrivalsPanel() {
   const arrived = arrivals.filter((a) => a.status === 'Arrived').length
   const landed = arrivals.filter((a) => a.status === 'Landed').length
   const needsPickup = arrivals.filter((a) => a.pickup_needed && a.status !== 'Arrived').length
+  const days = groupByDay(arrivals)
 
   return (
     <div className="flex flex-col md:min-h-0 md:flex-1 md:overflow-hidden">
@@ -268,6 +466,9 @@ export default function ArrivalsPanel() {
           </div>
         </div>
       </div>
+
+      {/* Next Arrival Hero */}
+      {!loading && <NextArrivalHero arrivals={arrivals} now={now} />}
 
       {/* I'm Here Check-In */}
       {!loading && arrivals.length > 0 && (
@@ -317,45 +518,91 @@ export default function ArrivalsPanel() {
           </div>
         ) : (
           <>
-            {/* Mobile cards */}
-            <div className="grid grid-cols-1 gap-3 p-4 sm:grid-cols-2 md:hidden">
-              {arrivals.map((a) => (
-                <div key={a.id} className="rounded border border-[#281408] bg-[#140a06] p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="font-bold text-base text-[#F2E4D0]">{a.name}</div>
-                    <span className={`shrink-0 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${STATUS_COLORS[a.status] || STATUS_COLORS.TBD}`}>
-                      {a.status}
-                    </span>
-                  </div>
-                  <div className="mt-2 flex items-center gap-2 text-sm text-[#9A8070]">
-                    {a.transport === 'flight' ? <Plane size={13} /> : <Car size={13} />}
-                    <span className="capitalize">{a.transport}</span>
-                    {a.flight_number && <span className="font-mono text-[#BA1323]">{a.flight_number}</span>}
-                  </div>
-                  {(a.arrival_date || a.arrival_time) && (
-                    <div className="mt-1 font-mono text-sm text-[#9A8070]">
-                      {a.arrival_date || ''}{a.arrival_time ? ` · ${a.arrival_time.slice(0, 5)}` : ''}
+            {/* Mobile cards — grouped by day → wave */}
+            <div className="p-4 md:hidden">
+              {days.map(({ date, arrivals: dayArrivals }) => {
+                const waves = groupIntoWaves(dayArrivals)
+                return (
+                  <div key={date} className="mb-6">
+                    {/* Day header */}
+                    <div className="mb-3 flex items-center gap-3">
+                      <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#BA1323]">
+                        {dayLabel(date)}
+                      </span>
+                      <div className="h-px flex-1 bg-[#3C1810]" />
+                      <span className="text-[9px] uppercase tracking-widest text-[#5C3820]">
+                        {dayArrivals.length} arriving
+                      </span>
                     </div>
-                  )}
-                  {a.pickup_needed && (
-                    <div className="mt-2 text-sm font-bold uppercase tracking-wider text-[#C4952A]">Needs pickup</div>
-                  )}
-                  {(a.notes || a.pickup_notes) && (
-                    <div className="mt-1 text-sm text-[#5C3820] italic">{a.notes || a.pickup_notes}</div>
-                  )}
-                  <div className="mt-3 flex items-center gap-3">
-                    <button type="button" onClick={() => setModal({ mode: 'edit', row: a })} className="flex items-center gap-1.5 text-xs text-[#5C3820] hover:text-[#BA1323]">
-                      <Edit2 size={13} /> Edit
-                    </button>
-                    <button type="button" onClick={() => handleDelete(a.id)} disabled={deletingId === a.id} className="flex items-center gap-1.5 text-xs text-[#5C3820] hover:text-[#E83025] disabled:opacity-40">
-                      <Trash2 size={13} /> Remove
-                    </button>
+
+                    {waves.map((wave, wi) => {
+                      const pickupCount = wave.filter(a => a.pickup_needed && a.status !== 'Arrived').length
+                      const showWaveHeader = wave.length >= 2
+                      const waveStart = fmt12(wave[0].arrival_time)
+                      const waveEnd = fmt12(wave[wave.length - 1].arrival_time)
+                      const waveRange = waveStart && waveEnd && waveStart !== waveEnd
+                        ? `${waveStart} – ${waveEnd}`
+                        : (waveStart || null)
+
+                      return (
+                        <div key={wi} className="mb-4">
+                          {showWaveHeader && (
+                            <div className="mb-2 flex items-center gap-3 rounded border border-[#281408] bg-[#0f0805] px-3 py-1.5">
+                              <span className="text-[9px] font-black uppercase tracking-widest text-[#5C3820]">
+                                Wave{waveRange ? ` · ${waveRange}` : ''}
+                              </span>
+                              {pickupCount > 0 && (
+                                <span className="text-[9px] font-bold uppercase tracking-wider text-[#C4952A]">
+                                  {pickupCount} need pickup
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            {wave.map((a) => (
+                              <div key={a.id} className="rounded border border-[#281408] bg-[#140a06] p-4">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="font-bold text-base text-[#F2E4D0]">{a.name}</div>
+                                  <span className={`shrink-0 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${STATUS_COLORS[a.status] || STATUS_COLORS.TBD}`}>
+                                    {a.status}
+                                  </span>
+                                </div>
+                                <div className="mt-2 flex items-center gap-2 text-sm text-[#9A8070]">
+                                  {a.transport === 'flight' ? <Plane size={13} /> : <Car size={13} />}
+                                  <span className="capitalize">{a.transport}</span>
+                                  {a.flight_number && <FlightLink flightNumber={a.flight_number} />}
+                                </div>
+                                {(a.arrival_date || a.arrival_time) && (
+                                  <div className="mt-1">
+                                    <ArrivalTime arrival={a} now={now} />
+                                  </div>
+                                )}
+                                {a.pickup_needed && (
+                                  <div className="mt-2 text-sm font-bold uppercase tracking-wider text-[#C4952A]">Needs pickup</div>
+                                )}
+                                {(a.notes || a.pickup_notes) && (
+                                  <div className="mt-1 text-sm text-[#5C3820] italic">{a.notes || a.pickup_notes}</div>
+                                )}
+                                <div className="mt-3 flex items-center gap-3">
+                                  <button type="button" onClick={() => setModal({ mode: 'edit', row: a })} className="flex items-center gap-1.5 text-xs text-[#5C3820] hover:text-[#BA1323]">
+                                    <Edit2 size={13} /> Edit
+                                  </button>
+                                  <button type="button" onClick={() => handleDelete(a.id)} disabled={deletingId === a.id} className="flex items-center gap-1.5 text-xs text-[#5C3820] hover:text-[#E83025] disabled:opacity-40">
+                                    <Trash2 size={13} /> Remove
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
 
-            {/* Desktop table */}
+            {/* Desktop table — grouped by day → wave */}
             <table className="hidden w-full border-collapse text-sm md:table">
               <thead>
                 <tr className="border-b border-[#281408]">
@@ -367,45 +614,98 @@ export default function ArrivalsPanel() {
                 </tr>
               </thead>
               <tbody>
-                {arrivals.map((a) => (
-                  <tr key={a.id} className="border-b border-[#281408] hover:bg-[#251508]">
-                    <td className="px-4 py-3 font-semibold text-[#F2E4D0]">{a.name}</td>
-                    <td className="px-4 py-3">
-                      <span className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${STATUS_COLORS[a.status] || STATUS_COLORS.TBD}`}>
-                        {a.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="flex items-center gap-1.5 text-[#9A8070]">
-                        {a.transport === 'flight' ? <Plane size={12} /> : <Car size={12} />}
-                        <span className="text-xs capitalize">{a.transport}</span>
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 font-mono text-xs text-[#9A8070]">
-                      {a.arrival_date ? `${a.arrival_date}` : '—'}
-                      {a.arrival_time ? ` ${a.arrival_time}` : ''}
-                    </td>
-                    <td className="px-4 py-3 font-mono text-xs text-[#9A8070]">{a.flight_number || '—'}</td>
-                    <td className="px-4 py-3">
-                      {a.pickup_needed ? (
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-[#C4952A]">Yes</span>
-                      ) : (
-                        <span className="text-[10px] text-[#5C3820]">—</span>
-                      )}
-                    </td>
-                    <td className="max-w-[180px] truncate px-4 py-3 text-xs text-[#9A8070]">{a.notes || a.pickup_notes || '—'}</td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <button type="button" onClick={() => setModal({ mode: 'edit', row: a })} className="text-[#5C3820] hover:text-[#BA1323]">
-                          <Edit2 size={13} />
-                        </button>
-                        <button type="button" onClick={() => handleDelete(a.id)} disabled={deletingId === a.id} className="text-[#5C3820] hover:text-[#E83025] disabled:opacity-40">
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                {days.map(({ date, arrivals: dayArrivals }) => {
+                  const waves = groupIntoWaves(dayArrivals)
+                  return (
+                    <Fragment key={date}>
+                      {/* Day header row */}
+                      <tr className="bg-[#0f0805]">
+                        <td colSpan={8} className="px-4 py-2">
+                          <div className="flex items-center gap-3">
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#BA1323]">
+                              {dayLabel(date)}
+                            </span>
+                            <div className="h-px flex-1 bg-[#3C1810]" />
+                            <span className="text-[9px] uppercase tracking-widest text-[#5C3820]">
+                              {dayArrivals.length} arriving
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+
+                      {waves.map((wave, wi) => {
+                        const pickupCount = wave.filter(a => a.pickup_needed && a.status !== 'Arrived').length
+                        const showWaveHeader = wave.length >= 2
+                        const waveStart = fmt12(wave[0].arrival_time)
+                        const waveEnd = fmt12(wave[wave.length - 1].arrival_time)
+                        const waveRange = waveStart && waveEnd && waveStart !== waveEnd
+                          ? `${waveStart} – ${waveEnd}`
+                          : (waveStart || null)
+
+                        return (
+                          <Fragment key={wi}>
+                            {showWaveHeader && (
+                              <tr className="bg-[#0f0805]/60">
+                                <td colSpan={8} className="px-4 py-1.5">
+                                  <div className="flex items-center gap-4">
+                                    <span className="text-[9px] font-black uppercase tracking-widest text-[#5C3820]">
+                                      Wave{waveRange ? ` · ${waveRange}` : ''}
+                                    </span>
+                                    {pickupCount > 0 && (
+                                      <span className="text-[9px] font-bold uppercase tracking-wider text-[#C4952A]">
+                                        {pickupCount} need{pickupCount === 1 ? 's' : ''} pickup
+                                      </span>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                            )}
+                            {wave.map((a) => (
+                              <tr key={a.id} className="border-b border-[#281408] hover:bg-[#251508]">
+                                <td className="px-4 py-3 font-semibold text-[#F2E4D0]">{a.name}</td>
+                                <td className="px-4 py-3">
+                                  <span className={`rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${STATUS_COLORS[a.status] || STATUS_COLORS.TBD}`}>
+                                    {a.status}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <span className="flex items-center gap-1.5 text-[#9A8070]">
+                                    {a.transport === 'flight' ? <Plane size={12} /> : <Car size={12} />}
+                                    <span className="text-xs capitalize">{a.transport}</span>
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3">
+                                  <ArrivalTime arrival={a} now={now} />
+                                </td>
+                                <td className="px-4 py-3">
+                                  <FlightLink flightNumber={a.flight_number} />
+                                </td>
+                                <td className="px-4 py-3">
+                                  {a.pickup_needed ? (
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#C4952A]">Yes</span>
+                                  ) : (
+                                    <span className="text-[10px] text-[#5C3820]">—</span>
+                                  )}
+                                </td>
+                                <td className="max-w-[180px] truncate px-4 py-3 text-xs text-[#9A8070]">{a.notes || a.pickup_notes || '—'}</td>
+                                <td className="px-4 py-3">
+                                  <div className="flex items-center gap-2">
+                                    <button type="button" onClick={() => setModal({ mode: 'edit', row: a })} className="text-[#5C3820] hover:text-[#BA1323]">
+                                      <Edit2 size={13} />
+                                    </button>
+                                    <button type="button" onClick={() => handleDelete(a.id)} disabled={deletingId === a.id} className="text-[#5C3820] hover:text-[#E83025] disabled:opacity-40">
+                                      <Trash2 size={13} />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            ))}
+                          </Fragment>
+                        )
+                      })}
+                    </Fragment>
+                  )
+                })}
               </tbody>
             </table>
           </>
