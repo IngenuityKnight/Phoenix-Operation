@@ -163,21 +163,32 @@ function TripSettings() {
 }
 
 // ─── ROSTER ──────────────────────────────────────────────────────────────────
-const TRANSPORT_OPTS = ['flight', 'drive', 'rideshare', 'TBD']
-const ARRIVAL_STATUS_OPTS = ['TBD', 'Confirmed', 'En Route', 'Landed', 'Arrived']
-const STATUS_COLORS = { Arrived: '#48B040', Landed: '#48B040', 'En Route': '#C4952A', Confirmed: '#BA1323', TBD: '#5C3820' }
-const ROSTER_EMPTY = { name: '', transport: 'flight', arrival_date: '', arrival_time: '', flight_number: '', pickup_needed: false, pickup_notes: '', status: 'TBD', notes: '' }
+const CREW_STATUS_OPTS = ['Confirmed', 'Maybe', 'Ghosting']
+const CREW_STATUS_COLORS = { Confirmed: '#48B040', Maybe: '#C4952A', Ghosting: '#5C3820' }
+const CREW_EMPTY = { name: '', status: 'Confirmed', arrival_window: '', phone: '', venmo_handle: '', dietary_notes: '', notes: '' }
 
 function AdminRoster() {
-  const { rows, insert, update, remove } = useSupabaseTable('arrivals', { orderBy: 'arrival_time', ascending: true })
-  const [modal, setModal] = useState(null)
-  const [form,  setForm]  = useState(ROSTER_EMPTY)
+  const { rows, insert, update, remove } = useSupabaseTable('roster', { orderBy: 'name', ascending: true })
+  const [modal, setModal] = useState(null) // null | 'add' | row
+  const [form, setForm]   = useState(CREW_EMPTY)
   const [saving, setSaving] = useState(false)
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }))
 
+  const confirmed = rows.filter(r => r.status === 'Confirmed').length
+  const maybe     = rows.filter(r => r.status === 'Maybe').length
+  const ghosting  = rows.filter(r => r.status === 'Ghosting').length
+
   async function handleSave(e) {
     e.preventDefault(); setSaving(true)
-    const payload = { ...form, arrival_time: form.arrival_time || null, arrival_date: form.arrival_date || null, flight_number: form.flight_number || null, pickup_notes: form.pickup_notes || null, notes: form.notes || null }
+    const payload = {
+      name: form.name.trim(),
+      status: form.status,
+      arrival_window: form.arrival_window || null,
+      phone: form.phone || null,
+      venmo_handle: form.venmo_handle || null,
+      dietary_notes: form.dietary_notes || null,
+      notes: form.notes || null,
+    }
     if (modal === 'add') await insert(payload)
     else await update(modal.id, payload)
     setSaving(false); setModal(null)
@@ -185,61 +196,105 @@ function AdminRoster() {
 
   return (
     <div>
-      <SectionHeader title="Roster" sub="Arrivals Tracking"
-        action={<button onClick={() => { setForm(ROSTER_EMPTY); setModal('add') }} className={btnPrimary}><Plus size={13} className="inline mr-1" />Add Person</button>} />
+      <SectionHeader
+        title="Crew Roster"
+        sub="Headcount"
+        action={
+          <button onClick={() => { setForm(CREW_EMPTY); setModal('add') }} className={btnPrimary}>
+            <Plus size={13} className="inline mr-1" />Add Guy
+          </button>
+        }
+      />
 
+      {/* Stats */}
+      <div className="mb-5 flex gap-4">
+        {[
+          { label: 'Confirmed', value: confirmed, color: '#48B040' },
+          { label: 'Maybe',     value: maybe,     color: '#C4952A' },
+          { label: 'Ghosting',  value: ghosting,  color: '#5C3820' },
+          { label: 'Total',     value: rows.length, color: '#FAF0E8' },
+        ].map(s => (
+          <div key={s.label} className="rounded border border-[#3C1810] bg-[#1C0C08] px-4 py-3 text-center">
+            <div className="font-mono text-2xl font-black" style={{ color: s.color }}>{s.value}</div>
+            <div className="mt-0.5 text-[9px] font-black uppercase tracking-widest text-[#5C3820]">{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Table */}
       <div className="rounded border border-[#3C1810] bg-[#1C0C08]">
-        <div className="grid grid-cols-[1fr_80px_80px_90px_80px_64px] gap-3 border-b border-[#3C1810] bg-[#140a06] px-5 py-2">
-          {['Name', 'Flight', 'ETA', 'Status', 'Transport', ''].map(h => (
+        <div className="grid grid-cols-[1fr_90px_110px_120px_64px] gap-3 border-b border-[#3C1810] bg-[#140a06] px-5 py-2">
+          {['Name', 'Status', 'Arrives', 'Venmo', ''].map(h => (
             <div key={h} className="text-[9px] font-black uppercase tracking-[0.3em] text-[#5C3820]">{h}</div>
           ))}
         </div>
-        {rows.length === 0 && <div className="px-5 py-10 text-center text-sm text-[#5C3820]">No arrivals logged</div>}
+        {rows.length === 0 && (
+          <div className="px-5 py-10 text-center text-sm text-[#5C3820]">No crew added yet</div>
+        )}
         {rows.map(row => (
-          <div key={row.id} className="grid grid-cols-[1fr_80px_80px_90px_80px_64px] items-center gap-3 border-b border-[#281408] px-5 py-3">
+          <div key={row.id} className="grid grid-cols-[1fr_90px_110px_120px_64px] items-center gap-3 border-b border-[#281408] px-5 py-3 hover:bg-[#1a0e08]">
             <div>
               <div className="text-sm font-semibold text-[#F2E4D0]">{row.name}</div>
-              {row.pickup_needed && <div className="text-[10px] font-bold text-[#E83025]">Needs ride</div>}
+              {row.dietary_notes && (
+                <div className="text-[10px] text-[#9A8070] italic">{row.dietary_notes}</div>
+              )}
             </div>
-            <div className="font-mono text-sm text-[#9A8070]">{row.flight_number || '—'}</div>
-            <div className="font-mono text-sm text-[#F2E4D0]">{row.arrival_time ? row.arrival_time.slice(0, 5) : '—'}</div>
-            <div className="text-[10px] font-black uppercase" style={{ color: STATUS_COLORS[row.status] || '#5C3820' }}>{row.status}</div>
-            <div className="text-[11px] capitalize text-[#9A8070]">{row.transport || '—'}</div>
+            <div
+              className="text-[10px] font-black uppercase tracking-wider"
+              style={{ color: CREW_STATUS_COLORS[row.status] || '#5C3820' }}
+            >
+              {row.status}
+            </div>
+            <div className="font-mono text-xs text-[#9A8070]">{row.arrival_window || '—'}</div>
+            <div className="font-mono text-xs text-[#9A8070]">{row.venmo_handle ? `@${row.venmo_handle}` : '—'}</div>
             <div className="flex gap-1.5">
-              <button onClick={() => { setForm({ ...ROSTER_EMPTY, ...row }); setModal(row) }} className="p-1 text-[#5C3820] hover:text-[#BA1323]"><Edit2 size={13} /></button>
-              <button onClick={() => { if (window.confirm('Delete?')) remove(row.id) }} className="p-1 text-[#5C3820] hover:text-[#E83025]"><Trash2 size={13} /></button>
+              <button
+                onClick={() => { setForm({ ...CREW_EMPTY, ...row, venmo_handle: row.venmo_handle || '', arrival_window: row.arrival_window || '', phone: row.phone || '', dietary_notes: row.dietary_notes || '', notes: row.notes || '' }); setModal(row) }}
+                className="p-1 text-[#5C3820] hover:text-[#BA1323]"
+              >
+                <Edit2 size={13} />
+              </button>
+              <button
+                onClick={() => { if (window.confirm(`Remove ${row.name} from the roster?`)) remove(row.id) }}
+                className="p-1 text-[#5C3820] hover:text-[#E83025]"
+              >
+                <Trash2 size={13} />
+              </button>
             </div>
           </div>
         ))}
       </div>
 
       {modal && (
-        <Modal title={modal === 'add' ? 'Add Person' : `Edit — ${modal.name}`} onClose={() => setModal(null)}>
+        <Modal title={modal === 'add' ? 'Add Guy' : `Edit — ${modal.name}`} onClose={() => setModal(null)}>
           <form onSubmit={handleSave} className="flex flex-col gap-4">
-            <FF label="Name"><input className={inp} value={form.name} onChange={e => set('name', e.target.value)} required /></FF>
             <div className="grid grid-cols-2 gap-4">
+              <FF label="Name">
+                <input className={inp} value={form.name} onChange={e => set('name', e.target.value)} placeholder="Full name" required />
+              </FF>
               <FF label="Status">
                 <select className={sel} value={form.status} onChange={e => set('status', e.target.value)}>
-                  {ARRIVAL_STATUS_OPTS.map(s => <option key={s}>{s}</option>)}
-                </select>
-              </FF>
-              <FF label="Transport">
-                <select className={sel} value={form.transport} onChange={e => set('transport', e.target.value)}>
-                  {TRANSPORT_OPTS.map(t => <option key={t}>{t}</option>)}
+                  {CREW_STATUS_OPTS.map(s => <option key={s}>{s}</option>)}
                 </select>
               </FF>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <FF label="Flight Number"><input className={inp} value={form.flight_number} onChange={e => set('flight_number', e.target.value)} /></FF>
-              <FF label="Arrival Time"><input type="time" className={inp} value={form.arrival_time} onChange={e => set('arrival_time', e.target.value)} /></FF>
+              <FF label="Phone">
+                <input className={inp} value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="+1 555 000 0000" />
+              </FF>
+              <FF label="Venmo Handle">
+                <input className={inp} value={form.venmo_handle} onChange={e => set('venmo_handle', e.target.value)} placeholder="username (no @)" />
+              </FF>
             </div>
-            <FF label="Arrival Date"><input type="date" className={inp} value={form.arrival_date} onChange={e => set('arrival_date', e.target.value)} /></FF>
-            <label className="flex cursor-pointer items-center gap-2">
-              <input type="checkbox" className="accent-[#E83025]" checked={!!form.pickup_needed} onChange={e => set('pickup_needed', e.target.checked)} />
-              <span className="text-sm text-[#F2E4D0]">Needs a ride from airport</span>
-            </label>
-            {form.pickup_needed && <FF label="Pickup Notes"><input className={inp} value={form.pickup_notes} onChange={e => set('pickup_notes', e.target.value)} /></FF>}
-            <FF label="Notes"><input className={inp} value={form.notes} onChange={e => set('notes', e.target.value)} /></FF>
+            <FF label="Arrival Window">
+              <input className={inp} value={form.arrival_window} onChange={e => set('arrival_window', e.target.value)} placeholder="e.g. Wed afternoon, TBD…" />
+            </FF>
+            <FF label="Dietary Notes">
+              <input className={inp} value={form.dietary_notes} onChange={e => set('dietary_notes', e.target.value)} placeholder="Allergies, restrictions…" />
+            </FF>
+            <FF label="Notes">
+              <input className={inp} value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Anything else…" />
+            </FF>
             <div className="flex gap-3 pt-2">
               <button type="submit" disabled={saving} className={btnPrimary}>{saving ? 'Saving…' : 'Save'}</button>
               <button type="button" onClick={() => setModal(null)} className={btnGhost}>Cancel</button>
