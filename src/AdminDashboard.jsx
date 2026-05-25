@@ -699,11 +699,30 @@ function AdminLogistics() {
 }
 
 // ─── WAR ROOM CONTROLS ────────────────────────────────────────────────────────
+const PRESENCE_STATUSES = [
+  { key: 'At the house', emoji: '🏠', color: '#48B040' },
+  { key: 'At the pool',  emoji: '🏊', color: '#BA1323' },
+  { key: 'Out / bars',   emoji: '🍺', color: '#C4952A' },
+  { key: 'Golf',         emoji: '⛳', color: '#48B040' },
+  { key: 'On the way',   emoji: '🚗', color: '#C4952A' },
+  { key: 'Crashed',      emoji: '😴', color: '#9A8070' },
+]
+const PRESENCE_MAP = Object.fromEntries(PRESENCE_STATUSES.map(s => [s.key, s]))
+
+function presRelTime(ts) {
+  const mins = Math.floor((Date.now() - new Date(ts)) / 60000)
+  if (mins < 1) return 'just now'
+  if (mins < 60) return `${mins}m ago`
+  return `${Math.floor(mins / 60)}h ago`
+}
+
 function WarRoomControls() {
   const iframeRef = useRef(null)
   const [broadcast, setBroadcast] = useState('')
   const [sending, setSending]     = useState(false)
   const [sent, setSent]           = useState(false)
+  const { rows: presence, remove: removePresence } = useSupabaseTable('presence', { orderBy: 'updated_at', ascending: false })
+  const [clearing, setClearing]   = useState(false)
 
   async function handleBroadcast(e) {
     e.preventDefault()
@@ -795,6 +814,66 @@ function WarRoomControls() {
             />
           </div>
         </div>
+      </div>
+
+      {/* Crew Status Board */}
+      <div className="mt-6 rounded border border-[#3C1810] bg-[#1C0C08]">
+        <div className="flex items-center justify-between border-b border-[#3C1810] px-5 py-3">
+          <div>
+            <div className="text-[10px] font-black uppercase tracking-[0.25em] text-[#5C3820]">Live Crew Status</div>
+            <div className="mt-0.5 text-xs text-[#9A8070]">
+              {presence.length === 0 ? 'No one reporting yet' : `${presence.length} reporting`}
+            </div>
+          </div>
+          {presence.length > 0 && (
+            <button
+              onClick={async () => {
+                if (!window.confirm(`Clear all ${presence.length} status reports and reset the board?`)) return
+                setClearing(true)
+                await supabase.from('presence').delete().not('id', 'is', null)
+                setClearing(false)
+              }}
+              disabled={clearing}
+              className="flex items-center gap-1.5 rounded border border-[#E83025]/40 px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-[#E83025]/70 transition-colors hover:border-[#E83025] hover:text-[#E83025] disabled:opacity-40"
+            >
+              <RefreshCw size={11} />
+              {clearing ? 'Clearing…' : 'Reset All'}
+            </button>
+          )}
+        </div>
+
+        {presence.length === 0 ? (
+          <div className="px-5 py-8 text-center text-sm text-[#5C3820]">No status reports yet</div>
+        ) : (
+          <div className="divide-y divide-[#281408]">
+            {presence.map(row => {
+              const s = PRESENCE_MAP[row.status]
+              return (
+                <div key={row.id} className="flex items-center justify-between px-5 py-3 hover:bg-[#1a0e08]">
+                  <div className="flex items-center gap-3">
+                    <span className="text-base">{s?.emoji ?? '❓'}</span>
+                    <div>
+                      <div className="text-sm font-semibold text-[#F2E4D0]">{row.name}</div>
+                      <div className="text-[10px] font-bold uppercase tracking-wider" style={{ color: s?.color ?? '#9A8070' }}>
+                        {row.status}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    <div className="font-mono text-[10px] text-[#5C3820]">{presRelTime(row.updated_at)}</div>
+                    <button
+                      onClick={() => removePresence(row.id)}
+                      className="p-1 text-[#5C3820] hover:text-[#E83025] transition-colors"
+                      title="Clear this status"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
     </div>
   )
