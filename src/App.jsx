@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   BriefcaseBusiness,
   ClipboardList,
@@ -6,14 +6,17 @@ import {
   Map,
   MessageSquarePlus,
   Plane,
+  Receipt,
   ScrollText,
   Send,
   Users,
   UtensilsCrossed,
   X,
+  Zap,
 } from 'lucide-react'
 import { supabase } from './supabaseClient'
 import { useSupabaseTable } from './hooks/useSupabaseTable'
+import { useNotifications } from './hooks/useNotifications'
 import ArrivalsPanel from './panels/ArrivalsPanel'
 import BudgetPanel from './panels/BudgetPanel'
 import DailyBriefingPanel from './panels/DailyBriefingPanel'
@@ -21,6 +24,7 @@ import FlightMapPanel from './panels/FlightMapPanel'
 import ItineraryPanel from './panels/ItineraryPanel'
 import LogisticsPanel from './panels/LogisticsPanel'
 import MealsPanel from './panels/MealsPanel'
+import PresencePanel from './panels/PresencePanel'
 import RosterPanel from './panels/RosterPanel'
 
 // ─── MESSAGES ────────────────────────────────────────────────────────────────
@@ -158,6 +162,7 @@ const NAV_ITEMS = [
   { id: 'logistics', label: 'Logistics',  icon: ClipboardList, desktopOnly: true },
   { id: 'budget',    label: 'Budget',     icon: DollarSign },
   { id: 'roster',    label: 'Roster',     icon: Users },
+  { id: 'crew',      label: 'Crew',       icon: Zap },
 ]
 
 function ShellNav({ selectedPage, onSelectPage }) {
@@ -229,9 +234,104 @@ function AppHeader({ selectedPage }) {
   )
 }
 
+// ─── QUICK EXPENSE ────────────────────────────────────────────────────────────
+
+const EXPENSE_CATS = ['house', 'golf', 'food', 'drinks', 'transport', 'activities', 'other']
+const inpCls = 'w-full rounded border border-[#3C1810] bg-[#140a06] px-3 py-2 text-sm text-[#F2E4D0] placeholder-[#5C3820] focus:border-[#BA1323] focus:outline-none'
+const selCls = 'w-full rounded border border-[#3C1810] bg-[#140a06] px-3 py-2 text-sm text-[#F2E4D0] focus:border-[#BA1323] focus:outline-none'
+
+function QuickExpenseModal({ onClose }) {
+  const { insert } = useSupabaseTable('expenses', { orderBy: 'created_at' })
+  const { rows: roster } = useSupabaseTable('roster', { orderBy: 'name' })
+  const [desc, setDesc]         = useState('')
+  const [amount, setAmount]     = useState('')
+  const [paidBy, setPaidBy]     = useState(() => localStorage.getItem('phx_name') || '')
+  const [payMode, setPayMode]   = useState('roster')
+  const [category, setCategory] = useState('other')
+  const [saving, setSaving]     = useState(false)
+
+  const rosterNames = roster.filter(r => r.status !== 'Ghosting').map(r => r.name)
+
+  async function handleSubmit(e) {
+    e.preventDefault()
+    if (!desc.trim() || !amount || !paidBy.trim()) return
+    setSaving(true)
+    localStorage.setItem('phx_name', paidBy.trim())
+    await insert({
+      description: desc.trim(),
+      amount: parseFloat(amount),
+      paid_by: paidBy.trim(),
+      category,
+      split_count: rosterNames.length || 14,
+      split_names: rosterNames.length > 0 ? rosterNames : null,
+      notes: null,
+    })
+    setSaving(false)
+    onClose()
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+      <div className="mx-4 w-full max-w-sm rounded border border-[#3C1810] bg-[#1C0C08] shadow-2xl">
+        <div className="flex items-center justify-between border-b border-[#3C1810] px-5 py-4">
+          <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#BA1323]">Log Expense</span>
+          <button type="button" onClick={onClose} className="text-[#9A8070] hover:text-[#F2E4D0]"><X size={16} /></button>
+        </div>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-5">
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-[#9A8070]">What was it?</label>
+            <input className={inpCls} value={desc} onChange={e => setDesc(e.target.value)} placeholder="Costco run, tee time, rounds…" required autoFocus />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[#9A8070]">Amount ($)</label>
+              <input type="number" step="0.01" min="0" className={inpCls} value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00" required />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] font-bold uppercase tracking-widest text-[#9A8070]">Category</label>
+              <select className={selCls} value={category} onChange={e => setCategory(e.target.value)}>
+                {EXPENSE_CATS.map(c => <option key={c} className="capitalize">{c}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-[#9A8070]">Who fronted it?</label>
+            {payMode === 'roster' ? (
+              <select className={selCls} value={paidBy} onChange={e => { if (e.target.value === '__manual__') { setPayMode('manual'); setPaidBy('') } else setPaidBy(e.target.value) }} required>
+                <option value="">— Pick name —</option>
+                {rosterNames.map(n => <option key={n} value={n}>{n}</option>)}
+                <option value="__manual__">Other…</option>
+              </select>
+            ) : (
+              <div className="flex gap-2">
+                <input className={`${inpCls} flex-1`} value={paidBy} onChange={e => setPaidBy(e.target.value)} placeholder="Name" required />
+                <button type="button" onClick={() => { setPayMode('roster'); setPaidBy('') }} className="shrink-0 text-[10px] text-[#9A8070] hover:text-[#BA1323]">← List</button>
+              </div>
+            )}
+          </div>
+          <div className="text-[10px] text-[#5C3820]">
+            Split will default to all {rosterNames.length || 14} guys — edit in Budget tab to customize.
+          </div>
+          <div className="flex justify-end gap-3 pt-1">
+            <button type="button" onClick={onClose} className="px-4 py-2 text-xs text-[#9A8070] hover:text-[#F2E4D0]">Cancel</button>
+            <button type="submit" disabled={saving} className="rounded bg-[#BA1323] px-5 py-2 text-xs font-bold uppercase tracking-wider text-[#140a06] hover:bg-[#79b8ff] disabled:opacity-50">
+              {saving ? 'Logging…' : 'Log It'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+// ─── APP ROOT ─────────────────────────────────────────────────────────────────
+
 export default function App() {
   const [selectedPage, setSelectedPage] = useState('briefing')
   const [msgOpen, setMsgOpen]           = useState(false)
+  const [expenseOpen, setExpenseOpen]   = useState(false)
+
+  useNotifications()
 
   let content = <DailyBriefingPanel />
   if (selectedPage === 'itinerary') content = <ItineraryPanel />
@@ -241,6 +341,7 @@ export default function App() {
   if (selectedPage === 'logistics') content = <LogisticsPanel />
   if (selectedPage === 'budget')    content = <BudgetPanel />
   if (selectedPage === 'roster')    content = <RosterPanel />
+  if (selectedPage === 'crew')      content = <PresencePanel />
 
   return (
     <div className="flex flex-col bg-[#100805] text-[#F2E4D0] md:h-screen md:flex-row">
@@ -250,17 +351,29 @@ export default function App() {
         <div className="flex flex-1 md:min-h-0 md:overflow-hidden">{content}</div>
       </main>
 
-      {/* Floating messages button */}
-      <button
-        onClick={() => setMsgOpen(true)}
-        className="fixed bottom-6 left-5 z-30 flex items-center gap-2 rounded-full border border-[#BA1323]/40 bg-[#1C0C08] px-4 py-3 text-[11px] font-black uppercase tracking-wider text-[#BA1323] shadow-lg shadow-black/40 hover:bg-[#BA1323]/10 transition-colors"
+      {/* Floating action buttons */}
+      <div
+        className="fixed left-5 z-30 flex flex-col gap-2"
         style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
       >
-        <MessageSquarePlus size={16} />
-        <span className="hidden sm:inline">Message</span>
-      </button>
+        <button
+          onClick={() => setExpenseOpen(true)}
+          className="flex items-center gap-2 rounded-full border border-[#48B040]/40 bg-[#1C0C08] px-4 py-3 text-[11px] font-black uppercase tracking-wider text-[#48B040] shadow-lg shadow-black/40 hover:bg-[#48B040]/10 transition-colors"
+        >
+          <Receipt size={16} />
+          <span className="hidden sm:inline">Log $</span>
+        </button>
+        <button
+          onClick={() => setMsgOpen(true)}
+          className="flex items-center gap-2 rounded-full border border-[#BA1323]/40 bg-[#1C0C08] px-4 py-3 text-[11px] font-black uppercase tracking-wider text-[#BA1323] shadow-lg shadow-black/40 hover:bg-[#BA1323]/10 transition-colors"
+        >
+          <MessageSquarePlus size={16} />
+          <span className="hidden sm:inline">Message</span>
+        </button>
+      </div>
 
-      {msgOpen && <MessagesDrawer onClose={() => setMsgOpen(false)} />}
+      {msgOpen     && <MessagesDrawer onClose={() => setMsgOpen(false)} />}
+      {expenseOpen && <QuickExpenseModal onClose={() => setExpenseOpen(false)} />}
     </div>
   )
 }

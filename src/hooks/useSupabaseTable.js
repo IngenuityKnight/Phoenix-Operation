@@ -1,14 +1,21 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 
-/**
- * Generic CRUD hook for a Supabase table.
- * Loads rows on mount, subscribes to real-time changes, and exposes
- * insert / update / remove operations that optimistically update local state.
- *
- * @param {string} tableName  The Supabase table name.
- * @param {{ orderBy?: string, ascending?: boolean }} options
- */
+const AUDIT_WRITE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/audit-write`
+const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
+
+async function auditWrite(action, table, record_id, payload) {
+  const res = await fetch(AUDIT_WRITE_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${ANON_KEY}`,
+    },
+    body: JSON.stringify({ action, table, record_id, payload }),
+  })
+  return res.json()
+}
+
 export function useSupabaseTable(tableName, { orderBy = 'created_at', ascending = true } = {}) {
   const [rows, setRows] = useState([])
   const [loading, setLoading] = useState(true)
@@ -56,15 +63,9 @@ export function useSupabaseTable(tableName, { orderBy = 'created_at', ascending 
 
   const insert = useCallback(
     async (values) => {
-      const { data, error: err } = await supabase
-        .from(tableName)
-        .insert(values)
-        .select()
-        .single()
-
+      const result = await auditWrite('insert', tableName, undefined, values)
+      const { data, error: err } = result
       if (err) return { data: null, error: err }
-
-      // Real-time will pick this up, but add optimistically in case of lag
       setRows((prev) => (prev.some((r) => r.id === data.id) ? prev : [...prev, data]))
       return { data, error: null }
     },
@@ -73,15 +74,9 @@ export function useSupabaseTable(tableName, { orderBy = 'created_at', ascending 
 
   const update = useCallback(
     async (id, values) => {
-      const { data, error: err } = await supabase
-        .from(tableName)
-        .update(values)
-        .eq('id', id)
-        .select()
-        .single()
-
+      const result = await auditWrite('update', tableName, id, values)
+      const { data, error: err } = result
       if (err) return { data: null, error: err }
-
       setRows((prev) => prev.map((r) => (r.id === id ? data : r)))
       return { data, error: null }
     },
@@ -90,7 +85,8 @@ export function useSupabaseTable(tableName, { orderBy = 'created_at', ascending 
 
   const remove = useCallback(
     async (id) => {
-      const { error: err } = await supabase.from(tableName).delete().eq('id', id)
+      const result = await auditWrite('delete', tableName, id, undefined)
+      const { error: err } = result
       if (!err) setRows((prev) => prev.filter((r) => r.id !== id))
       return { error: err }
     },

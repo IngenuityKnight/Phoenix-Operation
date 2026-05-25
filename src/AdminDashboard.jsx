@@ -1,8 +1,8 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   Calendar, Check, ClipboardList, DollarSign, Edit2,
   LogOut, Monitor, Pin, PinOff, Plus, Radio, RefreshCw,
-  Settings, Trash2, Users, Utensils, X, Zap,
+  Settings, ShieldCheck, Trash2, Users, Utensils, X, Zap,
 } from 'lucide-react'
 import { supabase } from './supabaseClient'
 import { useSupabaseTable } from './hooks/useSupabaseTable'
@@ -943,6 +943,117 @@ function AdminOpsFeed() {
   )
 }
 
+// ─── AUDIT LOG ────────────────────────────────────────────────────────────────
+const ACTION_HEX = { insert: '#48B040', update: '#C4952A', delete: '#E83025' }
+
+function AuditLog() {
+  const [rows, setRows]       = useState([])
+  const [loading, setLoading] = useState(true)
+  const [filter, setFilter]   = useState('all') // 'all' | action | table
+
+  useEffect(() => {
+    setLoading(true)
+    supabase
+      .from('audit_log')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(200)
+      .then(({ data }) => { setRows(data || []); setLoading(false) })
+  }, [])
+
+  const tables = [...new Set(rows.map(r => r.table_name))].sort()
+  const actions = ['insert', 'update', 'delete']
+
+  const visible = filter === 'all'
+    ? rows
+    : rows.filter(r => r.action === filter || r.table_name === filter)
+
+  function fmt(ts) {
+    const d = new Date(ts)
+    return d.toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })
+  }
+
+  return (
+    <div>
+      <SectionHeader title="Audit Log" sub="Input Tracking" />
+
+      {/* Stats */}
+      <div className="mb-4 grid grid-cols-4 gap-3">
+        {[
+          { label: 'Total Events', value: rows.length, color: '#FAF0E8' },
+          { label: 'Inserts', value: rows.filter(r => r.action === 'insert').length, color: '#48B040' },
+          { label: 'Updates', value: rows.filter(r => r.action === 'update').length, color: '#C4952A' },
+          { label: 'Deletes', value: rows.filter(r => r.action === 'delete').length, color: '#E83025' },
+        ].map(s => (
+          <div key={s.label} className="rounded border border-[#3C1810] bg-[#1C0C08] px-4 py-3 text-center">
+            <div className="font-mono text-2xl font-black" style={{ color: s.color }}>{s.value}</div>
+            <div className="mt-0.5 text-[9px] font-black uppercase tracking-widest text-[#5C3820]">{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Filters */}
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <span className="text-[10px] font-black uppercase tracking-widest text-[#5C3820]">Filter:</span>
+        <button
+          onClick={() => setFilter('all')}
+          className={`rounded px-3 py-1 text-[10px] font-black uppercase tracking-wider ${filter === 'all' ? 'bg-[#BA1323] text-[#140a06]' : 'border border-[#3C1810] text-[#5C3820] hover:text-[#9A8070]'}`}>
+          All
+        </button>
+        {actions.map(a => (
+          <button key={a} onClick={() => setFilter(a)}
+            className={`rounded px-3 py-1 text-[10px] font-black uppercase tracking-wider transition-colors ${filter === a ? 'text-[#140a06]' : 'border border-[#3C1810] text-[#5C3820] hover:text-[#9A8070]'}`}
+            style={filter === a ? { background: ACTION_HEX[a] } : {}}>
+            {a}
+          </button>
+        ))}
+        {tables.map(t => (
+          <button key={t} onClick={() => setFilter(t)}
+            className={`rounded px-3 py-1 text-[10px] font-black uppercase tracking-wider transition-colors ${filter === t ? 'bg-[#BA1323] text-[#140a06]' : 'border border-[#3C1810] text-[#5C3820] hover:text-[#9A8070]'}`}>
+            {t}
+          </button>
+        ))}
+      </div>
+
+      <div className="rounded border border-[#3C1810] bg-[#1C0C08]">
+        {/* Header */}
+        <div className="grid grid-cols-[120px_70px_120px_1fr_160px] gap-3 border-b border-[#3C1810] bg-[#140a06] px-5 py-2">
+          {['IP Address', 'Action', 'Table', 'Payload', 'Timestamp'].map(h => (
+            <div key={h} className="text-[9px] font-black uppercase tracking-[0.3em] text-[#5C3820]">{h}</div>
+          ))}
+        </div>
+
+        {loading && (
+          <div className="py-10 text-center text-sm text-[#5C3820]">Loading…</div>
+        )}
+        {!loading && visible.length === 0 && (
+          <div className="py-10 text-center text-sm text-[#5C3820]">No audit events yet. Make a change to any table to start logging.</div>
+        )}
+        {!loading && visible.map(row => {
+          const actionColor = ACTION_HEX[row.action] || '#9A8070'
+          return (
+            <div key={row.id} className="grid grid-cols-[120px_70px_120px_1fr_160px] items-start gap-3 border-b border-[#281408] px-5 py-3">
+              <div className="font-mono text-xs text-[#F2E4D0] break-all">{row.ip_address || '—'}</div>
+              <div className="text-[10px] font-black uppercase tracking-wider" style={{ color: actionColor }}>{row.action}</div>
+              <div className="font-mono text-xs text-[#9A8070]">{row.table_name}</div>
+              <div className="min-w-0 truncate font-mono text-[10px] text-[#5C3820]" title={JSON.stringify(row.payload)}>
+                {row.payload ? JSON.stringify(row.payload) : '—'}
+              </div>
+              <div className="font-mono text-[10px] text-[#9A8070]">{fmt(row.created_at)}</div>
+            </div>
+          )
+        })}
+      </div>
+
+      {visible.length > 0 && (
+        <div className="mt-2 text-right font-mono text-[10px] text-[#5C3820]">
+          showing {visible.length} of {rows.length} events (last 200)
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── SIDEBAR NAV ─────────────────────────────────────────────────────────────
 const NAV_ITEMS = [
   { id: 'settings',  label: 'Trip Settings', icon: Settings    },
@@ -953,6 +1064,7 @@ const NAV_ITEMS = [
   { id: 'logistics', label: 'Logistics',     icon: ClipboardList },
   { id: 'opsfeed',   label: 'Ops Feed',      icon: Radio       },
   { id: 'warroom',   label: 'War Room',      icon: Monitor     },
+  { id: 'auditlog',  label: 'Audit Log',     icon: ShieldCheck },
 ]
 
 const SECTIONS = {
@@ -964,6 +1076,7 @@ const SECTIONS = {
   logistics: <AdminLogistics />,
   opsfeed:   <AdminOpsFeed />,
   warroom:   <WarRoomControls />,
+  auditlog:  <AuditLog />,
 }
 
 function Dashboard({ onLogout }) {
