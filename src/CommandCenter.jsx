@@ -10,8 +10,8 @@ const OPS_CATEGORY_CONFIG = {
   HYPE:      { color: '#C4952A' },
 }
 
-// ─── UPDATE THIS TO THE ACTUAL WEDDING DATE ───────────────────────────────────
-const WEDDING_DATE = new Date('2026-08-08T16:00:00')
+// ─── BACHELOR PARTY START ─────────────────────────────────────────────────────
+const PARTY_DATE = new Date('2026-05-29T00:00:00')
 // ─────────────────────────────────────────────────────────────────────────────
 
 const LAT = 33.4942
@@ -58,9 +58,9 @@ function formatClock(d) {
   return `${pad(h)}:${pad(d.getMinutes())}:${pad(d.getSeconds())} ${d.getHours() >= 12 ? 'PM' : 'AM'}`
 }
 
-function weddingCountdown() {
-  const diff = WEDDING_DATE - new Date()
-  if (diff <= 0) return '0d 0h'
+function partyCountdown() {
+  const diff = PARTY_DATE - new Date()
+  if (diff <= 0) return 'IT\'S ON'
   const days = Math.floor(diff / 86400000)
   const hours = Math.floor((diff % 86400000) / 3600000)
   return `${days}d ${hours}h`
@@ -528,7 +528,7 @@ export default function CommandCenter() {
   const { rows: houseInfo } = useSupabaseTable('house_info', { orderBy: 'key' })
 
   const [clock, setClock]             = useState(formatClock(new Date()))
-  const [cdText, setCdText]           = useState(weddingCountdown())
+  const [cdText, setCdText]           = useState(partyCountdown())
   const [now, setNow]                 = useState(new Date())
   const [weather, setWeather]         = useState(null)
   const [lastUpdated, setLastUpdated] = useState(0)
