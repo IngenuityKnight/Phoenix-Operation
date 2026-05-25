@@ -175,7 +175,7 @@ export default function DailyBriefingPanel() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 px-4 py-4 md:px-6 md:py-6 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 px-4 py-4 sm:grid-cols-2 md:px-6 md:py-6 lg:grid-cols-4">
         <StatCard icon={Plane} label="Tracked Arrivals" value={arrivals.length} />
         <StatCard icon={ShieldAlert} label="Need Pickup" value={pendingPickups} tone="amber" />
         <StatCard icon={ClipboardList} label="Open Tasks" value={openTasks} tone="warn" />

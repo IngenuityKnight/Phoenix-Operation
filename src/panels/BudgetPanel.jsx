@@ -482,9 +482,9 @@ export default function BudgetPanel() {
                           </div>
                           <div className="flex shrink-0 items-center gap-3">
                             <span className="font-mono text-sm font-black text-[#48B040]">${Number(e.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                            <div className="flex items-center gap-1.5 opacity-100 md:opacity-0 md:transition-opacity md:group-hover:opacity-100">
-                              <button type="button" onClick={() => setModal({ mode: 'edit', row: e })} className="p-1 text-[#5C3820] hover:text-[#BA1323]"><Edit2 size={12} /></button>
-                              <button type="button" onClick={() => { if (window.confirm('Delete this expense?')) remove(e.id) }} className="p-1 text-[#5C3820] hover:text-[#E83025]"><Trash2 size={12} /></button>
+                            <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:transition-opacity md:group-hover:opacity-100">
+                              <button type="button" onClick={() => setModal({ mode: 'edit', row: e })} className="p-2 text-[#5C3820] hover:text-[#BA1323]"><Edit2 size={12} /></button>
+                              <button type="button" onClick={() => { if (window.confirm('Delete this expense?')) remove(e.id) }} className="p-2 text-[#5C3820] hover:text-[#E83025]"><Trash2 size={12} /></button>
                             </div>
                           </div>
                         </div>

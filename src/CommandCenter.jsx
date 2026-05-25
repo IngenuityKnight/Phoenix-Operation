@@ -85,28 +85,28 @@ function nowTimeStr()  { const n = new Date(); return `${pad(n.getHours())}:${pa
 
 function TopBar({ clock, cdText }) {
   return (
-    <div className="shrink-0 border-b-2 border-[#BA1323]/40 bg-[#0A0604] px-8 py-3">
-      <div className="flex items-center justify-between">
-        <div className="text-4xl font-black uppercase tracking-[0.18em] text-[#BA1323]">
+    <div className="shrink-0 border-b-2 border-[#BA1323]/40 bg-[#0A0604] px-4 py-2 md:px-8 md:py-3">
+      <div className="flex items-center justify-between gap-2">
+        <div className="text-xl font-black uppercase tracking-[0.12em] text-[#BA1323] md:text-4xl md:tracking-[0.18em]">
           Freakman Operation
         </div>
-        <div className="text-center">
+        <div className="hidden text-center md:block">
           <div className="text-2xl font-black uppercase tracking-[0.25em] text-[#FAF0E8]">
             Scottsdale · May 29–31
           </div>
         </div>
         <div className="text-right">
-          <div className="font-mono text-3xl font-black tabular-nums text-[#FAF0E8]">{clock}</div>
+          <div className="font-mono text-xl font-black tabular-nums text-[#FAF0E8] md:text-3xl">{clock}</div>
         </div>
       </div>
       {/* Wedding countdown bar */}
-      <div className="mt-2 flex items-center justify-center gap-3 border-t border-[#281408] pt-2">
-        <span className="text-lg font-black uppercase tracking-[0.18em] text-[#F2E4D0]">
-          Freakman — Bachelor
+      <div className="mt-1 flex items-center justify-center gap-2 border-t border-[#281408] pt-1 md:mt-2 md:gap-3 md:pt-2">
+        <span className="text-sm font-black uppercase tracking-[0.1em] text-[#F2E4D0] md:text-lg md:tracking-[0.18em]">
+          Bachelor
         </span>
         <span className="text-[#3C1810]">·</span>
-        <span className="font-mono text-2xl font-black text-[#E83025]">{cdText}</span>
-        <span className="text-lg font-black uppercase tracking-[0.12em] text-[#5C3820]">
+        <span className="font-mono text-lg font-black text-[#E83025] md:text-2xl">{cdText}</span>
+        <span className="hidden text-lg font-black uppercase tracking-[0.12em] text-[#5C3820] md:inline">
           until he belongs to someone else
         </span>
       </div>
@@ -485,7 +485,7 @@ function BottomTicker({ items }) {
   const text = (items && items.length > 0 ? items : TICKER_ITEMS).join('     ·     ')
   const full = `${text}     ·     ${text}`
   return (
-    <div className="shrink-0 flex items-center border-t-2 border-[#BA1323]/30 bg-[#0A0604]" style={{ height: '48px' }}>
+    <div className="shrink-0 flex h-12 items-center border-t-2 border-[#BA1323]/30 bg-[#0A0604]">
       <div className="shrink-0 flex h-full items-center bg-[#BA1323] px-5">
         <span className="text-[10px] font-black uppercase tracking-[0.35em] text-[#FAF0E8] whitespace-nowrap">
           Messages
@@ -532,6 +532,7 @@ export default function CommandCenter() {
   const [now, setNow]                 = useState(new Date())
   const [weather, setWeather]         = useState(null)
   const [lastUpdated, setLastUpdated] = useState(0)
+  const [mobileTab, setMobileTab]     = useState('arrivals')
 
   // 1-second clock + countdown — no component remounting
   useEffect(() => {
@@ -592,23 +593,45 @@ export default function CommandCenter() {
   ) || null
 
   return (
-    <div className="relative flex h-screen flex-col overflow-hidden bg-[#0C0605] text-[#F2E4D0]">
+    <div className="relative flex h-[100dvh] flex-col overflow-hidden bg-[#0C0605] text-[#F2E4D0]">
       <EmergencyOverlay entry={emergencyAlert} />
       <TopBar clock={clock} cdText={cdText} />
 
+      {/* Mobile tab nav — hidden on desktop */}
+      <div className="flex shrink-0 border-b border-[#3C1810] md:hidden">
+        {[
+          { id: 'arrivals', label: 'Arrivals' },
+          { id: 'mission',  label: 'Mission'  },
+          { id: 'status',   label: 'Status'   },
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            type="button"
+            onClick={() => setMobileTab(tab.id)}
+            className={`flex-1 py-2.5 text-[10px] font-black uppercase tracking-[0.2em] transition-colors ${
+              mobileTab === tab.id
+                ? 'border-b-2 border-[#BA1323] text-[#BA1323]'
+                : 'text-[#5C3820]'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
       <div className="flex min-h-0 flex-1">
         {/* Left 40% — Arrivals */}
-        <div className="w-[40%] overflow-hidden">
+        <div className={`overflow-y-auto flex-col md:overflow-hidden md:w-[40%] ${mobileTab === 'arrivals' ? 'flex w-full' : 'hidden'} md:flex`}>
           <ArrivalsBoard arrivals={arrivals} />
         </div>
 
         {/* Center 35% — Mission */}
-        <div className="w-[35%] overflow-hidden">
+        <div className={`overflow-y-auto flex-col md:overflow-hidden md:w-[35%] ${mobileTab === 'mission' ? 'flex w-full' : 'hidden'} md:flex`}>
           <MissionCenter itinerary={itinerary} weather={weather} now={now} />
         </div>
 
         {/* Right 25% — Stats + Ops Feed */}
-        <div className="flex w-[25%] flex-col overflow-hidden">
+        <div className={`overflow-y-auto flex-col md:overflow-hidden md:w-[25%] ${mobileTab === 'status' ? 'flex w-full' : 'hidden'} md:flex`}>
           <StatsPanel arrivals={arrivals} now={now} />
           <OpsFeed feed={opsFeed} />
         </div>

@@ -202,7 +202,7 @@ export default function FlightMapPanel() {
 
           {/* Legend */}
           <div className="absolute bottom-4 left-4 rounded border border-[#3C1810] bg-[#140a06]/90 p-3 backdrop-blur-sm">
-            <div className="mb-2 text-[8px] font-black uppercase tracking-[0.2em] text-[#5C3820]">Legend</div>
+            <div className="mb-2 text-[9px] font-black uppercase tracking-[0.2em] text-[#5C3820]">Legend</div>
             <div className="space-y-1.5">
               {[
                 { color: '#E83025', label: 'PHX Airport', dot: true },
@@ -252,7 +252,7 @@ export default function FlightMapPanel() {
                       <div key={person.id} className="flex items-center justify-between py-0.5">
                         <span className="text-[11px] text-[#F2E4D0]">{person.name}</span>
                         <span
-                          className="rounded px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider"
+                          className="rounded px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider"
                           style={{
                             color: STATUS_COLORS[person.status] || STATUS_COLORS.TBD,
                             background: `${STATUS_COLORS[person.status] || STATUS_COLORS.TBD}20`,

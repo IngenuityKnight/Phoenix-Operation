@@ -162,6 +162,162 @@ function TripSettings() {
   )
 }
 
+// ─── PHONE IMPORT ─────────────────────────────────────────────────────────────
+
+function parsePhoneLines(raw, rosterRows) {
+  return raw
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean)
+    .map((line) => {
+      let name = '', rawPhone = ''
+
+      if (line.includes('\t')) {
+        const [a, b] = line.split('\t')
+        name = a.trim(); rawPhone = b?.trim() ?? ''
+      } else if (line.includes(':')) {
+        const idx = line.indexOf(':')
+        name = line.slice(0, idx).trim(); rawPhone = line.slice(idx + 1).trim()
+      } else if (line.includes(' - ')) {
+        const idx = line.indexOf(' - ')
+        name = line.slice(0, idx).trim(); rawPhone = line.slice(idx + 3).trim()
+      } else {
+        const m = line.match(/^(.*?)\s+([+\d().\-\s]{7,})$/)
+        if (m) { name = m[1].trim(); rawPhone = m[2].trim() }
+        else name = line
+      }
+
+      const phone = rawPhone.replace(/[^\d+]/g, '')
+      const nl = name.toLowerCase()
+      const match =
+        rosterRows.find((r) => r.name.toLowerCase() === nl) ||
+        rosterRows.find((r) => r.name.toLowerCase().startsWith(nl)) ||
+        rosterRows.find((r) => nl.startsWith(r.name.toLowerCase())) ||
+        rosterRows.find((r) => r.name.toLowerCase().includes(nl)) ||
+        null
+
+      return { rawName: name, phone, match }
+    })
+}
+
+function PhoneImportModal({ rows, update, onClose }) {
+  const [raw, setRaw]         = useState('')
+  const [parsed, setParsed]   = useState(null)
+  const [applying, setApplying] = useState(false)
+  const [applied, setApplied] = useState(null) // count
+
+  function handleParse() {
+    setParsed(parsePhoneLines(raw, rows))
+  }
+
+  async function handleApply() {
+    const valid = parsed.filter((r) => r.match && r.phone)
+    setApplying(true)
+    for (const r of valid) await update(r.match.id, { phone: r.phone })
+    setApplying(false)
+    setApplied(valid.length)
+  }
+
+  const matched   = parsed?.filter((r) => r.match && r.phone) ?? []
+  const problems  = parsed?.filter((r) => !r.match || !r.phone) ?? []
+
+  return (
+    <Modal title="Bulk Phone Import" onClose={onClose} wide>
+      {applied !== null ? (
+        <div className="flex flex-col items-center gap-4 py-8 text-center">
+          <div className="text-4xl font-black text-[#48B040]">✓</div>
+          <div className="text-lg font-black uppercase tracking-wider text-[#FAF0E8]">
+            {applied} phone number{applied !== 1 ? 's' : ''} saved
+          </div>
+          <button onClick={onClose} className={btnPrimary}>Done</button>
+        </div>
+      ) : parsed === null ? (
+        <div className="flex flex-col gap-4">
+          <div className="rounded border border-[#3C1810] bg-[#140a06] px-4 py-3 text-[11px] leading-relaxed text-[#9A8070]">
+            Paste one person per line. Accepted formats:
+            <div className="mt-2 space-y-1 font-mono text-[10px] text-[#5C3820]">
+              <div>Cameron: 602-555-0100</div>
+              <div>Jake 6025550101</div>
+              <div>Noah - +16025550102</div>
+              <div>Scotty{'  '}(602) 555-0103{'  '}← tab-separated</div>
+            </div>
+          </div>
+          <textarea
+            className={`${inp} resize-none`}
+            rows={10}
+            value={raw}
+            onChange={(e) => setRaw(e.target.value)}
+            placeholder={`Cameron: 602-555-0100\nJake 6025550101\nNoah - +16025550102`}
+            autoFocus
+          />
+          <div className="flex gap-3">
+            <button onClick={handleParse} disabled={!raw.trim()} className={btnPrimary}>
+              Preview Matches
+            </button>
+            <button onClick={onClose} className={btnGhost}>Cancel</button>
+          </div>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-4">
+          {/* Summary */}
+          <div className="flex gap-3">
+            <div className="rounded border border-[#48B040]/30 bg-[#48B040]/10 px-4 py-2 text-center">
+              <div className="font-mono text-2xl font-black text-[#48B040]">{matched.length}</div>
+              <div className="text-[9px] font-black uppercase tracking-widest text-[#48B040]/70">Matched</div>
+            </div>
+            {problems.length > 0 && (
+              <div className="rounded border border-[#E83025]/30 bg-[#E83025]/10 px-4 py-2 text-center">
+                <div className="font-mono text-2xl font-black text-[#E83025]">{problems.length}</div>
+                <div className="text-[9px] font-black uppercase tracking-widest text-[#E83025]/70">Unmatched</div>
+              </div>
+            )}
+          </div>
+
+          {/* Preview table */}
+          <div className="rounded border border-[#3C1810] bg-[#1C0C08]">
+            <div className="grid grid-cols-[1fr_1fr_140px_80px] gap-3 border-b border-[#3C1810] bg-[#140a06] px-4 py-2">
+              {['Input Name', 'Roster Match', 'Phone', 'Status'].map((h) => (
+                <div key={h} className="text-[9px] font-black uppercase tracking-[0.25em] text-[#5C3820]">{h}</div>
+              ))}
+            </div>
+            <div className="max-h-72 overflow-y-auto divide-y divide-[#281408]">
+              {parsed.map((r, i) => (
+                <div key={i} className="grid grid-cols-[1fr_1fr_140px_80px] items-center gap-3 px-4 py-2.5">
+                  <div className="text-sm text-[#F2E4D0] truncate">{r.rawName || '—'}</div>
+                  <div className="text-sm truncate" style={{ color: r.match ? '#F2E4D0' : '#5C3820' }}>
+                    {r.match ? r.match.name : 'No match'}
+                  </div>
+                  <div className="font-mono text-sm" style={{ color: r.phone ? '#9A8070' : '#5C3820' }}>
+                    {r.phone || 'No number'}
+                  </div>
+                  <div className="text-[10px] font-black uppercase tracking-wider"
+                    style={{ color: r.match && r.phone ? '#48B040' : '#E83025' }}>
+                    {r.match && r.phone ? '✓ Ready' : r.match ? 'No #' : 'No match'}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {problems.length > 0 && (
+            <div className="text-[11px] text-[#9A8070]">
+              Unmatched rows will be skipped. Go back to fix them or apply the {matched.length} that matched.
+            </div>
+          )}
+
+          <div className="flex gap-3">
+            <button onClick={handleApply} disabled={applying || matched.length === 0} className={btnPrimary}>
+              {applying ? 'Saving…' : `Apply ${matched.length} Update${matched.length !== 1 ? 's' : ''}`}
+            </button>
+            <button onClick={() => setParsed(null)} className={btnGhost}>← Back</button>
+            <button onClick={onClose} className={btnGhost}>Cancel</button>
+          </div>
+        </div>
+      )}
+    </Modal>
+  )
+}
+
 // ─── ROSTER ──────────────────────────────────────────────────────────────────
 const CREW_STATUS_OPTS = ['Confirmed', 'Maybe', 'Ghosting']
 const CREW_STATUS_COLORS = { Confirmed: '#48B040', Maybe: '#C4952A', Ghosting: '#5C3820' }
@@ -169,9 +325,10 @@ const CREW_EMPTY = { name: '', status: 'Confirmed', arrival_window: '', phone: '
 
 function AdminRoster() {
   const { rows, insert, update, remove } = useSupabaseTable('roster', { orderBy: 'name', ascending: true })
-  const [modal, setModal] = useState(null) // null | 'add' | row
-  const [form, setForm]   = useState(CREW_EMPTY)
-  const [saving, setSaving] = useState(false)
+  const [modal, setModal]           = useState(null) // null | 'add' | row
+  const [form, setForm]             = useState(CREW_EMPTY)
+  const [saving, setSaving]         = useState(false)
+  const [phoneImport, setPhoneImport] = useState(false)
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }))
 
   const confirmed = rows.filter(r => r.status === 'Confirmed').length
@@ -200,9 +357,14 @@ function AdminRoster() {
         title="Crew Roster"
         sub="Headcount"
         action={
-          <button onClick={() => { setForm(CREW_EMPTY); setModal('add') }} className={btnPrimary}>
-            <Plus size={13} className="inline mr-1" />Add Guy
-          </button>
+          <div className="flex gap-2">
+            <button onClick={() => setPhoneImport(true)} className={btnGhost}>
+              Import Phones
+            </button>
+            <button onClick={() => { setForm(CREW_EMPTY); setModal('add') }} className={btnPrimary}>
+              <Plus size={13} className="inline mr-1" />Add Guy
+            </button>
+          </div>
         }
       />
 
@@ -301,6 +463,10 @@ function AdminRoster() {
             </div>
           </form>
         </Modal>
+      )}
+
+      {phoneImport && (
+        <PhoneImportModal rows={rows} update={update} onClose={() => setPhoneImport(false)} />
       )}
     </div>
   )
