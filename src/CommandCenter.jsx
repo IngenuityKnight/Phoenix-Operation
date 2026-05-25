@@ -102,12 +102,12 @@ function TopBar({ clock, cdText }) {
       {/* Wedding countdown bar */}
       <div className="mt-1 flex items-center justify-center gap-2 border-t border-[#281408] pt-1 md:mt-2 md:gap-3 md:pt-2">
         <span className="text-sm font-black uppercase tracking-[0.1em] text-[#F2E4D0] md:text-lg md:tracking-[0.18em]">
-          Bachelor
+          Scottsdale
         </span>
         <span className="text-[#3C1810]">·</span>
         <span className="font-mono text-lg font-black text-[#E83025] md:text-2xl">{cdText}</span>
         <span className="hidden text-lg font-black uppercase tracking-[0.12em] text-[#5C3820] md:inline">
-          until he belongs to someone else
+          Until we get this shit cracking
         </span>
       </div>
     </div>
@@ -539,7 +539,7 @@ export default function CommandCenter() {
     const t = setInterval(() => {
       const d = new Date()
       setClock(formatClock(d))
-      setCdText(weddingCountdown())
+      setCdText(partyCountdown())
       setNow(d)
       setLastUpdated((s) => s + 1)
     }, 1000)
