@@ -63,13 +63,13 @@ function FormField({ label, children }) {
 
 function Modal({ title, onClose, children }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="mx-4 w-full max-w-lg rounded border border-[#3C1810] bg-[#1C0C08] shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center">
+      <div className="w-full rounded-t-xl border border-[#3C1810] bg-[#1C0C08] shadow-2xl sm:mx-4 sm:max-w-lg sm:rounded-lg">
         <div className="flex items-center justify-between border-b border-[#3C1810] px-5 py-4">
           <span className="text-[11px] font-black uppercase tracking-[0.2em] text-[#BA1323]">{title}</span>
           <button type="button" onClick={onClose} className="text-[#9A8070] hover:text-[#F2E4D0]"><X size={16} /></button>
         </div>
-        <div className="max-h-[80vh] overflow-y-auto p-5">{children}</div>
+        <div className="max-h-[78vh] overflow-y-auto p-5">{children}</div>
       </div>
     </div>
   )
