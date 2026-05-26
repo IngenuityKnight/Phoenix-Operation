@@ -264,8 +264,8 @@ export default function DailyBriefingPanel() {
         </div>
 
         <div className="space-y-6">
-          <PanelSection eyebrow="Support" title="Arrival Control">
-            {dayArrivals.length ? (
+          {dayArrivals.length > 0 && (
+            <PanelSection eyebrow="Support" title="Arrival Control">
               <div className="space-y-3">
                 {dayArrivals.map((arrival) => (
                   <div key={arrival.id} className="border border-[#3C1810] bg-[#140a06] px-4 py-3">
@@ -283,10 +283,8 @@ export default function DailyBriefingPanel() {
                   </div>
                 ))}
               </div>
-            ) : (
-              <div className="text-[11px] text-[#9A8070]">No arrivals logged for this day.</div>
-            )}
-          </PanelSection>
+            </PanelSection>
+          )}
 
           <PanelSection eyebrow="Food" title="Meal Coverage">
             {dayMeals.length ? (
