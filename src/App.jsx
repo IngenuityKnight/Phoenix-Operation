@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from './toast'
 import {
   BriefcaseBusiness,
@@ -53,6 +53,12 @@ function MessagesDrawer({ onClose }) {
   const [cat, setCat]         = useState('INFO')
   const [name, setName]       = useState(() => localStorage.getItem('phx_name') || '')
   const [posting, setPosting] = useState(false)
+
+  useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [onClose])
 
   const active = feed.filter(e => !e.expires_at || new Date(e.expires_at) > new Date()).slice(0, 20)
 
@@ -252,6 +258,12 @@ function QuickExpenseModal({ onClose }) {
   const [category, setCategory] = useState('other')
   const [saving, setSaving]     = useState(false)
 
+  useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [onClose])
+
   const rosterNames = roster.filter(r => r.status !== 'Ghosting').map(r => r.name)
 
   async function handleSubmit(e) {
@@ -333,8 +345,21 @@ export default function App() {
   const [selectedPage, setSelectedPage] = useState('briefing')
   const [msgOpen, setMsgOpen]           = useState(false)
   const [expenseOpen, setExpenseOpen]   = useState(false)
+  const [unreadCount, setUnreadCount]   = useState(0)
+  const msgOpenRef = useRef(false)
 
   useNotifications()
+
+  useEffect(() => { msgOpenRef.current = msgOpen }, [msgOpen])
+
+  useEffect(() => {
+    const ch = supabase.channel('ops-unread-badge')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'ops_feed' }, () => {
+        if (!msgOpenRef.current) setUnreadCount(prev => prev + 1)
+      })
+      .subscribe()
+    return () => supabase.removeChannel(ch)
+  }, [])
 
   let content = <DailyBriefingPanel />
   if (selectedPage === 'itinerary') content = <ItineraryPanel />
@@ -367,11 +392,16 @@ export default function App() {
           <span className="hidden sm:inline">Log $</span>
         </button>
         <button
-          onClick={() => setMsgOpen(true)}
-          className="flex items-center gap-2 rounded-full border border-[#BA1323]/40 bg-[#1C0C08] px-4 py-3 text-[11px] font-black uppercase tracking-wider text-[#BA1323] shadow-lg shadow-black/40 hover:bg-[#BA1323]/10 transition-colors"
+          onClick={() => { setMsgOpen(true); setUnreadCount(0) }}
+          className="relative flex items-center gap-2 rounded-full border border-[#BA1323]/40 bg-[#1C0C08] px-4 py-3 text-[11px] font-black uppercase tracking-wider text-[#BA1323] shadow-lg shadow-black/40 hover:bg-[#BA1323]/10 transition-colors"
         >
           <MessageSquarePlus size={16} />
           <span className="hidden sm:inline">Message</span>
+          {unreadCount > 0 && (
+            <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[#BA1323] font-mono text-[9px] font-black text-[#FAF0E8]">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
         </button>
       </div>
 

@@ -22,7 +22,7 @@ export default function Toaster() {
   if (toasts.length === 0) return null
 
   return (
-    <div className="fixed bottom-24 right-4 z-[100] flex flex-col gap-2" style={{ pointerEvents: 'none' }}>
+    <div className="fixed bottom-40 right-4 z-[100] flex flex-col gap-2" style={{ pointerEvents: 'none' }}>
       {toasts.map(t => {
         const s = TYPE_STYLES[t.type] || TYPE_STYLES.info
         return (

@@ -2,6 +2,7 @@ import { Fragment, useEffect, useState } from 'react'
 import { Car, Edit2, ExternalLink, Plane, Plus, Trash2, X } from 'lucide-react'
 import { useSupabaseTable } from '../hooks/useSupabaseTable'
 import { AIRPORT_DB } from '../airportDB'
+import { toast } from '../toast'
 
 const TRANSPORT_OPTIONS = ['flight', 'drive', 'rideshare', 'TBD']
 const STATUS_OPTIONS = ['TBD', 'Confirmed', 'En Route', 'Landed', 'Arrived']
@@ -137,6 +138,11 @@ function useNow() {
 // ── Sub-components ─────────────────────────────────────────────────────────────
 
 function Modal({ title, onClose, children }) {
+  useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [onClose])
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 backdrop-blur-sm sm:items-center">
       <div className="w-full rounded-t-xl border border-[#3C1810] bg-[#1C0C08] shadow-2xl sm:mx-4 sm:max-w-lg sm:rounded-lg">
@@ -404,6 +410,7 @@ export default function ArrivalsPanel() {
     setCheckingInId(arrival.id)
     await update(arrival.id, { status: 'Arrived' })
     setCheckingInId(null)
+    toast(`${arrival.name} is at the house`, 'success')
   }
 
   async function handleSave(form) {

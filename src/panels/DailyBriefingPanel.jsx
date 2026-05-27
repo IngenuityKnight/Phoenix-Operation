@@ -91,6 +91,22 @@ const DAYS = [
       'Unclaimed shared expenses',
     ],
   },
+  {
+    date: '2026-05-31',
+    label: 'Sun 5/31',
+    title: 'Checkout & Departures',
+    mission: 'Final morning at the house. Bertha signs off, everyone packs up, settles any remaining shared expenses, and makes it to the airport. Good trip, gentlemen.',
+    priorities: [
+      'House packed and cleaned before checkout — leave it better than you found it.',
+      'All shared expenses settled in the Budget tab before anyone leaves.',
+      'Coordinate airport runs — no man left behind at Sky Harbor.',
+    ],
+    watchItems: [
+      'Items left behind at the house',
+      'Unsettled Venmo / shared costs',
+      'Missing flights due to Sunday morning carnage',
+    ],
+  },
 ]
 
 function StatCard({ icon: Icon, label, value, tone = 'red' }) {

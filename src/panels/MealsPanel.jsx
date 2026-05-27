@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Edit2, Plus, Trash2, Utensils, X } from 'lucide-react'
 import { useSupabaseTable } from '../hooks/useSupabaseTable'
 
@@ -45,6 +45,11 @@ function FormField({ label, children }) {
 }
 
 function Modal({ title, onClose, children }) {
+  useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [onClose])
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="mx-4 w-full max-w-lg rounded border border-[#3C1810] bg-[#1C0C08] shadow-2xl">

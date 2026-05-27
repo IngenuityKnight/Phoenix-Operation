@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Clock, Edit2, MapPin, Plus, Trash2, X } from 'lucide-react'
 import { useSupabaseTable } from '../hooks/useSupabaseTable'
 
@@ -6,6 +6,7 @@ const DAYS = [
   { date: '2026-05-28', label: 'Thu 5/28', title: 'Night Out in Old Town' },
   { date: '2026-05-29', label: 'Fri 5/29', title: 'Golf · Casino' },
   { date: '2026-05-30', label: 'Sat 5/30', title: 'Breweries · Final Night' },
+  { date: '2026-05-31', label: 'Sun 5/31', title: 'Checkout & Departures' },
 ]
 
 const CATEGORIES = ['pool', 'nightlife', 'golf', 'food', 'transport', 'activity', 'other']
@@ -44,6 +45,11 @@ function FormField({ label, children }) {
 }
 
 function Modal({ title, onClose, children }) {
+  useEffect(() => {
+    const handler = (e) => { if (e.key === 'Escape') onClose() }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [onClose])
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
       <div className="mx-4 w-full max-w-lg rounded border border-[#3C1810] bg-[#1C0C08] shadow-2xl">
@@ -173,7 +179,7 @@ export default function ItineraryPanel() {
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <div className="text-[10px] font-black uppercase tracking-[0.2em] text-[#9A8070]">Itinerary</div>
-            <div className="mt-0.5 text-lg font-bold text-[#F2E4D0]">May 28–30 · Scottsdale</div>
+            <div className="mt-0.5 text-lg font-bold text-[#F2E4D0]">May 28–31 · Scottsdale</div>
           </div>
           <button
             type="button"
@@ -198,7 +204,7 @@ export default function ItineraryPanel() {
             <span className="text-[11px] uppercase tracking-widest text-[#9A8070]">Loading…</span>
           </div>
         ) : (
-          <div className="grid grid-cols-1 divide-y divide-[#281408] lg:grid-cols-3 lg:divide-x lg:divide-y-0">
+          <div className="grid grid-cols-1 divide-y divide-[#281408] lg:grid-cols-4 lg:divide-x lg:divide-y-0">
             {DAYS.map((day) => {
               const dayItems = items
                 .filter((i) => i.day_date === day.date)

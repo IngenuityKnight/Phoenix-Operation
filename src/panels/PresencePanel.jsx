@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { useSupabaseTable } from '../hooks/useSupabaseTable'
+import { toast } from '../toast'
 
 const STATUSES = [
   { key: 'At the house', emoji: '🏠', color: '#48B040' },
@@ -45,6 +46,7 @@ export default function PresencePanel() {
       await insert({ name: myName.trim(), ...payload })
     }
     setSaving(false)
+    toast('Status updated', 'success')
   }
 
   const myRow = presence.find(p => p.name.toLowerCase() === myName.trim().toLowerCase())
