@@ -271,7 +271,7 @@ export default function AdminPanel() {
                 type="button"
                 onClick={async () => {
                   if (window.confirm('Delete all expired entries?')) {
-                    for (const e of expiredFeed) await remove(e.id)
+                    await Promise.all(expiredFeed.map(e => remove(e.id)))
                   }
                 }}
                 className="text-[10px] font-bold uppercase tracking-wider text-[#5C3820] hover:text-[#E83025]"

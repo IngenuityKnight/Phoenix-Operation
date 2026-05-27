@@ -274,11 +274,11 @@ export default function RosterPanel() {
         ) : (
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
             {/* By arrival wave */}
-            {Object.entries(arrivalGroups).map(([window, people]) => (
-              <div key={window} className="flex flex-col gap-2">
-                <div className="text-[9px] font-black uppercase tracking-[0.18em] text-[#5C3820]">{window}</div>
+            {Object.entries(arrivalGroups).map(([arrWindow, people]) => (
+              <div key={arrWindow} className="flex flex-col gap-2">
+                <div className="text-[9px] font-black uppercase tracking-[0.18em] text-[#5C3820]">{arrWindow}</div>
                 {people.map((p) => (
-                  <RosterCard key={p.id} person={p} arrival={getArrival(p)} onEdit={() => setModal({ mode: 'edit', row: p })} onDelete={() => { if (window.confirm?.('Remove this person?')) remove(p.id) }} />
+                  <RosterCard key={p.id} person={p} arrival={getArrival(p)} onEdit={() => setModal({ mode: 'edit', row: p })} onDelete={() => { if (window.confirm('Remove this person?')) remove(p.id) }} />
                 ))}
               </div>
             ))}
@@ -291,7 +291,7 @@ export default function RosterPanel() {
                 <div className="flex flex-col gap-2">
                   <div className="text-[9px] font-black uppercase tracking-[0.18em] text-[#5C3820]">Arrival TBD</div>
                   {noWindow.map((p) => (
-                    <RosterCard key={p.id} person={p} arrival={getArrival(p)} onEdit={() => setModal({ mode: 'edit', row: p })} onDelete={() => { if (window.confirm?.('Remove this person?')) remove(p.id) }} />
+                    <RosterCard key={p.id} person={p} arrival={getArrival(p)} onEdit={() => setModal({ mode: 'edit', row: p })} onDelete={() => { if (window.confirm('Remove this person?')) remove(p.id) }} />
                   ))}
                 </div>
               )
@@ -302,7 +302,7 @@ export default function RosterPanel() {
               <div className="flex flex-col gap-2">
                 <div className="text-[9px] font-black uppercase tracking-[0.18em] text-[#E83025]/50">Ghosting</div>
                 {roster.filter((p) => p.status === 'Ghosting').map((p) => (
-                  <RosterCard key={p.id} person={p} arrival={getArrival(p)} onEdit={() => setModal({ mode: 'edit', row: p })} onDelete={() => { if (window.confirm?.('Remove this person?')) remove(p.id) }} />
+                  <RosterCard key={p.id} person={p} arrival={getArrival(p)} onEdit={() => setModal({ mode: 'edit', row: p })} onDelete={() => { if (window.confirm('Remove this person?')) remove(p.id) }} />
                 ))}
               </div>
             )}

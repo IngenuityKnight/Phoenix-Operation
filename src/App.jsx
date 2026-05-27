@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
+import { toast } from './toast'
 import {
   BriefcaseBusiness,
   ClipboardList,
@@ -20,7 +21,7 @@ import { useNotifications } from './hooks/useNotifications'
 import ArrivalsPanel from './panels/ArrivalsPanel'
 import BudgetPanel from './panels/BudgetPanel'
 import DailyBriefingPanel from './panels/DailyBriefingPanel'
-import FlightMapPanel from './panels/FlightMapPanel'
+const FlightMapPanel = lazy(() => import('./panels/FlightMapPanel'))
 import ItineraryPanel from './panels/ItineraryPanel'
 import LogisticsPanel from './panels/LogisticsPanel'
 import MealsPanel from './panels/MealsPanel'
@@ -63,6 +64,7 @@ function MessagesDrawer({ onClose }) {
     await insert({ message: `${name.trim()}: ${text.trim()}`, category: cat, pinned: false, expires_at: null })
     setText('')
     setPosting(false)
+    toast('Message sent', 'success')
   }
 
   return (
@@ -104,7 +106,7 @@ function MessagesDrawer({ onClose }) {
                 disabled={posting || !text.trim() || !name.trim()}
                 className="flex shrink-0 items-center gap-1.5 rounded bg-[#BA1323] px-4 py-2 text-[11px] font-black uppercase tracking-wider text-[#FAF0E8] hover:bg-[#D4152A] disabled:opacity-40 transition-colors"
               >
-                <Send size={13} />
+                {posting ? <span className="text-[10px]">Sending…</span> : <Send size={13} />}
               </button>
             </div>
             {/* Category pills */}
@@ -267,6 +269,7 @@ function QuickExpenseModal({ onClose }) {
       notes: null,
     })
     setSaving(false)
+    toast('Expense logged', 'success')
     onClose()
   }
 
@@ -336,7 +339,7 @@ export default function App() {
   let content = <DailyBriefingPanel />
   if (selectedPage === 'itinerary') content = <ItineraryPanel />
   if (selectedPage === 'arrivals')  content = <ArrivalsPanel />
-  if (selectedPage === 'map')       content = <FlightMapPanel />
+  if (selectedPage === 'map')       content = <Suspense fallback={<div className="flex flex-1 items-center justify-center text-[11px] uppercase tracking-widest text-[#5C3820]">Loading map…</div>}><FlightMapPanel /></Suspense>
   if (selectedPage === 'meals')     content = <MealsPanel />
   if (selectedPage === 'logistics') content = <LogisticsPanel />
   if (selectedPage === 'budget')    content = <BudgetPanel />
@@ -353,7 +356,7 @@ export default function App() {
 
       {/* Floating action buttons */}
       <div
-        className="fixed left-5 z-30 flex flex-col gap-2"
+        className="fixed right-4 z-30 flex flex-col gap-2"
         style={{ bottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
       >
         <button

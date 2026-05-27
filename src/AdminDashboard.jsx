@@ -7,10 +7,6 @@ import {
 import { supabase } from './supabaseClient'
 import { useSupabaseTable } from './hooks/useSupabaseTable'
 
-// ─── AUTH ─────────────────────────────────────────────────────────────────────
-const PASSWORD   = 'phxops2025'
-const STORAGE_KEY = 'phx_admin_authed'
-
 // ─── STYLE PRIMITIVES ─────────────────────────────────────────────────────────
 const inp = 'w-full rounded border border-[#3C1810] bg-[#140a06] px-3 py-2 text-sm text-[#F2E4D0] placeholder-[#5C3820] focus:border-[#BA1323] focus:outline-none'
 const sel = 'w-full rounded border border-[#3C1810] bg-[#140a06] px-3 py-2 text-sm text-[#F2E4D0] focus:border-[#BA1323] focus:outline-none'
@@ -1232,7 +1228,7 @@ function AdminOpsFeed() {
               {expiredFeed.length} expired {expiredFeed.length === 1 ? 'entry' : 'entries'}
             </div>
             <button type="button"
-              onClick={async () => { if (window.confirm('Delete all expired?')) for (const e of expiredFeed) await remove(e.id) }}
+              onClick={async () => { if (window.confirm('Delete all expired?')) await Promise.all(expiredFeed.map(e => remove(e.id))) }}
               className="text-[10px] font-bold uppercase tracking-wider text-[#5C3820] hover:text-[#E83025]">
               Clear all
             </button>
@@ -1259,6 +1255,7 @@ function AuditLog() {
       .order('created_at', { ascending: false })
       .limit(200)
       .then(({ data }) => { setRows(data || []); setLoading(false) })
+      .catch(() => setLoading(false))
   }, [])
 
   const tables = [...new Set(rows.map(r => r.table_name))].sort()
@@ -1368,15 +1365,15 @@ const NAV_ITEMS = [
 ]
 
 const SECTIONS = {
-  settings:  <TripSettings />,
-  roster:    <AdminRoster />,
-  budget:    <AdminBudget />,
-  itinerary: <AdminItinerary />,
-  meals:     <AdminMeals />,
-  logistics: <AdminLogistics />,
-  opsfeed:   <AdminOpsFeed />,
-  warroom:   <WarRoomControls />,
-  auditlog:  <AuditLog />,
+  settings:  TripSettings,
+  roster:    AdminRoster,
+  budget:    AdminBudget,
+  itinerary: AdminItinerary,
+  meals:     AdminMeals,
+  logistics: AdminLogistics,
+  opsfeed:   AdminOpsFeed,
+  warroom:   WarRoomControls,
+  auditlog:  AuditLog,
 }
 
 function Dashboard({ onLogout }) {
@@ -1419,39 +1416,7 @@ function Dashboard({ onLogout }) {
 
       {/* Main */}
       <div className="flex-1 overflow-y-auto p-8">
-        {SECTIONS[active]}
-      </div>
-    </div>
-  )
-}
-
-// ─── PASSWORD GATE ────────────────────────────────────────────────────────────
-function PasswordGate({ onAuth }) {
-  const [val, setVal] = useState('')
-  const [err, setErr] = useState(false)
-
-  function submit(e) {
-    e.preventDefault()
-    if (val === PASSWORD) {
-      localStorage.setItem(STORAGE_KEY, '1')
-      onAuth()
-    } else {
-      setErr(true)
-      setVal('')
-    }
-  }
-
-  return (
-    <div className="flex h-screen items-center justify-center bg-[#100805]">
-      <div className="w-full max-w-sm rounded border border-[#3C1810] bg-[#1C0C08] p-8">
-        <div className="mb-1 text-[10px] font-black uppercase tracking-[0.3em] text-[#BA1323]">Phoenix Operation</div>
-        <div className="mb-6 text-2xl font-black uppercase tracking-[0.08em] text-[#FAF0E8]">Admin Access</div>
-        <form onSubmit={submit} className="flex flex-col gap-4">
-          <input type="password" className={inp} placeholder="Password" value={val} autoFocus
-            onChange={e => { setVal(e.target.value); setErr(false) }} />
-          {err && <div className="text-[11px] font-bold text-[#E83025]">Incorrect password</div>}
-          <button type="submit" className={btnPrimary}>Enter</button>
-        </form>
+        {(() => { const Section = SECTIONS[active]; return Section ? <Section /> : null })()}
       </div>
     </div>
   )
@@ -1459,13 +1424,9 @@ function PasswordGate({ onAuth }) {
 
 // ─── ROOT ─────────────────────────────────────────────────────────────────────
 export default function AdminDashboard() {
-  const [authed, setAuthed] = useState(() => localStorage.getItem(STORAGE_KEY) === '1')
-
-  function logout() {
-    localStorage.removeItem(STORAGE_KEY)
-    setAuthed(false)
+  async function logout() {
+    await fetch('/api/admin-logout', { method: 'POST' })
+    window.location.href = '/'
   }
-
-  if (!authed) return <PasswordGate onAuth={() => setAuthed(true)} />
   return <Dashboard onLogout={logout} />
 }

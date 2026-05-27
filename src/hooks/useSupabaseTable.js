@@ -5,15 +5,19 @@ const AUDIT_WRITE_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/audit
 const ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 async function auditWrite(action, table, record_id, payload) {
-  const res = await fetch(AUDIT_WRITE_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${ANON_KEY}`,
-    },
-    body: JSON.stringify({ action, table, record_id, payload }),
-  })
-  return res.json()
+  try {
+    const res = await fetch(AUDIT_WRITE_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${ANON_KEY}`,
+      },
+      body: JSON.stringify({ action, table, record_id, payload }),
+    })
+    return res.json()
+  } catch (err) {
+    return { data: null, error: err?.message ?? 'Network error' }
+  }
 }
 
 export function useSupabaseTable(tableName, { orderBy = 'created_at', ascending = true } = {}) {
@@ -65,7 +69,7 @@ export function useSupabaseTable(tableName, { orderBy = 'created_at', ascending 
     async (values) => {
       const result = await auditWrite('insert', tableName, undefined, values)
       const { data, error: err } = result
-      if (err) return { data: null, error: err }
+      if (err || !data) return { data: null, error: err ?? 'Insert returned no data' }
       setRows((prev) => (prev.some((r) => r.id === data.id) ? prev : [...prev, data]))
       return { data, error: null }
     },
@@ -76,7 +80,7 @@ export function useSupabaseTable(tableName, { orderBy = 'created_at', ascending 
     async (id, values) => {
       const result = await auditWrite('update', tableName, id, values)
       const { data, error: err } = result
-      if (err) return { data: null, error: err }
+      if (err || !data) return { data: null, error: err ?? 'Update returned no data' }
       setRows((prev) => prev.map((r) => (r.id === id ? data : r)))
       return { data, error: null }
     },

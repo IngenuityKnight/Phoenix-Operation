@@ -5,27 +5,35 @@ import AdminPanel from './AdminPanel.jsx'
 import App from './App.jsx'
 import CommandCenter from './CommandCenter.jsx'
 import ErrorBoundary from './ErrorBoundary.jsx'
+import Toaster from './Toaster.jsx'
 import './index.css'
 
-// Shared with AdminDashboard — must stay in sync if password changes
-const ADMIN_PASSWORD   = 'phxops2025'
-const ADMIN_STORAGE_KEY = 'phx_admin_authed'
-
-function AdminGate({ children }) {
-  const [authed, setAuthed] = useState(() => localStorage.getItem(ADMIN_STORAGE_KEY) === '1')
+function AdminLogin() {
+  const params = new URLSearchParams(window.location.search)
+  const next = params.get('next') || '/admin'
   const [val, setVal] = useState('')
   const [err, setErr] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  if (authed) return children
-
-  function submit(e) {
+  async function submit(e) {
     e.preventDefault()
-    if (val === ADMIN_PASSWORD) {
-      localStorage.setItem(ADMIN_STORAGE_KEY, '1')
-      setAuthed(true)
-    } else {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/admin-auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: val }),
+      })
+      if (res.ok) {
+        window.location.href = next
+      } else {
+        setErr(true)
+        setVal('')
+      }
+    } catch {
       setErr(true)
-      setVal('')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -44,8 +52,12 @@ function AdminGate({ children }) {
             onChange={e => { setVal(e.target.value); setErr(false) }}
           />
           {err && <div className="text-[11px] font-bold text-[#E83025]">Incorrect password</div>}
-          <button type="submit" className="rounded bg-[#BA1323] px-4 py-2 text-[11px] font-black uppercase tracking-wider text-[#140a06] hover:bg-[#D4152A] transition-colors">
-            Enter
+          <button
+            type="submit"
+            disabled={loading || !val}
+            className="rounded bg-[#BA1323] px-4 py-2 text-[11px] font-black uppercase tracking-wider text-[#140a06] hover:bg-[#D4152A] transition-colors disabled:opacity-40"
+          >
+            {loading ? 'Verifying…' : 'Enter'}
           </button>
         </form>
       </div>
@@ -59,9 +71,11 @@ ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <ErrorBoundary>
       {path === '/command' ? <CommandCenter />
-        : path === '/admin' ? <AdminDashboard />
-        : path === '/post'  ? <AdminGate><AdminPanel /></AdminGate>
+        : path === '/admin'   ? <AdminDashboard />
+        : path === '/post'    ? <AdminPanel />
+        : path === '/login'   ? <AdminLogin />
         : <App />}
+      <Toaster />
     </ErrorBoundary>
   </React.StrictMode>,
 )
