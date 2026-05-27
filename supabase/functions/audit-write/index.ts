@@ -19,8 +19,9 @@ function corsHeaders(origin: string | null) {
 
 // Tables allowed to be written through this endpoint
 const ALLOWED_TABLES = new Set([
-  'arrivals', 'meals', 'logistics', 'logistics_items',
+  'arrivals', 'meals', 'logistics_items',
   'itinerary_items', 'expenses', 'roster', 'house_info', 'ops_feed', 'presence',
+  'settlements_paid',
 ])
 
 Deno.serve(async (req) => {

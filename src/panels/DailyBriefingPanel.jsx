@@ -132,8 +132,8 @@ export default function DailyBriefingPanel() {
   const { rows: arrivals } = useSupabaseTable('arrivals', { orderBy: 'arrival_date', ascending: true })
   const { rows: itinerary } = useSupabaseTable('itinerary_items', { orderBy: 'start_time' })
   const { rows: meals } = useSupabaseTable('meals', { orderBy: 'day_date' })
-  const { rows: logistics } = useSupabaseTable('logistics', { orderBy: 'created_at' })
-  const { rows: houseInfo } = useSupabaseTable('house_info', { orderBy: 'category' })
+  const { rows: logistics } = useSupabaseTable('logistics_items', { orderBy: 'created_at' })
+  const { rows: houseInfo } = useSupabaseTable('house_info', { orderBy: 'key' })
   const todayStr = new Date().toLocaleDateString('en-CA')
   const defaultDate = DAYS.find((d) => d.date === todayStr)?.date ?? DAYS[0].date
   const [selectedDate, setSelectedDate] = useState(defaultDate)

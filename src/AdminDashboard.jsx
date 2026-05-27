@@ -563,10 +563,10 @@ function AdminBudget() {
 
 // ─── ITINERARY ────────────────────────────────────────────────────────────────
 const DAYS = [
-  { date: '2026-05-28', label: 'Wed 5/28' },
-  { date: '2026-05-29', label: 'Thu 5/29' },
-  { date: '2026-05-30', label: 'Fri 5/30' },
-  { date: '2026-05-31', label: 'Sat 5/31' },
+  { date: '2026-05-28', label: 'Thu 5/28' },
+  { date: '2026-05-29', label: 'Fri 5/29' },
+  { date: '2026-05-30', label: 'Sat 5/30' },
+  { date: '2026-05-31', label: 'Sun 5/31' },
 ]
 const ITIN_CATS = ['pool', 'nightlife', 'golf', 'food', 'transport', 'activity', 'other']
 const ITIN_CAT_HEX = { pool: '#BA1323', nightlife: '#C4952A', golf: '#48B040', food: '#C4952A', transport: '#9A8070', activity: '#E83025', other: '#5C3820' }

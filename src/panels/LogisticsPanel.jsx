@@ -117,7 +117,7 @@ function LogisticsItem({ item, onToggle, onEdit, onDelete }) {
 }
 
 export default function LogisticsPanel() {
-  const { rows: items, loading, insert, update, remove } = useSupabaseTable('logistics', { orderBy: 'created_at' })
+  const { rows: items, loading, insert, update, remove } = useSupabaseTable('logistics_items', { orderBy: 'created_at' })
   const [modal, setModal] = useState(null)
   const [saving, setSaving] = useState(false)
 

@@ -3,10 +3,10 @@ import { Edit2, Plus, Trash2, Utensils, X } from 'lucide-react'
 import { useSupabaseTable } from '../hooks/useSupabaseTable'
 
 const DAYS = [
-  { date: '2026-05-28', label: 'Wed 5/28', title: 'Arrivals Day' },
-  { date: '2026-05-29', label: 'Thu 5/29', title: 'Pool Day' },
-  { date: '2026-05-30', label: 'Fri 5/30', title: 'Golf / Nightlife' },
-  { date: '2026-05-31', label: 'Sat 5/31', title: 'Last Night' },
+  { date: '2026-05-28', label: 'Thu 5/28', title: 'Arrivals Day' },
+  { date: '2026-05-29', label: 'Fri 5/29', title: 'Pool Day' },
+  { date: '2026-05-30', label: 'Sat 5/30', title: 'Golf / Nightlife' },
+  { date: '2026-05-31', label: 'Sun 5/31', title: 'Last Night' },
 ]
 const MEAL_TYPES = ['breakfast', 'lunch', 'dinner', 'snacks']
 const PLAN_TYPES = ['TBD', 'cook', 'restaurant', 'delivery', 'catered']
