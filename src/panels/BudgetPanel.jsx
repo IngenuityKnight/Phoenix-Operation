@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { CheckCircle, Circle, DollarSign, Edit2, Plus, Trash2, X } from 'lucide-react'
+import { ArrowDownLeft, CheckCircle, Circle, DollarSign, Edit2, Plus, Trash2, X } from 'lucide-react'
 import { useSupabaseTable } from '../hooks/useSupabaseTable'
 
 const HEADCOUNT = 14
 const CATEGORIES = ['house', 'golf', 'food', 'drinks', 'transport', 'activities', 'other']
+const PAYMENT_CAT = 'payment'
 
 const CATEGORY_COLORS = {
   house:      'text-[#BA1323] bg-[#BA1323]/10 border-[#BA1323]/30',
@@ -118,6 +119,47 @@ function SplitPicker({ value, onChange, rosterNames }) {
   )
 }
 
+function LogPaymentForm({ from, to, maxAmount, onSave, onCancel, saving }) {
+  const [amount, setAmount] = useState('')
+  const [note, setNote] = useState('')
+  return (
+    <form onSubmit={e => { e.preventDefault(); onSave(Number(amount), note) }} className="flex flex-col gap-4">
+      <div className="rounded border border-[#C4952A]/30 bg-[#C4952A]/5 p-3 text-[11px] text-[#C4952A]">
+        Recording a payment <span className="font-bold">{from}</span> sent you outside the app. This reduces their outstanding balance.
+      </div>
+      <div className="flex items-center gap-3 rounded border border-[#3C1810] bg-[#140a06] px-4 py-3">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-[#E83025]/10 text-xs font-black text-[#E83025]">{from[0]?.toUpperCase()}</div>
+        <div className="flex-1 text-sm font-semibold text-[#F2E4D0]">{from}</div>
+        <ArrowDownLeft size={14} className="text-[#48B040]" />
+        <div className="text-sm font-semibold text-[#48B040]">{to}</div>
+      </div>
+      <FormField label={`Amount Received (max $${maxAmount.toFixed(2)})`}>
+        <input
+          type="number"
+          className={inputCls}
+          value={amount}
+          onChange={e => setAmount(e.target.value)}
+          placeholder="0.00"
+          min={0.01}
+          max={maxAmount}
+          step="0.01"
+          required
+          autoFocus
+        />
+      </FormField>
+      <FormField label="Note (optional)">
+        <input className={inputCls} value={note} onChange={e => setNote(e.target.value)} placeholder="Venmo, cash, etc." />
+      </FormField>
+      <div className="flex justify-end gap-3 pt-2">
+        <button type="button" onClick={onCancel} className="px-4 py-2 text-xs text-[#9A8070] hover:text-[#F2E4D0]">Cancel</button>
+        <button type="submit" disabled={saving || !amount || Number(amount) <= 0} className="rounded bg-[#48B040] px-4 py-2 text-xs font-bold uppercase tracking-wider text-[#0a1f0a] hover:bg-[#5fd455] disabled:opacity-50">
+          {saving ? 'Saving…' : 'Log Payment'}
+        </button>
+      </div>
+    </form>
+  )
+}
+
 function ExpenseForm({ initial, rosterNames, onSave, onCancel, saving }) {
   const initSplitNames = initial?.split_names?.length
     ? initial.split_names
@@ -189,6 +231,7 @@ export default function BudgetPanel() {
   const { rows: paidSettlements, insert: markPaid, remove: unmarkPaid } = useSupabaseTable('settlements_paid', { orderBy: 'created_at' })
   const { rows: roster } = useSupabaseTable('roster', { orderBy: 'name' })
   const [modal, setModal] = useState(null)
+  const [paymentModal, setPaymentModal] = useState(null) // { from, to, maxAmount }
   const [saving, setSaving] = useState(false)
   const [view, setView] = useState('expenses')
   const [sortBy, setSortBy] = useState('newest')
@@ -213,6 +256,22 @@ export default function BudgetPanel() {
     if (record) await unmarkPaid(record.id)
   }
 
+  async function handleLogPayment(amount, note) {
+    setSaving(true)
+    const { from, to } = paymentModal
+    await insert({
+      description: `Payment from ${from}${note ? ` — ${note}` : ''}`,
+      amount,
+      paid_by: from,
+      category: PAYMENT_CAT,
+      split_names: [to],
+      split_count: 1,
+      notes: note || '',
+    })
+    setSaving(false)
+    setPaymentModal(null)
+  }
+
   async function handleSave(form) {
     setSaving(true)
     const splitNames = form.split_names.length > 0 ? form.split_names : null
@@ -233,11 +292,14 @@ export default function BudgetPanel() {
 
   // ── Derived data ──────────────────────────────────────────────────────────
 
-  const totalSpent = expenses.reduce((s, e) => s + (Number(e.amount) || 0), 0)
+  const realExpenses = expenses.filter(e => e.category !== PAYMENT_CAT)
+  const paymentEntries = expenses.filter(e => e.category === PAYMENT_CAT)
+
+  const totalSpent = realExpenses.reduce((s, e) => s + (Number(e.amount) || 0), 0)
   const perPerson = groupSize > 0 ? totalSpent / groupSize : 0
 
   const byCategory = CATEGORIES.reduce((acc, cat) => {
-    acc[cat] = expenses.filter(e => e.category === cat).reduce((s, e) => s + Number(e.amount), 0)
+    acc[cat] = realExpenses.filter(e => e.category === cat).reduce((s, e) => s + Number(e.amount), 0)
     return acc
   }, {})
 
@@ -248,10 +310,10 @@ export default function BudgetPanel() {
     payerTotals[payer] = (payerTotals[payer] || 0) + Number(e.amount)
   })
 
-  const splitPeopleNames = [...new Set(expenses.flatMap(e => Array.isArray(e.split_names) ? e.split_names : []))]
+  const splitPeopleNames = [...new Set(realExpenses.flatMap(e => Array.isArray(e.split_names) ? e.split_names : []))]
   const allPeople = [...new Set([...rosterNames, ...Object.keys(payerTotals), ...splitPeopleNames])]
 
-  // Per-person owed: sum of their share on each expense
+  // Per-person owed: sum of their share on each expense (all, including payments)
   const owedByPerson = {}
   allPeople.forEach(name => {
     owedByPerson[name] = expenses.reduce((sum, e) => {
@@ -273,7 +335,7 @@ export default function BudgetPanel() {
 
   // ── Sort + filter for expense list ────────────────────────────────────────
 
-  const visibleExpenses = expenses
+  const visibleExpenses = realExpenses
     .filter(e => !filterCat || e.category === filterCat)
     .filter(e => {
       if (!filterPerson) return true
@@ -320,7 +382,7 @@ export default function BudgetPanel() {
             <div className="text-[9px] uppercase tracking-widest text-[#9A8070]">Avg / Person</div>
           </div>
           <div className="text-center">
-            <div className="font-mono text-xl font-black text-[#BA1323]">{expenses.length}</div>
+            <div className="font-mono text-xl font-black text-[#BA1323]">{realExpenses.length}</div>
             <div className="text-[9px] uppercase tracking-widest text-[#9A8070]">Expenses</div>
           </div>
           {settlements.length > 0 && (
@@ -385,7 +447,7 @@ export default function BudgetPanel() {
                 )}
 
                 {/* Sort + filter controls */}
-                {expenses.length > 0 && (
+                {realExpenses.length > 0 && (
                   <div className="flex flex-wrap items-center gap-2">
                     <select
                       value={sortBy}
@@ -423,13 +485,13 @@ export default function BudgetPanel() {
                       </button>
                     )}
                     {hasFilters && (
-                      <span className="font-mono text-[10px] text-[#5C3820]">{visibleExpenses.length} of {expenses.length}</span>
+                      <span className="font-mono text-[10px] text-[#5C3820]">{visibleExpenses.length} of {realExpenses.length}</span>
                     )}
                   </div>
                 )}
 
                 {/* Expense list */}
-                {expenses.length === 0 ? (
+                {realExpenses.length === 0 ? (
                   <div className="flex flex-col items-center gap-3 py-16 text-[#5C3820]">
                     <DollarSign size={32} strokeWidth={1} />
                     <span className="text-[11px] uppercase tracking-widest">No expenses logged yet</span>
@@ -565,32 +627,52 @@ export default function BudgetPanel() {
                     {settlements.filter(t => !isPaid(t)).length > 0 && (
                       <div className="flex flex-col gap-2">
                         <div className="text-[9px] font-black uppercase tracking-[0.18em] text-[#9A8070]">Outstanding</div>
-                        {settlements.filter(t => !isPaid(t)).map((t, i) => (
-                          <div key={i} className="flex items-center justify-between rounded border border-[#281408] bg-[#140a06] p-4">
-                            <div className="flex items-center gap-3">
-                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-[#E83025]/10 text-xs font-black text-[#E83025]">
-                                {t.from[0]?.toUpperCase()}
+                        {settlements.filter(t => !isPaid(t)).map((t, i) => {
+                          const paidToward = paymentEntries
+                            .filter(e => e.paid_by === t.from && Array.isArray(e.split_names) && e.split_names.includes(t.to))
+                            .reduce((s, e) => s + Number(e.amount), 0)
+                          return (
+                            <div key={i} className="rounded border border-[#281408] bg-[#140a06] p-4">
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-[#E83025]/10 text-xs font-black text-[#E83025]">
+                                    {t.from[0]?.toUpperCase()}
+                                  </div>
+                                  <div>
+                                    <div className="text-sm font-semibold text-[#F2E4D0]">{t.from}</div>
+                                    <div className="text-[10px] text-[#9A8070]">sends to <span className="text-[#48B040]">{t.to}</span></div>
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                  <div className="text-right">
+                                    <div className="font-mono text-lg font-black text-[#C4952A]">${t.amount.toFixed(2)}</div>
+                                    <div className="text-[9px] uppercase tracking-widest text-[#5C3820]">Venmo / Cash</div>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => setPaymentModal({ from: t.from, to: t.to, maxAmount: t.amount })}
+                                    className="flex items-center gap-1.5 rounded border border-[#3C1810] bg-[#1C0C08] px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#9A8070] transition-colors hover:border-[#C4952A] hover:text-[#C4952A]"
+                                  >
+                                    <ArrowDownLeft size={12} /> Paid Me
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMarkPaid(t)}
+                                    className="flex items-center gap-1.5 rounded border border-[#3C1810] bg-[#1C0C08] px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#9A8070] transition-colors hover:border-[#48B040] hover:text-[#48B040]"
+                                  >
+                                    <Circle size={12} /> Mark Paid
+                                  </button>
+                                </div>
                               </div>
-                              <div>
-                                <div className="text-sm font-semibold text-[#F2E4D0]">{t.from}</div>
-                                <div className="text-[10px] text-[#9A8070]">sends to <span className="text-[#48B040]">{t.to}</span></div>
-                              </div>
+                              {paidToward > 0 && (
+                                <div className="mt-2 flex items-center gap-1.5 text-[10px] text-[#C4952A]">
+                                  <ArrowDownLeft size={10} />
+                                  <span className="font-mono font-bold">${paidToward.toFixed(2)}</span> already received — balance reflects this
+                                </div>
+                              )}
                             </div>
-                            <div className="flex items-center gap-4">
-                              <div className="text-right">
-                                <div className="font-mono text-lg font-black text-[#C4952A]">${t.amount.toFixed(2)}</div>
-                                <div className="text-[9px] uppercase tracking-widest text-[#5C3820]">Venmo / Cash</div>
-                              </div>
-                              <button
-                                type="button"
-                                onClick={() => handleMarkPaid(t)}
-                                className="flex items-center gap-1.5 rounded border border-[#3C1810] bg-[#1C0C08] px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#9A8070] transition-colors hover:border-[#48B040] hover:text-[#48B040]"
-                              >
-                                <Circle size={12} /> Mark Paid
-                              </button>
-                            </div>
-                          </div>
-                        ))}
+                          )
+                        })}
                       </div>
                     )}
 
@@ -647,6 +729,19 @@ export default function BudgetPanel() {
             rosterNames={rosterNames}
             onSave={handleSave}
             onCancel={() => setModal(null)}
+            saving={saving}
+          />
+        </Modal>
+      )}
+
+      {paymentModal && (
+        <Modal title="Log Payment Received" onClose={() => setPaymentModal(null)}>
+          <LogPaymentForm
+            from={paymentModal.from}
+            to={paymentModal.to}
+            maxAmount={paymentModal.maxAmount}
+            onSave={handleLogPayment}
+            onCancel={() => setPaymentModal(null)}
             saving={saving}
           />
         </Modal>
