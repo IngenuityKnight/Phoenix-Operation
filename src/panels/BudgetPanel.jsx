@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ArrowDownLeft, ChevronDown, ChevronRight, CheckCircle, Circle, DollarSign, Edit2, Plus, Trash2, X } from 'lucide-react'
+import { ArrowDownLeft, ChevronDown, ChevronRight, CheckCircle, Circle, DollarSign, Edit2, Lock, Plus, Trash2, X } from 'lucide-react'
 import { useSupabaseTable } from '../hooks/useSupabaseTable'
 
 const HEADCOUNT = 14
@@ -38,8 +38,10 @@ function computeSettlement(balances) {
   return txns
 }
 
-const VIEWS = ['expenses', 'balances', 'settle']
-const VIEW_LABELS = { expenses: 'Expenses', balances: 'Balances', settle: 'Settle Up' }
+const VIEWS = ['expenses', 'balances', 'settle', 'payments']
+const VIEW_LABELS = { expenses: 'Expenses', balances: 'Balances', settle: 'Settle Up', payments: 'Payments' }
+
+const DELETE_PIN = '1234'
 
 const EMPTY_FORM = {
   description: '',
@@ -79,6 +81,59 @@ function Modal({ title, onClose, children }) {
         <div className="max-h-[78vh] overflow-y-auto p-5">{children}</div>
       </div>
     </div>
+  )
+}
+
+function DeletePinModal({ description, onConfirm, onCancel }) {
+  const [pin, setPin] = useState('')
+  const [error, setError] = useState(false)
+
+  function handleSubmit(e) {
+    e.preventDefault()
+    if (pin === DELETE_PIN) {
+      onConfirm()
+    } else {
+      setError(true)
+      setPin('')
+    }
+  }
+
+  return (
+    <Modal title="Confirm Delete" onClose={onCancel}>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <div className="rounded border border-[#E83025]/20 bg-[#E83025]/5 p-3">
+          <div className="mb-1 text-[9px] font-black uppercase tracking-[0.18em] text-[#E83025]">Deleting expense</div>
+          <div className="text-sm text-[#F2E4D0]">{description}</div>
+        </div>
+        <FormField label="Enter PIN to confirm">
+          <div className="relative">
+            <Lock size={12} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#5C3820]" />
+            <input
+              type="password"
+              className={`${inputCls} pl-8`}
+              value={pin}
+              onChange={e => { setPin(e.target.value); setError(false) }}
+              placeholder="••••"
+              autoFocus
+              maxLength={20}
+            />
+          </div>
+        </FormField>
+        {error && (
+          <div className="text-[10px] font-bold text-[#E83025]">Incorrect PIN — try again</div>
+        )}
+        <div className="flex justify-end gap-3 pt-1">
+          <button type="button" onClick={onCancel} className="px-4 py-2 text-xs text-[#9A8070] hover:text-[#F2E4D0]">Cancel</button>
+          <button
+            type="submit"
+            disabled={!pin}
+            className="flex items-center gap-2 rounded bg-[#E83025] px-4 py-2 text-xs font-bold uppercase tracking-wider text-white hover:bg-[#ff4436] disabled:opacity-50"
+          >
+            <Trash2 size={12} /> Delete
+          </button>
+        </div>
+      </form>
+    </Modal>
   )
 }
 
@@ -352,7 +407,8 @@ export default function BudgetPanel() {
   const { rows: paidSettlements, insert: markPaid, remove: unmarkPaid } = useSupabaseTable('settlements_paid', { orderBy: 'created_at' })
   const { rows: roster } = useSupabaseTable('roster', { orderBy: 'name' })
   const [modal, setModal] = useState(null)
-  const [paymentModal, setPaymentModal] = useState(null) // null | { from?: string, to?: string }
+  const [paymentModal, setPaymentModal] = useState(null)
+  const [deleteConfirm, setDeleteConfirm] = useState(null) // null | { id: string, description: string }
   const [expandedRows, setExpandedRows] = useState(new Set())
   const [saving, setSaving] = useState(false)
   const [view, setView] = useState('expenses')
@@ -726,7 +782,7 @@ export default function BudgetPanel() {
                             <span className="font-mono text-sm font-black text-[#48B040]">${Number(e.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                             <div className="flex items-center gap-1 opacity-100 md:opacity-0 md:transition-opacity md:group-hover:opacity-100">
                               <button type="button" onClick={() => setModal({ mode: 'edit', row: e })} className="p-2 text-[#5C3820] hover:text-[#BA1323]"><Edit2 size={12} /></button>
-                              <button type="button" onClick={() => { if (window.confirm('Delete this expense?')) remove(e.id) }} className="p-2 text-[#5C3820] hover:text-[#E83025]"><Trash2 size={12} /></button>
+                              <button type="button" onClick={() => setDeleteConfirm({ id: e.id, description: e.description })} className="p-2 text-[#5C3820] hover:text-[#E83025]"><Trash2 size={12} /></button>
                             </div>
                           </div>
                         </div>
@@ -779,6 +835,76 @@ export default function BudgetPanel() {
                       </div>
                     )
                   })
+                )}
+              </div>
+            )}
+
+            {/* PAYMENTS VIEW */}
+            {view === 'payments' && (
+              <div className="flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div className="text-[9px] font-black uppercase tracking-[0.18em] text-[#9A8070]">
+                    Direct payments · {paymentEntries.length} recorded
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setPaymentModal({})}
+                    className="flex items-center gap-1.5 rounded border border-[#3C1810] bg-[#1C0C08] px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-[#C4952A] transition-colors hover:border-[#C4952A] hover:bg-[#251508]"
+                  >
+                    <ArrowDownLeft size={12} /> Log Payment
+                  </button>
+                </div>
+
+                {paymentEntries.length === 0 ? (
+                  <div className="flex flex-col items-center gap-2 py-16 text-[#5C3820]">
+                    <ArrowDownLeft size={32} strokeWidth={1} />
+                    <span className="text-[11px] uppercase tracking-widest">No payments logged yet</span>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex flex-col gap-2">
+                      {[...paymentEntries]
+                        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+                        .map(p => {
+                          const recipient = Array.isArray(p.split_names) ? p.split_names.join(', ') : '—'
+                          const date = new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+                          return (
+                            <div key={p.id} className="group flex items-center gap-3 rounded border border-[#281408] bg-[#140a06] p-4 hover:border-[#3C1810]">
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-[#48B040]/10">
+                                <ArrowDownLeft size={14} className="text-[#48B040]" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex flex-wrap items-center gap-1.5 text-sm">
+                                  <span className="font-semibold text-[#F2E4D0]">{p.paid_by}</span>
+                                  <span className="text-[#5C3820]">→</span>
+                                  <span className="font-semibold text-[#48B040]">{recipient}</span>
+                                </div>
+                                <div className="mt-0.5 text-[10px] text-[#9A8070]">
+                                  {p.notes || p.description}
+                                </div>
+                                <div className="mt-0.5 text-[9px] text-[#5C3820]">{date}</div>
+                              </div>
+                              <div className="flex shrink-0 items-center gap-3">
+                                <span className="font-mono text-sm font-black text-[#48B040]">${Number(p.amount).toFixed(2)}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => setDeleteConfirm({ id: p.id, description: p.notes || p.description })}
+                                  className="p-2 text-[#5C3820] opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100 hover:text-[#E83025]"
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              </div>
+                            </div>
+                          )
+                        })}
+                    </div>
+                    <div className="rounded border border-[#3C1810] bg-[#180C07] p-3 flex items-center justify-between">
+                      <span className="text-[10px] uppercase tracking-widest text-[#9A8070]">Total payments logged</span>
+                      <span className="font-mono text-sm font-black text-[#48B040]">
+                        ${paymentEntries.reduce((s, p) => s + Number(p.amount), 0).toFixed(2)}
+                      </span>
+                    </div>
+                  </>
                 )}
               </div>
             )}
@@ -984,6 +1110,14 @@ export default function BudgetPanel() {
             saving={saving}
           />
         </Modal>
+      )}
+
+      {deleteConfirm !== null && (
+        <DeletePinModal
+          description={deleteConfirm.description}
+          onConfirm={() => { remove(deleteConfirm.id); setDeleteConfirm(null) }}
+          onCancel={() => setDeleteConfirm(null)}
+        />
       )}
     </div>
   )
