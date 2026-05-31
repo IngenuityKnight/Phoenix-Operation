@@ -47,6 +47,7 @@ const EMPTY_FORM = {
   paid_by: '',
   category: 'other',
   split_names: [],
+  custom_splits: null,
   notes: '',
 }
 
@@ -119,6 +120,74 @@ function SplitPicker({ value, onChange, rosterNames }) {
   )
 }
 
+const amtInputCls = 'w-24 rounded border border-[#3C1810] bg-[#1C0C08] px-2 py-1 text-right font-mono text-sm text-[#F2E4D0] placeholder-[#5C3820] focus:border-[#C4952A] focus:outline-none'
+
+function CustomSplitEditor({ splitNames, customSplits, totalAmount, rosterNames, onToggle, onAmountChange }) {
+  const billTotal = Number(totalAmount) || 0
+  const enteredTotal = splitNames.reduce((s, n) => s + (Number(customSplits[n]) || 0), 0)
+  const diff = billTotal - enteredTotal
+  const balanced = Math.abs(diff) < 0.005
+  const excluded = rosterNames.filter(n => !splitNames.includes(n))
+
+  function distributeEvenly() {
+    if (!splitNames.length || !billTotal) return
+    const share = (billTotal / splitNames.length).toFixed(2)
+    splitNames.forEach(n => onAmountChange(n, share))
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="rounded border border-[#3C1810] bg-[#140a06] divide-y divide-[#1f0d08]">
+        {splitNames.length === 0 && (
+          <div className="px-3 py-4 text-center text-[10px] text-[#5C3820]">No one selected — add people below</div>
+        )}
+        {splitNames.map(name => (
+          <div key={name} className="flex items-center gap-3 px-3 py-2">
+            <button type="button" onClick={() => onToggle(name)} className="shrink-0 text-[#5C3820] hover:text-[#E83025]" title="Remove">
+              <X size={11} />
+            </button>
+            <span className="flex-1 text-sm text-[#F2E4D0]">{name}</span>
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] text-[#5C3820]">$</span>
+              <input
+                type="number"
+                className={amtInputCls}
+                value={customSplits[name] ?? ''}
+                onChange={e => onAmountChange(name, e.target.value)}
+                placeholder="0.00"
+                min={0}
+                step="0.01"
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {excluded.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {excluded.map(name => (
+            <button key={name} type="button" onClick={() => onToggle(name)}
+              className="flex items-center gap-1 rounded border border-[#281408] bg-[#1C0C08] px-2 py-1 text-[10px] text-[#5C3820] hover:border-[#3C1810] hover:text-[#9A8070]"
+            >
+              <Plus size={9} /> {name}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className={`flex items-center justify-between rounded px-3 py-2 text-[10px] font-mono ${balanced ? 'bg-[#48B040]/10 text-[#48B040]' : 'bg-[#C4952A]/10 text-[#C4952A]'}`}>
+        <span>Entered: ${enteredTotal.toFixed(2)}</span>
+        {billTotal > 0 && (
+          <span>{balanced ? '✓ Matches bill' : diff > 0 ? `$${diff.toFixed(2)} unassigned` : `$${Math.abs(diff).toFixed(2)} over bill`}</span>
+        )}
+        <button type="button" onClick={distributeEvenly} className="text-[9px] font-bold uppercase tracking-wider opacity-70 hover:opacity-100">
+          Split evenly
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function DirectPaymentForm({ allPeople, initialFrom, initialTo, onSave, onCancel, saving }) {
   const [from, setFrom] = useState(initialFrom || '')
   const [to, setTo] = useState(initialTo || '')
@@ -160,20 +229,51 @@ function DirectPaymentForm({ allPeople, initialFrom, initialTo, onSave, onCancel
 }
 
 function ExpenseForm({ initial, rosterNames, onSave, onCancel, saving }) {
-  const initSplitNames = initial?.split_names?.length
-    ? initial.split_names
-    : [...rosterNames]
+  const initSplitNames = initial?.split_names?.length ? initial.split_names : [...rosterNames]
+  const hasCustom = initial?.custom_splits && Object.keys(initial.custom_splits).length > 0
 
   const [form, setForm] = useState(
-    initial ? { ...initial, split_names: initSplitNames } : { ...EMPTY_FORM, split_names: [...rosterNames] }
+    initial
+      ? { ...initial, split_names: initSplitNames, custom_splits: initial.custom_splits || null }
+      : { ...EMPTY_FORM, split_names: [...rosterNames] }
   )
+  const [splitMode, setSplitMode] = useState(hasCustom ? 'custom' : 'even')
   const [payMode, setPayMode] = useState(
     initial?.paid_by && !rosterNames.includes(initial.paid_by) ? 'manual' : 'roster'
   )
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }))
 
+  function switchSplitMode(mode) {
+    if (mode === 'custom') {
+      const billTotal = Number(form.amount) || 0
+      const share = form.split_names.length > 0 ? (billTotal / form.split_names.length) : 0
+      const splits = {}
+      form.split_names.forEach(n => { splits[n] = share > 0 ? share.toFixed(2) : '' })
+      setForm(p => ({ ...p, custom_splits: splits }))
+    } else {
+      setForm(p => ({ ...p, custom_splits: null }))
+    }
+    setSplitMode(mode)
+  }
+
+  function handleCustomToggle(name) {
+    if (form.split_names.includes(name)) {
+      const newSplits = { ...(form.custom_splits || {}) }
+      delete newSplits[name]
+      setForm(p => ({ ...p, split_names: p.split_names.filter(n => n !== name), custom_splits: newSplits }))
+    } else {
+      setForm(p => ({ ...p, split_names: [...p.split_names, name], custom_splits: { ...(p.custom_splits || {}), [name]: '' } }))
+    }
+  }
+
+  function handleCustomAmount(name, val) {
+    setForm(p => ({ ...p, custom_splits: { ...(p.custom_splits || {}), [name]: val } }))
+  }
+
+  const evenShare = form.amount && form.split_names.length ? (Number(form.amount) / form.split_names.length).toFixed(2) : '0.00'
+
   return (
-    <form onSubmit={e => { e.preventDefault(); onSave(form) }} className="flex flex-col gap-4">
+    <form onSubmit={e => { e.preventDefault(); onSave(form, splitMode) }} className="flex flex-col gap-4">
       <FormField label="Description">
         <input className={inputCls} value={form.description} onChange={e => set('description', e.target.value)} placeholder="e.g. Tee time deposit, Costco run…" required />
       </FormField>
@@ -189,13 +289,8 @@ function ExpenseForm({ initial, rosterNames, onSave, onCancel, saving }) {
       </div>
       <FormField label="Paid By">
         {payMode === 'roster' ? (
-          <select
-            className={selectCls}
-            value={form.paid_by}
-            onChange={e => {
-              if (e.target.value === '__manual__') { setPayMode('manual'); set('paid_by', '') }
-              else set('paid_by', e.target.value)
-            }}
+          <select className={selectCls} value={form.paid_by}
+            onChange={e => { if (e.target.value === '__manual__') { setPayMode('manual'); set('paid_by', '') } else set('paid_by', e.target.value) }}
             required
           >
             <option value="">— Who fronted it? —</option>
@@ -209,9 +304,36 @@ function ExpenseForm({ initial, rosterNames, onSave, onCancel, saving }) {
           </div>
         )}
       </FormField>
-      <FormField label={`Split Among (${form.split_names.length} people · $${form.amount && form.split_names.length ? (Number(form.amount) / form.split_names.length).toFixed(2) : '0.00'}/person)`}>
-        <SplitPicker value={form.split_names} onChange={v => set('split_names', v)} rosterNames={rosterNames} />
-      </FormField>
+
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center justify-between">
+          <label className="text-[10px] font-bold uppercase tracking-widest text-[#9A8070]">
+            {splitMode === 'even' ? `Split Among (${form.split_names.length} people · $${evenShare}/person)` : `Custom Split (${form.split_names.length} people)`}
+          </label>
+          <div className="flex gap-0.5 rounded border border-[#3C1810] bg-[#140a06] p-0.5">
+            {['even', 'custom'].map(m => (
+              <button key={m} type="button" onClick={() => switchSplitMode(m)}
+                className={`rounded px-2.5 py-1 text-[9px] font-black uppercase tracking-wider transition-colors ${splitMode === m ? 'bg-[#BA1323]/20 text-[#BA1323]' : 'text-[#5C3820] hover:text-[#9A8070]'}`}
+              >
+                {m === 'even' ? 'Even' : 'Custom'}
+              </button>
+            ))}
+          </div>
+        </div>
+        {splitMode === 'even' ? (
+          <SplitPicker value={form.split_names} onChange={v => set('split_names', v)} rosterNames={rosterNames} />
+        ) : (
+          <CustomSplitEditor
+            splitNames={form.split_names}
+            customSplits={form.custom_splits || {}}
+            totalAmount={form.amount}
+            rosterNames={rosterNames}
+            onToggle={handleCustomToggle}
+            onAmountChange={handleCustomAmount}
+          />
+        )}
+      </div>
+
       <FormField label="Notes">
         <input className={inputCls} value={form.notes} onChange={e => set('notes', e.target.value)} placeholder="Receipt #, context…" />
       </FormField>
@@ -271,9 +393,12 @@ export default function BudgetPanel() {
     setPaymentModal(null)
   }
 
-  async function handleSave(form) {
+  async function handleSave(form, splitMode) {
     setSaving(true)
     const splitNames = form.split_names.length > 0 ? form.split_names : null
+    const customSplits = splitMode === 'custom' && form.custom_splits && Object.keys(form.custom_splits).length > 0
+      ? Object.fromEntries(Object.entries(form.custom_splits).map(([k, v]) => [k, Number(v) || 0]))
+      : null
     const payload = {
       description: form.description,
       amount: Number(form.amount),
@@ -281,6 +406,7 @@ export default function BudgetPanel() {
       category: form.category,
       split_names: splitNames,
       split_count: splitNames ? splitNames.length : HEADCOUNT,
+      custom_splits: customSplits,
       notes: form.notes,
     }
     if (modal?.mode === 'edit') await update(modal.row.id, payload)
@@ -312,15 +438,17 @@ export default function BudgetPanel() {
   const splitPeopleNames = [...new Set(realExpenses.flatMap(e => Array.isArray(e.split_names) ? e.split_names : []))]
   const allPeople = [...new Set([...rosterNames, ...Object.keys(payerTotals), ...splitPeopleNames])]
 
-  // Per-person owed: sum of their share on each expense (all, including payments)
+  // Per-person owed: custom_splits take priority, then even split, then legacy
   const owedByPerson = {}
   allPeople.forEach(name => {
     owedByPerson[name] = expenses.reduce((sum, e) => {
+      if (e.custom_splits && typeof e.custom_splits === 'object') {
+        return sum + (Number(e.custom_splits[name]) || 0)
+      }
       const names = Array.isArray(e.split_names) && e.split_names.length > 0 ? e.split_names : null
       if (names) {
         return sum + (names.includes(name) ? Number(e.amount) / names.length : 0)
       }
-      // Legacy expense: distribute evenly using split_count
       return sum + Number(e.amount) / (Number(e.split_count) || HEADCOUNT)
     }, 0)
   })
@@ -341,9 +469,15 @@ export default function BudgetPanel() {
         return names ? names.includes(personName) : true
       })
       .map(e => {
-        const names = Array.isArray(e.split_names) && e.split_names.length > 0 ? e.split_names : null
-        const denom = names ? names.length : (Number(e.split_count) || HEADCOUNT)
-        return { id: e.id, description: e.description, category: e.category, paid_by: e.paid_by?.trim(), share: Number(e.amount) / denom }
+        let share
+        if (e.custom_splits && typeof e.custom_splits === 'object') {
+          share = Number(e.custom_splits[personName]) || 0
+        } else {
+          const names = Array.isArray(e.split_names) && e.split_names.length > 0 ? e.split_names : null
+          const denom = names ? names.length : (Number(e.split_count) || HEADCOUNT)
+          share = Number(e.amount) / denom
+        }
+        return { id: e.id, description: e.description, category: e.category, paid_by: e.paid_by?.trim(), share, isCustom: !!(e.custom_splits) }
       })
       .sort((a, b) => b.share - a.share)
     const logsForPerson = paymentEntries.filter(e => e.paid_by?.trim() === personName)
@@ -532,9 +666,10 @@ export default function BudgetPanel() {
                   <div className="flex flex-col gap-2">
                     {visibleExpenses.map(e => {
                       const names = Array.isArray(e.split_names) && e.split_names.length > 0 ? e.split_names : null
+                      const isCustom = e.custom_splits && typeof e.custom_splits === 'object' && Object.keys(e.custom_splits).length > 0
                       const denom = names ? names.length : (Number(e.split_count) || HEADCOUNT)
-                      const share = Number(e.amount) / denom
-                      const isAllGroup = names && rosterNames.length > 0 && names.length === rosterNames.length
+                      const evenShare = Number(e.amount) / denom
+                      const isAllGroup = !isCustom && names && rosterNames.length > 0 && names.length === rosterNames.length
 
                       return (
                         <div key={e.id} className="group flex items-start gap-3 rounded border border-[#281408] bg-[#140a06] p-3 hover:border-[#3C1810]">
@@ -544,31 +679,40 @@ export default function BudgetPanel() {
                                 {e.category}
                               </span>
                               <span className="truncate text-sm font-semibold text-[#F2E4D0]">{e.description}</span>
+                              {isCustom && (
+                                <span className="rounded border border-[#C4952A]/40 bg-[#C4952A]/10 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider text-[#C4952A]">Custom</span>
+                              )}
                             </div>
                             <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1">
                               <span className="text-[10px] text-[#9A8070]">
                                 Paid by <span className="text-[#F2E4D0]">{e.paid_by}</span>
                               </span>
-                              <span className="text-[10px] text-[#9A8070]">
-                                <span className="font-mono text-[#C4952A]">${share.toFixed(2)}/person</span>
-                              </span>
+                              {!isCustom && (
+                                <span className="font-mono text-[10px] text-[#C4952A]">${evenShare.toFixed(2)}/person</span>
+                              )}
                               {e.notes && <span className="text-[10px] italic text-[#5C3820]">{e.notes}</span>}
                             </div>
-                            {/* Split names */}
                             <div className="mt-1.5 flex flex-wrap items-center gap-1">
-                              {isAllGroup ? (
+                              {isCustom ? (
+                                Object.entries(e.custom_splits).slice(0, 6).map(([name, amt]) => (
+                                  <span key={name} className="rounded bg-[#281408] px-1.5 py-0.5 text-[9px] text-[#9A8070]">
+                                    {name} <span className="font-mono text-[#C4952A]">${Number(amt).toFixed(2)}</span>
+                                  </span>
+                                ))
+                              ) : isAllGroup ? (
                                 <span className="text-[10px] text-[#5C3820]">All {names.length} guys</span>
                               ) : names ? (
                                 <>
                                   {names.slice(0, 5).map(n => (
                                     <span key={n} className="rounded bg-[#281408] px-1.5 py-0.5 text-[9px] text-[#9A8070]">{n}</span>
                                   ))}
-                                  {names.length > 5 && (
-                                    <span className="text-[9px] text-[#5C3820]">+{names.length - 5} more</span>
-                                  )}
+                                  {names.length > 5 && <span className="text-[9px] text-[#5C3820]">+{names.length - 5} more</span>}
                                 </>
                               ) : (
                                 <span className="text-[10px] text-[#5C3820]">Split {e.split_count || HEADCOUNT} ways</span>
+                              )}
+                              {isCustom && Object.keys(e.custom_splits).length > 6 && (
+                                <span className="text-[9px] text-[#5C3820]">+{Object.keys(e.custom_splits).length - 6} more</span>
                               )}
                             </div>
                           </div>
