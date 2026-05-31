@@ -406,12 +406,18 @@ export default function BudgetPanel() {
       category: form.category,
       split_names: splitNames,
       split_count: splitNames ? splitNames.length : HEADCOUNT,
-      custom_splits: customSplits,
       notes: form.notes,
+      // only include custom_splits when non-null — avoids errors if DB migration hasn't run yet
+      ...(customSplits !== null && { custom_splits: customSplits }),
     }
-    if (modal?.mode === 'edit') await update(modal.row.id, payload)
-    else await insert(payload)
+    const { error } = modal?.mode === 'edit'
+      ? await update(modal.row.id, payload)
+      : await insert(payload)
     setSaving(false)
+    if (error) {
+      alert(`Save failed: ${error}`)
+      return
+    }
     setModal(null)
   }
 
