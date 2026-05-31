@@ -572,7 +572,7 @@ export default function BudgetPanel() {
         </div>
       </div>
 
-      <div className="p-4 md:flex-1 md:overflow-auto md:p-6">
+      <div className="p-4 md:flex-1 md:overflow-auto md:p-6" style={{ paddingBottom: '7rem' }}>
         {loading ? (
           <div className="flex h-48 items-center justify-center text-[#9A8070]">
             <span className="text-[11px] uppercase tracking-widest">Loading…</span>
